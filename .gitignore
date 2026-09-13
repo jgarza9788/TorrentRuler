@@ -1,8 +1,33 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+out/
+*.pdb
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Test results
+TestResults/
+*.trx
+[Cc]overage/
+*.coverage
+*.coveragexml
+
+# Local data / secrets
 config.json
-bin
+*.db
+*.db-shm
+*.db-wal
 
-
-# other stuff
-.vscode
-bin
-obj
+# OS files
+.DS_Store
+Thumbs.db
