@@ -1,0 +1,46 @@
+# 192.168.1.106:8087 -> torrentruler:8080
+#
+# Only TORRENTRULER_DATA_DIR and TORRENTRULER_LOCATION are real -- see README.md for what
+# every setting actually does. Everything else (parallelism, dry-run, kill switch,
+# theme, log level, timezone, path mappings, instance credentials) is configured
+# from the Settings/Instances pages after first boot, not env vars.
+
+services:
+  torrentruler:
+    build:
+      context: /home/tbp/projects/torrentruler/
+      dockerfile: Dockerfile
+
+    container_name: torrentruler
+    ports:
+      - "8087:8080"
+    environment:
+      TZ: ${TIMEZONE}
+
+      # SQLite DB + Data Protection key ring (credential encryption). Already
+      # defaults to /data in the image; only set this if you want it elsewhere.
+      TORRENTRULER_DATA_DIR: "/data"
+
+    volumes:
+      # SQLite db + Data Protection keys. Back this up -- losing the key ring
+      # means every stored instance credential becomes unreadable and has to
+      # be re-entered.
+      - ${TORRENTRULER_LOCATION}/data:/data
+
+      # Rolling log files (torrentruler-YYYY-MM-DD.log, last 7 days kept).
+      - ${TORRENTRULER_LOCATION}/log:/log
+
+      # Mount every path you want disk-usage rules for, and/or that "move"
+      # actions need to see to verify a move completed. Path mappings in the
+      # Settings page translate between these and whatever qBittorrent/Plex
+      # report, so the mount points don't have to match exactly.
+      # - /mnt/media:/mnt/media
+      # - /mnt/downloads:/mnt/downloads
+
+    restart: unless-stopped
+    healthcheck:
+      # wget, not curl: the Alpine image has busybox wget and no curl.
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
