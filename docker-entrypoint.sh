@@ -6,8 +6,8 @@
 # just run as-is and rely on the host dir being writable.
 set -e
 
-DATA_DIR="${QBITFLOW_DATA_DIR:-/data}"
-LOG_DIR="${QBITFLOW_LOG_DIR:-/log}"
+DATA_DIR="${TORRENTRULER_DATA_DIR:-/data}"
+LOG_DIR="${TORRENTRULER_LOG_DIR:-/log}"
 mkdir -p "$DATA_DIR" "$LOG_DIR"
 
 if [ "$(id -u)" = "0" ]; then

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\TorrentRuler.Core\TorrentRuler.Core.csproj" />
+    <ProjectReference Include="..\TorrentRuler.Sources\TorrentRuler.Sources.csproj" />
+    <ProjectReference Include="..\TorrentRuler.Snapshot\TorrentRuler.Snapshot.csproj" />
+    <ProjectReference Include="..\TorrentRuler.Infrastructure\TorrentRuler.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TorrentRuler.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CronExpressionDescriptor" Version="2.42.0" />
+    <PackageReference Include="Cronos" Version="0.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>

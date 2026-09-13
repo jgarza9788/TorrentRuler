@@ -1,8 +1,8 @@
-# qbitflow
+# torrentruler
 
 Rule-driven automation for qBittorrent, informed by your media library and watch
 history. Define rules — a schedule, a condition, and one or more actions — and
-qbitflow evaluates them against a live snapshot of your qBittorrent, Plex, Jellyfin,
+torrentruler evaluates them against a live snapshot of your qBittorrent, Plex, Jellyfin,
 Tautulli, Jellystat, Jellyglance, and disk-usage data, then tags, re-categorizes,
 moves, or throttles matching torrents.
 
@@ -12,7 +12,7 @@ Self-hosted, single Docker image, SQLite only (no external database, no Redis).
 
 ```bash
 git clone <this repo>
-cd qbitflow
+cd torrentruler
 docker compose up -d
 ```
 
@@ -40,22 +40,22 @@ instance credentials at rest) lives under one directory, configurable via:
 
 | Env var | Default | Purpose |
 |---|---|---|
-| `QBITFLOW_DATA_DIR` | `/data` in the container, `./data` when run locally | SQLite DB + key ring |
-| `QBITFLOW_LOG_DIR` | `/log` in the container, `./log` when run locally | Rolling log files (see [Troubleshooting](#troubleshooting)) |
-| `QBITFLOW_LOG_LEVEL` | _(unset)_ | Overrides the Settings-page log level when set (`Trace`/`Debug`/`Information`/`Warning`/`Error`/`Critical`) |
+| `TORRENTRULER_DATA_DIR` | `/data` in the container, `./data` when run locally | SQLite DB + key ring |
+| `TORRENTRULER_LOG_DIR` | `/log` in the container, `./log` when run locally | Rolling log files (see [Troubleshooting](#troubleshooting)) |
+| `TORRENTRULER_LOG_LEVEL` | _(unset)_ | Overrides the Settings-page log level when set (`Trace`/`Debug`/`Information`/`Warning`/`Error`/`Critical`) |
 
 Everything else (parallelism level, dry-run, kill switch, theme, log level, timezone,
 path mappings) is configured from the **Settings** page, not environment variables —
 this is what gets backed up when you export config, and what gets applied without a
 restart. The log level now applies immediately on save too.
 
-`docker-compose.yml` mounts `${QBITFLOW_LOCATION}/data` at `/data` (your entire
-configuration, rules, and run history — back this up) and `${QBITFLOW_LOCATION}/log`
+`docker-compose.yml` mounts `${TORRENTRULER_LOCATION}/data` at `/data` (your entire
+configuration, rules, and run history — back this up) and `${TORRENTRULER_LOCATION}/log`
 at `/log` (the rolling log files, safe to discard).
 
-If you use the **move** action and want qbitflow to verify the move against the same
+If you use the **move** action and want torrentruler to verify the move against the same
 paths your qBittorrent/Plex/Jellyfin containers see, mount those paths into the
-qbitflow container too (see the commented-out volume lines in `docker-compose.yml`)
+torrentruler container too (see the commented-out volume lines in `docker-compose.yml`)
 and set up a path mapping in Settings if the mount points differ between containers.
 
 ## Setting up sources
@@ -80,7 +80,7 @@ type you pick, so it tells you which fields that particular source actually uses
 | `Jellyglance` | Playback events | API key | `X-Api-Key` header |
 
 Credentials are encrypted at rest with ASP.NET Core Data Protection (the key ring lives
-beside the database in `QBITFLOW_DATA_DIR`), are decrypted only in memory when an
+beside the database in `TORRENTRULER_DATA_DIR`), are decrypted only in memory when an
 adapter makes a request, and are never included in a config export. Leaving the
 password or API key blank when editing an existing instance keeps the stored one.
 
@@ -126,18 +126,18 @@ one that matters most — it is what correlates a playback event back to a torre
 
 ### Storage paths
 
-**Instances → Add storage path.** A name and a directory. qbitflow reads the
+**Instances → Add storage path.** A name and a directory. torrentruler reads the
 filesystem's capacity/used/free for that path, and optionally its recursive folder size
 on an interval you set. These are addressed as `storage.<name>.<field>`, so the name
 follows the same naming rules as an instance.
 
-The path must be visible **to the qbitflow container**. If you want to check the disk
+The path must be visible **to the torrentruler container**. If you want to check the disk
 your downloads actually live on, mount it (see the commented-out volume lines in
 `docker-compose.yml`).
 
 ### Path mappings
 
-**This is the setting that makes cross-source rules work.** qbitflow correlates rows
+**This is the setting that makes cross-source rules work.** torrentruler correlates rows
 across sources by **normalized file path** — not by title, and not by any shared ID. At
 ingest, every path from every source goes through the same normalization, and a torrent
 is linked to a library item or a playback event when the results match.
@@ -408,7 +408,7 @@ Callable from advanced SQL, and what the computed fields above use internally:
 
 Switch a rule to advanced mode when the visual builder can't say what you mean — deeper
 nesting, a multi-condition EXISTS body, arithmetic across fields. You write a boolean
-WHERE-clause expression; qbitflow wraps it in
+WHERE-clause expression; torrentruler wraps it in
 `SELECT … FROM qbittorrent t WHERE <yours>` and the torrent row is aliased `t`.
 
 Field keys work verbatim, and are rewritten into the same SQL the visual builder
@@ -467,7 +467,7 @@ next scheduled run.
 Add tag(s), remove tag(s), set category, move (with optional
 wait-for-completion verification), set upload limit, set download limit, start torrent,
 stop torrent, and export the `.torrent` file (writes each matched torrent's `.torrent`
-into a directory on qbitflow's own filesystem — flat, or a subfolder per category —
+into a directory on torrentruler's own filesystem — flat, or a subfolder per category —
 naming files `<torrent name> [<hash>].torrent` and skipping any already on disk). Every
 action applies to the torrents a rule matched, so a rule always resolves to a set of
 torrents no matter how many sources its condition consulted. All actions
@@ -516,32 +516,32 @@ What changed, concretely:
 
 ## Troubleshooting
 
-**Logs.** qbitflow writes a rolling file per day to `/log` inside the container
-(`qbitflow-YYYY-MM-DD.log`, the last 7 days are kept). With the default compose file
-that's `${QBITFLOW_LOCATION}/log/` on the host, so you can read it directly:
+**Logs.** torrentruler writes a rolling file per day to `/log` inside the container
+(`torrentruler-YYYY-MM-DD.log`, the last 7 days are kept). With the default compose file
+that's `${TORRENTRULER_LOCATION}/log/` on the host, so you can read it directly:
 
 ```bash
-tail -f "${QBITFLOW_LOCATION}/log/qbitflow-$(date +%F).log"
+tail -f "${TORRENTRULER_LOCATION}/log/torrentruler-$(date +%F).log"
 # or, from inside the container:
-docker compose exec qbitflow sh -c 'tail -f /log/qbitflow-$(date +%F).log'
+docker compose exec torrentruler sh -c 'tail -f /log/torrentruler-$(date +%F).log'
 ```
 
-The same lines also go to stdout as JSON: `docker compose logs -f qbitflow`.
+The same lines also go to stdout as JSON: `docker compose logs -f torrentruler`.
 
 **Log level.** Set it on the **Settings** page (`Information` by default) — it takes
-effect immediately, no restart. `QBITFLOW_LOG_LEVEL` overrides it if you need to set a
+effect immediately, no restart. `TORRENTRULER_LOG_LEVEL` overrides it if you need to set a
 level before the app can reach its database.
 
 **qBittorrent connection test fails.**
 
 - *"qBittorrent rejected the login …"* — the WebUI credentials are wrong, **or**
-  qBittorrent has temporarily banned qbitflow's IP after repeated failed logins
+  qBittorrent has temporarily banned torrentruler's IP after repeated failed logins
   (Options → Web UI → "Ban client after consecutive failures", default 5 / 3600 s).
   Restart qBittorrent or wait out the ban, then retry. Newer qBittorrent generates a
   random admin password on first run (printed to its own log) — `adminadmin` won't work.
 - *"qBittorrent auth returned HTTP 403 / 401"* — usually qBittorrent's host-header
   validation rejecting the request, or the WebUI not actually listening where you think.
-- *"Could not reach qBittorrent at …"* — DNS/networking; from inside the qbitflow
+- *"Could not reach qBittorrent at …"* — DNS/networking; from inside the torrentruler
   container the qBittorrent URL must be resolvable (use the compose service name or a
   reachable IP, not `localhost`).
 
@@ -551,21 +551,21 @@ Tools → Log) is the authoritative source for a rejected login.
 
 ## Architecture
 
-- **Qbitflow.Core** — domain models, the condition-tree and action types, and the
+- **TorrentRuler.Core** — domain models, the condition-tree and action types, and the
   interfaces adapters/executors implement.
-- **Qbitflow.Sources** — one adapter per data source (qBittorrent, Plex, Jellyfin,
+- **TorrentRuler.Sources** — one adapter per data source (qBittorrent, Plex, Jellyfin,
   Tautulli, Jellystat, Jellyglance) plus the storage-usage service, the
   shared per-instance TTL cache, and the per-host concurrency limiter.
-- **Qbitflow.Snapshot** — the in-memory SQLite database rebuilt each rule run (see
+- **TorrentRuler.Snapshot** — the in-memory SQLite database rebuilt each rule run (see
   [The snapshot schema](#the-snapshot-schema)), the path normalizer, and the SQLite
   UDFs.
-- **Qbitflow.Engine** — the condition-tree → parameterized-SQL compiler, the advanced
+- **TorrentRuler.Engine** — the condition-tree → parameterized-SQL compiler, the advanced
   SQL validator/executor, the action executor, cron scheduling, and RuleRunner (the
   glue that ties a rule's run together end to end).
-- **Qbitflow.Infrastructure** — EF Core persistence (config, instances, rules, run
+- **TorrentRuler.Infrastructure** — EF Core persistence (config, instances, rules, run
   history), auth, config/rule import-export.
-- **Qbitflow.Web** — ASP.NET Core Razor Pages + HTMX + Alpine.js UI.
-- **Qbitflow.Tests** — xUnit: the SQL compiler, snapshot schema, cron handling, action
+- **TorrentRuler.Web** — ASP.NET Core Razor Pages + HTMX + Alpine.js UI.
+- **TorrentRuler.Tests** — xUnit: the SQL compiler, snapshot schema, cron handling, action
   idempotency, the example rule library, and a 10,000-torrent/50-rule benchmark.
 
 ### The snapshot schema
@@ -630,8 +630,8 @@ path mappings applied, and is what every cross-source correlation joins on.
 ## Development
 
 ```bash
-dotnet build Qbitflow.sln
-dotnet test src/Qbitflow.Tests/Qbitflow.Tests.csproj
+dotnet build TorrentRuler.sln
+dotnet test src/TorrentRuler.Tests/TorrentRuler.Tests.csproj
 ```
 
 ### Adding a source type
@@ -639,10 +639,10 @@ dotnet test src/Qbitflow.Tests/Qbitflow.Tests.csproj
 The per-type schema and the field catalog are both generated from the `SourceType`
 enum, so a new media/history source is a small, well-defined change:
 
-1. Add the value to `SourceType` (`src/Qbitflow.Core/Domain/Enums.cs`). That alone
+1. Add the value to `SourceType` (`src/TorrentRuler.Core/Domain/Enums.cs`). That alone
    creates its snapshot table, its catalog entry, and its option in the instance
    editor's source dropdown.
-2. Add an adapter in `src/Qbitflow.Sources/Adapters/`. A REST watch-history source can
+2. Add an adapter in `src/TorrentRuler.Sources/Adapters/`. A REST watch-history source can
    usually derive from `RestHistoryAdapterBase` and supply three defaults — see
    `JellyglanceAdapter.cs`, which is ~35 lines.
 3. Register it in `ServiceCollectionExtensions.cs` and give it a TTL in
@@ -653,13 +653,13 @@ enum, so a new media/history source is a small, well-defined change:
 `SourceFieldCatalogTests` will then check the new type's fields actually compile and
 execute against the real schema, and that it shares the media/history vocabulary.
 
-EF Core migrations live in `src/Qbitflow.Infrastructure/Persistence/Migrations`; add
+EF Core migrations live in `src/TorrentRuler.Infrastructure/Persistence/Migrations`; add
 a new one with:
 
 ```bash
 dotnet ef migrations add <Name> \
-  --project src/Qbitflow.Infrastructure/Qbitflow.Infrastructure.csproj \
-  --startup-project src/Qbitflow.Web/Qbitflow.Web.csproj \
+  --project src/TorrentRuler.Infrastructure/TorrentRuler.Infrastructure.csproj \
+  --startup-project src/TorrentRuler.Web/TorrentRuler.Web.csproj \
   --output-dir Persistence/Migrations
 ```
 

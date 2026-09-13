@@ -11,20 +11,20 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG RID=linux-musl-x64
 WORKDIR /src
 
-COPY Qbitflow.sln .
-COPY src/Qbitflow.Core/Qbitflow.Core.csproj src/Qbitflow.Core/
-COPY src/Qbitflow.Sources/Qbitflow.Sources.csproj src/Qbitflow.Sources/
-COPY src/Qbitflow.Snapshot/Qbitflow.Snapshot.csproj src/Qbitflow.Snapshot/
-COPY src/Qbitflow.Engine/Qbitflow.Engine.csproj src/Qbitflow.Engine/
-COPY src/Qbitflow.Infrastructure/Qbitflow.Infrastructure.csproj src/Qbitflow.Infrastructure/
-COPY src/Qbitflow.Web/Qbitflow.Web.csproj src/Qbitflow.Web/
-COPY src/Qbitflow.Tests/Qbitflow.Tests.csproj src/Qbitflow.Tests/
-RUN dotnet restore src/Qbitflow.Web/Qbitflow.Web.csproj -r $RID
+COPY TorrentRuler.sln .
+COPY src/TorrentRuler.Core/TorrentRuler.Core.csproj src/TorrentRuler.Core/
+COPY src/TorrentRuler.Sources/TorrentRuler.Sources.csproj src/TorrentRuler.Sources/
+COPY src/TorrentRuler.Snapshot/TorrentRuler.Snapshot.csproj src/TorrentRuler.Snapshot/
+COPY src/TorrentRuler.Engine/TorrentRuler.Engine.csproj src/TorrentRuler.Engine/
+COPY src/TorrentRuler.Infrastructure/TorrentRuler.Infrastructure.csproj src/TorrentRuler.Infrastructure/
+COPY src/TorrentRuler.Web/TorrentRuler.Web.csproj src/TorrentRuler.Web/
+COPY src/TorrentRuler.Tests/TorrentRuler.Tests.csproj src/TorrentRuler.Tests/
+RUN dotnet restore src/TorrentRuler.Web/TorrentRuler.Web.csproj -r $RID
 
 COPY src/ src/
 # --self-contained false keeps this framework-dependent: the shared runtime still
 # comes from the base image below, and the RID is here only to prune native assets.
-RUN dotnet publish src/Qbitflow.Web/Qbitflow.Web.csproj \
+RUN dotnet publish src/TorrentRuler.Web/TorrentRuler.Web.csproj \
         -c Release -r $RID --self-contained false \
         -o /app --no-restore
 
@@ -50,8 +50,8 @@ COPY --chmod=0755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 ENV ASPNETCORE_URLS=http://+:8080 \
     ASPNETCORE_ENVIRONMENT=Production \
-    QBITFLOW_DATA_DIR=/data \
-    QBITFLOW_LOG_DIR=/log \
+    TORRENTRULER_DATA_DIR=/data \
+    TORRENTRULER_LOG_DIR=/log \
     DOTNET_EnableDiagnostics=0
 
 EXPOSE 8080
@@ -64,4 +64,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null || exit 1
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["dotnet", "Qbitflow.Web.dll"]
+CMD ["dotnet", "TorrentRuler.Web.dll"]

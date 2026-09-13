@@ -1,4 +1,4 @@
-# Unicode set for the qbitflow web font subset.
+# Unicode set for the torrentruler web font subset.
 # Consumed by subset-font.sh via `pyftsubset --unicodes-file=`.
 # Blank lines and #-comments are ignored by pyftsubset.
 #

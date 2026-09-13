@@ -1,11 +1,11 @@
-# qbitflow — How to Improve
+# torrentruler — How to Improve
 
 _Assessment written 2026-09-05, branch `Dev10`. Based on a full read of the codebase against
-`fable-prompt-qbitflow.md`. No code was changed to produce this document._
+`fable-prompt-torrentruler.md`. No code was changed to produce this document._
 
 ## Context
 
-`qbitflow` is the Fable one-shot rewrite of the old `qbt_auto` tool: a long-running,
+`torrentruler` is the Fable one-shot rewrite of the old `qbt_auto` tool: a long-running,
 Dockerized ASP.NET Core (.NET 9) Razor Pages + HTMX app, SQLite only, that evaluates
 user-defined rules (cron + condition + actions) against a live snapshot of qBittorrent,
 Plex, Jellyfin, Tautulli, Jellystat, Jellyglance, and disk-usage data.
@@ -57,8 +57,8 @@ gets wrong behavior with no error.
 
 ### 1.1 Jellystat & Jellyglance watch timestamps are always NULL
 
-- **Where:** `src/Qbitflow.Sources/Json/JsonPathResolver.cs:60` (`GetUnixSeconds`), used at
-  `src/Qbitflow.Sources/Adapters/RestHistoryAdapterBase.cs:83`.
+- **Where:** `src/TorrentRuler.Sources/Json/JsonPathResolver.cs:60` (`GetUnixSeconds`), used at
+  `src/TorrentRuler.Sources/Adapters/RestHistoryAdapterBase.cs:83`.
 - **Problem:** `GetUnixSeconds` only accepts a numeric epoch. Tautulli's default field `date`
   is numeric → fine. Jellystat's default `ActivityDateInserted` and Jellyglance's `watchedAt`
   are ISO-8601 strings → parse returns null → `watch_history.watched_at` is NULL for those two
@@ -69,15 +69,15 @@ gets wrong behavior with no error.
 - **Fix:** add ISO-8601 / RFC3339 parsing to a new `GetTimestamp(element, field)` helper
   (try `long` epoch seconds, then epoch millis, then `DateTimeOffset.TryParse` with
   `DateTimeStyles.AssumeUniversal | AdjustToUniversal`). Point `RestHistoryAdapterBase` at it.
-- **Test:** extend `src/Qbitflow.Tests/Sources/` history-adapter tests with an ISO-timestamp
+- **Test:** extend `src/TorrentRuler.Tests/Sources/` history-adapter tests with an ISO-timestamp
   fixture for Jellystat and Jellyglance; assert `WatchedAt` is populated.
 - **Effort:** ~1 hr.
 
 ### 1.2 `torrent_files` is never populated
 
-- **Where:** `src/Qbitflow.Engine/RuleRunner.cs:98-106` builds `SnapshotInput` from cache with
+- **Where:** `src/TorrentRuler.Engine/RuleRunner.cs:98-106` builds `SnapshotInput` from cache with
   only `Torrents`, `MediaItems`, `WatchHistory`. `SourceFetchResult`
-  (`src/Qbitflow.Core/Domain/SourceData/SourceFetchResult.cs`) has no `TorrentFiles` list.
+  (`src/TorrentRuler.Core/Domain/SourceData/SourceFetchResult.cs`) has no `TorrentFiles` list.
   `QbtAdapter.GetFilesAsync` / `IQbtTorrentFilesProvider` is fully implemented but has zero
   non-test callers. `SnapshotDatabase.RebuildTorrentFiles` hardcodes `instance_id = 0`.
 - **Problem:** file-level torrent↔library matching does not function. `torrent_files` as a
@@ -99,9 +99,9 @@ gets wrong behavior with no error.
 
 ### 1.3 `Priority` and `StopOnMatch` are never enforced
 
-- **Where:** `src/Qbitflow.Core/Domain/Rule.cs:18-22` (fields), shown in
-  `src/Qbitflow.Web/Pages/Rules/Index.cshtml`, exported in `ConfigPortabilityService`.
-  `src/Qbitflow.Engine/Scheduling/RuleSchedulerService.cs` fires each due rule as an
+- **Where:** `src/TorrentRuler.Core/Domain/Rule.cs:18-22` (fields), shown in
+  `src/TorrentRuler.Web/Pages/Rules/Index.cshtml`, exported in `ConfigPortabilityService`.
+  `src/TorrentRuler.Engine/Scheduling/RuleSchedulerService.cs` fires each due rule as an
   independent fire-and-forget task; `RuleRunner.RunAsync(int ruleId)` runs one rule with its
   own fresh `SnapshotDatabase` (`RuleRunner.cs:91`).
 - **Problem:** no cross-rule "cycle." `StopOnMatch` is a no-op. `Priority` only affects list
@@ -124,9 +124,9 @@ gets wrong behavior with no error.
 
 ### 1.4 Recursive folder size never computes at runtime
 
-- **Where:** `src/Qbitflow.Sources/Storage/StorageUsageService.cs` —
+- **Where:** `src/TorrentRuler.Sources/Storage/StorageUsageService.cs` —
   `GetOrComputeFolderSizeAsync` has no caller outside
-  `src/Qbitflow.Tests/Sources/StorageUsageServiceTests.cs`. `RuleRunner.cs:95` calls only
+  `src/TorrentRuler.Tests/Sources/StorageUsageServiceTests.cs`. `RuleRunner.cs:95` calls only
   `GetUsage`, which merely *reads* the folder-size cache that nothing populates.
 - **Problem:** `folder_size_bytes` / `folder_size_gb` / `folder_size_computed_at` are always
   NULL. Any rule using `storage.<name>.folder_size_gb` silently never matches.
@@ -140,7 +140,7 @@ gets wrong behavior with no error.
 
 ### 1.5 "Run now" bypasses the overlap gate
 
-- **Where:** `src/Qbitflow.Web/Pages/Rules/Index.cshtml.cs:44` calls
+- **Where:** `src/TorrentRuler.Web/Pages/Rules/Index.cshtml.cs:44` calls
   `ruleRunner.RunAsync(id, ct)` directly; `RuleRunGate` is only consulted by
   `RuleSchedulerService`.
 - **Problem:** a manual run can overlap an in-flight scheduled run of the same rule → two
@@ -152,8 +152,8 @@ gets wrong behavior with no error.
 
 ### 1.6 Theme setting is a dead control
 
-- **Where:** `src/Qbitflow.Web/Pages/Settings/Index.cshtml.cs` persists `AppSettings.Theme`;
-  `Shared/_Layout.cshtml` only ever reads `localStorage['qbitflow-theme']` via the navbar
+- **Where:** `src/TorrentRuler.Web/Pages/Settings/Index.cshtml.cs` persists `AppSettings.Theme`;
+  `Shared/_Layout.cshtml` only ever reads `localStorage['torrentruler-theme']` via the navbar
   toggle. The two are unlinked.
 - **Fix:** on server render, emit the persisted `AppSettings.Theme` as the initial
   `data-bs-theme` (and as a `<meta>` or inline bootstrap value the pre-paint script reads),
@@ -168,7 +168,7 @@ gets wrong behavior with no error.
   lands in the image. No "load examples" button; README §"Example rules" says to import from
   Settings.
 - **Fix:** `COPY examples/ ./examples/` in the runtime stage (or embed the JSON as an assembly
-  resource in `Qbitflow.Web`), and add a "Load bundled examples" button on the Rules page or
+  resource in `TorrentRuler.Web`), and add a "Load bundled examples" button on the Rules page or
   the Settings import block that reads the shipped file and runs it through the existing
   `ConfigPortabilityService` rules-import path.
 - **Effort:** ~1–2 hrs.
@@ -176,12 +176,12 @@ gets wrong behavior with no error.
 ### 1.8 `docker-compose.yml` only works on the author's machine
 
 - **Where:** `docker-compose.yml`.
-- **Problems:** hard-coded `build.context: /home/tbp/projects/qbitflow/`; undocumented
-  `${TIMEZONE}` / `${QBITFLOW_LOCATION}` with no `.env.example`; README claims a named volume
-  `qbitflow-data` but compose bind-mounts `${QBITFLOW_LOCATION}/data`; README says open `:8080`
+- **Problems:** hard-coded `build.context: /home/tbp/projects/torrentruler/`; undocumented
+  `${TIMEZONE}` / `${TORRENTRULER_LOCATION}` with no `.env.example`; README claims a named volume
+  `torrentruler-data` but compose bind-mounts `${TORRENTRULER_LOCATION}/data`; README says open `:8080`
   but compose maps `8087:8080`; compose healthcheck hits `localhost` while the Dockerfile uses
   `127.0.0.1`.
-- **Fix:** `build.context: .`; ship a named volume `qbitflow-data` as the default with the
+- **Fix:** `build.context: .`; ship a named volume `torrentruler-data` as the default with the
   bind-mount shown commented-out; add `.env.example` with `TZ` and any real knobs; align the
   port and the README; make the healthcheck consistent. Decide on ONE canonical port and use
   it everywhere.
@@ -214,9 +214,9 @@ call that the power-user path. **Effort:** (a) 2–4 days · (b) ~1 day.
 
 ### 2.4 Field reference panel is half-finished
 
-- **Where:** `src/Qbitflow.Web/Pages/Rules/Edit.cshtml` (`#fieldRefPanel` offcanvas),
+- **Where:** `src/TorrentRuler.Web/Pages/Rules/Edit.cshtml` (`#fieldRefPanel` offcanvas),
   `wwwroot/js/rule-editor.js` (`fieldReferencePanel`),
-  `src/Qbitflow.Engine/Conditions/SnapshotFieldRegistry.cs`,
+  `src/TorrentRuler.Engine/Conditions/SnapshotFieldRegistry.cs`,
   `Rules/Edit.cshtml.cs` `BuildFieldRegistryPayload`.
 - **Missing vs spec:** click-to-insert into the editor (currently copy-only; `insertField`
   exists in the builder JS but nothing calls it from the panel); grouped/collapsible by source
@@ -230,7 +230,7 @@ call that the power-user path. **Effort:** (a) 2–4 days · (b) ~1 day.
 
 ### 2.5 Parallelism doesn't apply to action execution
 
-- **Where:** `src/Qbitflow.Engine/Actions/ActionExecutor.cs:27,57` — sequential
+- **Where:** `src/TorrentRuler.Engine/Actions/ActionExecutor.cs:27,57` — sequential
   `foreach (group) { foreach (action) }`. Constructor takes no `IHostConcurrencyLimiter` /
   `IParallelismSettingsProvider`. The fetch path is throttled per-host
   (`HostConcurrencyLimiter`), the action path isn't at all.
@@ -303,7 +303,7 @@ Rules editor (visual builder + field panel), and Run history; drop them in `docs
 - **No SSE / live log** — the Run History page with expandable per-torrent/per-action detail is
   a solid audit surface. A live log is nice-to-have, not required.
 - **Structured logging minimum level requires a restart** (read from SQLite before DI is built).
-  Acceptable and documented; an env-var override (`QBITFLOW_LOG_LEVEL`) would be a cheap
+  Acceptable and documented; an env-var override (`TORRENTRULER_LOG_LEVEL`) would be a cheap
   addition if desired.
 
 ---
@@ -321,7 +321,7 @@ Rules editor (visual builder + field panel), and Run history; drop them in `docs
 
 ## Verification for each change
 
-- `dotnet build Qbitflow.sln` clean, `dotnet test src/Qbitflow.Tests/Qbitflow.Tests.csproj`
+- `dotnet build TorrentRuler.sln` clean, `dotnet test src/TorrentRuler.Tests/TorrentRuler.Tests.csproj`
   green (132 baseline; add tests per item above).
 - For watch-history and folder-size fixes: build the Docker image, point it at a real
   Jellystat/Jellyglance and a real path, create a dry-run rule using `days_since_watched` /

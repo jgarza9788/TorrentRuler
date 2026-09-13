@@ -1,7 +1,7 @@
 # Web font tooling
 
 Generates the subsetted icon + monospace font shipped at
-`src/Qbitflow.Web/wwwroot/fonts/`.
+`src/TorrentRuler.Web/wwwroot/fonts/`.
 
 Everything in this directory is **build-time only**. The `Dockerfile` copies
 just `src/`, so nothing here reaches the runtime image, and none of it is

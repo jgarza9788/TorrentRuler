@@ -11,7 +11,7 @@ set -euo pipefail
 NF_TAG=v3.4.0
 SRC_NAME=JetBrainsMonoNerdFontMono-Regular.ttf
 VERSION=v2                                  # bump on every regeneration (cache-busting)
-OUT_DIR=src/Qbitflow.Web/wwwroot/fonts
+OUT_DIR=src/TorrentRuler.Web/wwwroot/fonts
 OUT="${OUT_DIR}/jetbrainsmono-nerd-${VERSION}.woff2"
 
 if [ ! -f tools/fonts/icons.txt ]; then
@@ -76,5 +76,5 @@ echo ">> wrote $OUT ($(wc -c < "$OUT") bytes)"
 echo
 echo "Remember to bump the -${VERSION} reference in:"
 echo "  - tools/fonts/subset-font.sh   (VERSION)"
-echo "  - src/Qbitflow.Web/wwwroot/css/site.css        (@font-face src)"
-echo "  - src/Qbitflow.Web/Pages/Shared/_Layout.cshtml (preload link)"
+echo "  - src/TorrentRuler.Web/wwwroot/css/site.css        (@font-face src)"
+echo "  - src/TorrentRuler.Web/Pages/Shared/_Layout.cshtml (preload link)"
