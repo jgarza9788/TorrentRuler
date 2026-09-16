@@ -13,26 +13,26 @@
                 <input type="search" class="form-control form-control-sm qf-table-filter"
                        data-table-filter placeholder="Filter&hellip;" aria-label="Filter rules" />
             }
-            <a asp-page="/Rules/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Add rule</a>
+            <a asp-page="/Rules/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add rule"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add rule</span></a>
         </div>
     </div>
     <div class="qf-card-body p-0">
         @if (Model.Rules.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon qf-icon qf-icon--rules" aria-hidden="true"></div>
+                <div class="qf-empty-icon bi bi-list-check" aria-hidden="true"></div>
                 <p class="mb-2">No rules yet. A rule is a schedule, a condition, and one or more actions.</p>
-                <a asp-page="/Rules/Edit" class="btn btn-sm btn-primary qf-ico-btn"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Create your first rule</a>
+                <a asp-page="/Rules/Edit" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i>Create your first rule</a>
             </div>
         }
         else
         {
-            <div class="table-responsive">
+            <div class="d-none d-md-block table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead>
                     <tr>
                         <th>Status</th>
-                        <th>Priority</th>
+                        <th class="d-none d-lg-table-cell">Priority</th>
                         <th>Name</th>
                         <th>Schedule</th>
                         <th>Last run</th>
@@ -45,19 +45,14 @@
                         <tr>
                             <td>
                                 <form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@rule.Id">
-                                    <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent">
-                                        @if (rule.Enabled)
-                                        {
-                                            <span class="qf-badge qf-badge-success"><span class="qf-badge-dot"></span>on</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="qf-badge qf-badge-secondary"><span class="qf-badge-dot"></span>off</span>
-                                        }
-                                    </button>
+                                    <div class="form-check form-switch qf-toggle-switch">
+                                        <input type="checkbox" class="form-check-input" role="switch"
+                                               @(rule.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                               aria-label="Toggle @rule.Name" />
+                                    </div>
                                 </form>
                             </td>
-                            <td class="text-secondary">@rule.Priority</td>
+                            <td class="text-secondary d-none d-lg-table-cell">@rule.Priority</td>
                             <td>
                                 <div class="fw-medium">@rule.Name</div>
                                 @if (!string.IsNullOrEmpty(rule.Description))
@@ -69,28 +64,105 @@
                                     <span class="qf-badge qf-badge-secondary">dry-run</span>
                                 }
                             </td>
-                            <td class="small">
+                            <td class="small" style="max-width: 240px;">
                                 @TorrentRuler.Engine.Scheduling.CronDescriptionService.Describe(rule.CronExpression)
-                                <div class="qf-muted-mono">@rule.CronExpression (@rule.TimeZoneId)</div>
+                                <div class="qf-muted-mono text-truncate" title="@rule.CronExpression (@rule.TimeZoneId)">@rule.CronExpression (@rule.TimeZoneId)</div>
                             </td>
-                            <td class="text-secondary small">@(rule.LastRunAt is not null ? rule.LastRunAt.Value.LocalDateTime.ToString("g") : "never")</td>
+                            <td class="text-secondary small">
+                                @if (rule.LastRunAt is not null)
+                                {
+                                    <partial name="_RelativeTime" model="rule.LastRunAt.Value" />
+                                }
+                                else
+                                {
+                                    <span>never</span>
+                                }
+                            </td>
                             <td class="text-end">
                                 <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-success qf-ico-btn"><span class="qf-icon qf-icon--play" aria-hidden="true"></span>Run now</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-success qf-ico-btn"><i class="bi bi-play-fill" aria-hidden="true"></i>Run now</button>
                                 </form>
-                                <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--edit" aria-hidden="true"></span>Edit</a>
+                                <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--copy" aria-hidden="true"></span>Duplicate</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-clipboard" aria-hidden="true"></i>Duplicate</button>
                                 </form>
                                 <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id" class="d-inline"
                                       onsubmit="return confirm('Delete rule &quot;@rule.Name&quot;?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><span class="qf-icon qf-icon--delete" aria-hidden="true"></span>Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </td>
                         </tr>
                     }
                     </tbody>
                 </table>
+            </div>
+            <div class="d-md-none qf-row-card-list">
+            @foreach (var rule in Model.Rules)
+            {
+                <div class="qf-row-card">
+                    <div class="qf-row-card-top">
+                        <form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@rule.Id">
+                            <div class="form-check form-switch qf-toggle-switch">
+                                <input type="checkbox" class="form-check-input" role="switch"
+                                       @(rule.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                       aria-label="Toggle @rule.Name" />
+                            </div>
+                        </form>
+                        <span class="qf-row-card-title flex-grow-1">@rule.Name</span>
+                        <div class="dropdown qf-row-card-actions">
+                            <button class="btn btn-sm btn-outline-secondary border-0" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for @rule.Name">
+                                <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-page="/Rules/Edit" asp-route-id="@rule.Id"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit</a></li>
+                                <li>
+                                    <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id">
+                                        <button type="submit" class="dropdown-item"><i class="bi bi-clipboard me-2" aria-hidden="true"></i>Duplicate</button>
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id"
+                                          onsubmit="return confirm('Delete rule &quot;@rule.Name&quot;?');">
+                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2" aria-hidden="true"></i>Delete</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(rule.Description))
+                    {
+                        <div class="small text-secondary">@rule.Description</div>
+                    }
+                    @if (rule.DryRun)
+                    {
+                        <span class="qf-badge qf-badge-secondary mt-1">dry-run</span>
+                    }
+                    <dl class="qf-row-card-meta">
+                        <dt>Schedule</dt>
+                        <dd class="text-truncate" title="@rule.CronExpression (@rule.TimeZoneId)">
+                            @TorrentRuler.Engine.Scheduling.CronDescriptionService.Describe(rule.CronExpression)
+                        </dd>
+                        <dt>Last run</dt>
+                        <dd>
+                            @if (rule.LastRunAt is not null)
+                            {
+                                <partial name="_RelativeTime" model="rule.LastRunAt.Value" />
+                            }
+                            else
+                            {
+                                <span>never</span>
+                            }
+                        </dd>
+                    </dl>
+                    <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" class="mt-2">
+                        <button type="submit" class="btn btn-sm btn-outline-success qf-ico-btn w-100">
+                            <i class="bi bi-play-fill" aria-hidden="true"></i>Run now
+                        </button>
+                    </form>
+                </div>
+            }
             </div>
         }
     </div>

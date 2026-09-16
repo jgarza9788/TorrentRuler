@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="mt-3">
-                        <button type="submit" class="btn btn-primary qf-ico-btn"><span class="qf-icon qf-icon--save" aria-hidden="true"></span>Save settings</button>
+                        <button type="submit" class="btn btn-primary qf-ico-btn"><i class="bi bi-save2" aria-hidden="true"></i>Save settings</button>
                     </div>
                 </form>
             </div>
@@ -74,7 +74,7 @@
         <div class="qf-card">
             <div class="qf-card-header">
                 <h2>Path mappings</h2>
-                <a asp-page="/Settings/EditPathMapping" class="btn btn-sm btn-primary qf-ico-btn"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Add mapping</a>
+                <a asp-page="/Settings/EditPathMapping" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add mapping"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add mapping</span></a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.PathMappingRules.Count == 0)
@@ -85,41 +85,66 @@
                 }
                 else
                 {
-                    <table class="table table-sm align-middle mb-0">
-                        <thead>
-                        <tr><th>Status</th><th>Source prefix</th><th></th><th>Canonical prefix</th><th class="text-end">Actions</th></tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var rule in Model.PathMappingRules)
-                        {
-                            <tr>
-                                <td>
-                                    <form method="post" asp-page-handler="TogglePathMapping" asp-route-id="@rule.Id">
-                                        <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent">
-                                            @if (rule.Enabled)
-                                            {
-                                                <span class="qf-badge qf-badge-success"><span class="qf-badge-dot"></span>on</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="qf-badge qf-badge-secondary"><span class="qf-badge-dot"></span>off</span>
-                                            }
-                                        </button>
-                                    </form>
-                                </td>
-                                <td class="qf-muted-mono">@rule.SourcePrefix</td>
-                                <td class="text-secondary">&rarr;</td>
-                                <td class="qf-muted-mono">@rule.CanonicalPrefix</td>
-                                <td class="text-end">
-                                    <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--edit" aria-hidden="true"></span>Edit</a>
-                                    <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><span class="qf-icon qf-icon--delete" aria-hidden="true"></span>Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
+                    <div class="d-none d-md-block table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                            <tr><th>Status</th><th>Source prefix</th><th></th><th>Canonical prefix</th><th class="text-end">Actions</th></tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var rule in Model.PathMappingRules)
+                            {
+                                <tr>
+                                    <td>
+                                        <form method="post" asp-page-handler="TogglePathMapping" asp-route-id="@rule.Id">
+                                            <div class="form-check form-switch qf-toggle-switch">
+                                                <input type="checkbox" class="form-check-input" role="switch"
+                                                       @(rule.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                                       aria-label="Toggle @rule.SourcePrefix" />
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="qf-muted-mono text-truncate" style="max-width: 200px;" title="@rule.SourcePrefix">@rule.SourcePrefix</td>
+                                    <td class="text-secondary">&rarr;</td>
+                                    <td class="qf-muted-mono text-truncate" style="max-width: 200px;" title="@rule.CanonicalPrefix">@rule.CanonicalPrefix</td>
+                                    <td class="text-end">
+                                        <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                                        <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="d-inline"
+                                              onsubmit="return confirm('Delete path mapping &quot;@rule.SourcePrefix&quot;?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-md-none qf-row-card-list">
+                    @foreach (var rule in Model.PathMappingRules)
+                    {
+                        <div class="qf-row-card">
+                            <div class="qf-row-card-top" style="padding-right: 0;">
+                                <form method="post" asp-page-handler="TogglePathMapping" asp-route-id="@rule.Id">
+                                    <div class="form-check form-switch qf-toggle-switch">
+                                        <input type="checkbox" class="form-check-input" role="switch"
+                                               @(rule.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                               aria-label="Toggle @rule.SourcePrefix" />
+                                    </div>
+                                </form>
+                                <span class="qf-row-card-title flex-grow-1 qf-muted-mono" title="@rule.SourcePrefix">@rule.SourcePrefix</span>
+                            </div>
+                            <dl class="qf-row-card-meta">
+                                <dt>Canonical</dt><dd class="qf-muted-mono" title="@rule.CanonicalPrefix">@rule.CanonicalPrefix</dd>
+                            </dl>
+                            <div class="d-flex gap-2 mt-2">
+                                <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                                <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="flex-grow-1"
+                                      onsubmit="return confirm('Delete path mapping &quot;@rule.SourcePrefix&quot;?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    </div>
                 }
             </div>
         </div>
@@ -143,10 +168,10 @@
                 <h3 class="h6">Export</h3>
                 <p class="text-secondary small">Instance credentials are never included in an export.</p>
                 <div class="d-flex flex-wrap gap-2 mb-4">
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Json"><span class="qf-icon qf-icon--download" aria-hidden="true"></span>Config (JSON)</a>
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Yaml"><span class="qf-icon qf-icon--download" aria-hidden="true"></span>Config (YAML)</a>
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Json"><span class="qf-icon qf-icon--download" aria-hidden="true"></span>Rules (JSON)</a>
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Yaml"><span class="qf-icon qf-icon--download" aria-hidden="true"></span>Rules (YAML)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Json"><i class="bi bi-download" aria-hidden="true"></i>Config (JSON)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Yaml"><i class="bi bi-download" aria-hidden="true"></i>Config (YAML)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Json"><i class="bi bi-download" aria-hidden="true"></i>Rules (JSON)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Yaml"><i class="bi bi-download" aria-hidden="true"></i>Rules (YAML)</a>
                 </div>
 
                 <h3 class="h6">Import</h3>
@@ -166,7 +191,7 @@
                     <div class="mb-2">
                         <input type="file" name="importFile" class="form-control form-control-sm" accept=".json,.yaml,.yml" />
                     </div>
-                    <button type="submit" class="btn btn-sm btn-outline-primary qf-ico-btn"><span class="qf-icon qf-icon--upload" aria-hidden="true"></span>Import</button>
+                    <button type="submit" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="bi bi-upload" aria-hidden="true"></i>Import</button>
                 </form>
             </div>
         </div>

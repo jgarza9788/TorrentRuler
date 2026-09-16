@@ -10,6 +10,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Log in - torrentruler</title>
+    <link rel="icon" type="image/svg+xml" href="~/img/icon.svg" />
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
+    <meta name="theme-color" content="#212529" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 </head>
 <body>
@@ -28,7 +32,7 @@
                 <label asp-for="Input.Password" class="form-label"></label>
                 <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" />
             </div>
-            <button type="submit" class="btn btn-primary w-100 qf-ico-btn"><span class="qf-icon qf-icon--signin" aria-hidden="true"></span>Log in</button>
+            <button type="submit" class="btn btn-primary w-100 qf-ico-btn"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Log in</button>
         </form>
     </div>
 </body>

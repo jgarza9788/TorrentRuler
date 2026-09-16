@@ -1,0 +1,20 @@
+@model DateTimeOffset
+@{
+    var local = Model.ToLocalTime();
+    var span = DateTimeOffset.Now - local;
+    if (span < TimeSpan.Zero) { span = TimeSpan.Zero; }
+
+    string relative;
+    if (span < TimeSpan.FromSeconds(45)) { relative = "just now"; }
+    else if (span < TimeSpan.FromMinutes(60)) { relative = $"{(int)span.TotalMinutes} min ago"; }
+    else if (span < TimeSpan.FromHours(24)) { relative = $"{(int)span.TotalHours} hr ago"; }
+    else if (span < TimeSpan.FromDays(7))
+    {
+        var days = (int)span.TotalDays;
+        relative = $"{days} day{(days == 1 ? "" : "s")} ago";
+    }
+    else { relative = local.ToString("MMM d, HH:mm"); }
+
+    var absolute = local.ToString("MMM d, HH:mm");
+}
+<span class="text-nowrap" title="@absolute">@relative</span>

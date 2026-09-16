@@ -1,33 +1,10 @@
 /* ---- Fonts ---- */
 
-/* No local @font-face and no --bs-font-monospace override: the icon glyphs now
-   come from the Nerd Fonts symbols webfont loaded in _Layout.cshtml, which
-   carries symbols only and no text face. The monospace surfaces
+/* No local @font-face and no --bs-font-monospace override: icon glyphs come
+   from the self-hosted Bootstrap Icons webfont (wwwroot/lib/bootstrap-icons),
+   which carries symbols only and no text face. The monospace surfaces
    (.qf-sql-preview / .qf-field-key / .qf-muted-mono) therefore fall through to
    Bootstrap's own --bs-font-monospace stack -- Menlo / Consolas and friends. */
-
-/* ---- Icons ---- */
-
-/* Codepoints live here and nowhere else. Keeping them out of .cshtml avoids
-   putting invisible Private-Use characters into Razor source, where an editor
-   or git's text normalisation can silently mangle them -- and it keeps the
-   name -> codepoint map in one file. Always pair with aria-hidden="true" and a
-   .visually-hidden label so screen readers never reach the glyph. */
-.qf-icon {
-  font-family: "NerdFontsSymbols Nerd Font";
-  font-style: normal;
-  font-weight: 400;
-  font-variant: normal;
-  line-height: 1;
-  display: inline-block;
-  text-transform: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.qf-icon::before {
-  display: inline-block;
-}
 
 /* Pairs an icon with a text label inside a button or link: aligns the glyph to
    the label's optical centre and spaces it. Omit on icon-only controls. */
@@ -36,37 +13,6 @@
   align-items: center;
   gap: 0.45em;
 }
-
-.qf-icon--sun::before { content: "\f185"; }
-.qf-icon--moon::before { content: "\f186"; }
-.qf-icon--auto::before { content: "\f042"; }
-.qf-icon--copy::before { content: "\f0c5"; }
-.qf-icon--check::before { content: "\f00c"; }
-.qf-icon--close::before { content: "\f00d"; }
-.qf-icon--chevron::before { content: "\f078"; }
-.qf-icon--database::before { content: "\f1c0"; }
-.qf-icon--clock::before { content: "\f017"; }
-.qf-icon--play::before { content: "\f04b"; }
-.qf-icon--warning::before { content: "\f071"; }
-.qf-icon--tag::before { content: "\f02b"; }
-.qf-icon--folder::before { content: "\f07b"; }
-.qf-icon--gear::before { content: "\f013"; }
-.qf-icon--edit::before { content: "\f044"; }
-.qf-icon--delete::before { content: "\f014"; }
-.qf-icon--add::before { content: "\f067"; }
-.qf-icon--save::before { content: "\f0c7"; }
-.qf-icon--filter::before { content: "\f0b0"; }
-.qf-icon--download::before { content: "\f019"; }
-.qf-icon--upload::before { content: "\f093"; }
-.qf-icon--eye::before { content: "\f06e"; }
-.qf-icon--rotate::before { content: "\f2f1"; }
-.qf-icon--dashboard::before { content: "\f0e4"; }
-.qf-icon--rules::before { content: "\f0ae"; }
-.qf-icon--plug::before { content: "\f1e6"; }
-.qf-icon--server::before { content: "\f233"; }
-.qf-icon--key::before { content: "\f084"; }
-.qf-icon--signout::before { content: "\f2f5"; }
-.qf-icon--signin::before { content: "\f2f6"; }
 
 html {
   font-size: 15px;
@@ -126,7 +72,7 @@ body {
   transition: color 0.12s ease, background-color 0.12s ease;
 }
 
-.qf-theme-toggle .btn .qf-icon {
+.qf-theme-toggle .btn .bi {
   font-size: 0.95rem;
 }
 
@@ -161,6 +107,16 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
+/* ---- Nav active-link indicator ---- */
+
+/* Blue (Bootstrap primary) is the app's one accent color for interactive
+   chrome; the logo's gold gradient stays confined to the logo mark itself. */
+.qf-navbar .nav-link.active {
+  color: var(--bs-primary);
+  background-color: rgba(var(--bs-primary-rgb), 0.12);
+  border-radius: 0.5rem;
+}
+
 .qf-content {
   max-width: 1320px;
   padding-top: 1.5rem;
@@ -172,9 +128,8 @@ body {
 .qf-card {
   background: var(--bs-body-bg);
   border: 1px solid var(--bs-border-color-translucent);
-  border-radius: 0.6rem;
-  /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); */
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.4rem 1rem rgba(var(--bs-emphasis-color-rgb), 0.08);
 }
 
 .qf-card-header {
@@ -196,8 +151,31 @@ body {
   padding: 1.25rem;
 }
 
+/* ---- Stat cards ---- */
+
 .qf-stat {
   padding: 1.1rem 1.25rem;
+  position: relative;
+}
+
+.qf-stat-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.qf-stat-link:hover,
+.qf-stat-link:focus-visible {
+  color: inherit;
+  transform: translateY(-2px);
+  box-shadow: 0 0.6rem 1.25rem rgba(var(--bs-emphasis-color-rgb), 0.14);
+}
+
+.qf-stat-icon {
+  font-size: 1.15rem;
+  color: var(--bs-secondary-color);
+  margin-bottom: 0.35rem;
 }
 
 .qf-stat .qf-stat-value {
@@ -212,6 +190,15 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-top: 0.35rem;
+}
+
+.qf-stat--danger {
+  border-color: rgba(var(--bs-danger-rgb), 0.4);
+}
+
+.qf-stat--danger .qf-stat-icon,
+.qf-stat--danger .qf-stat-value {
+  color: var(--bs-danger);
 }
 
 /* ---- Empty / loading / error states ---- */
@@ -247,6 +234,11 @@ body {
   font-weight: 600;
 }
 
+.qf-badge i {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
 .qf-badge-dot {
   width: 0.5em;
   height: 0.5em;
@@ -274,6 +266,87 @@ body {
 [data-bs-theme="dark"] .qf-badge-danger { background: rgba(220, 53, 69, 0.2); color: #ea868f; }
 [data-bs-theme="dark"] .qf-badge-warning { background: rgba(255, 193, 7, 0.2); color: #ffda6a; }
 [data-bs-theme="dark"] .qf-badge-secondary { background: rgba(173, 181, 189, 0.2); color: #ced4da; }
+
+/* ---- Toggle switches (table status columns) ---- */
+
+.qf-toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+}
+
+.qf-toggle-switch .form-check-input {
+  width: 2.5em;
+  height: 1.4em;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* ---- Mobile row cards (table alternative under md) ---- */
+
+.qf-row-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem;
+}
+
+.qf-row-card {
+  position: relative;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 0.6rem;
+  background: var(--bs-body-bg);
+  padding: 0.9rem 1rem;
+}
+
+.qf-row-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 2.25rem; /* clears the absolute kebab button */
+  margin-bottom: 0.5rem;
+}
+
+.qf-row-card-title {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qf-row-card-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 0.25rem;
+  column-gap: 0.75rem;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.qf-row-card-meta dt {
+  color: var(--bs-secondary-color);
+  font-weight: 500;
+}
+
+.qf-row-card-meta dd {
+  margin: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.qf-row-card-actions {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.5rem;
+}
 
 /* ---- Condition / action builder ---- */
 
@@ -391,6 +464,41 @@ body {
   }
 }
 
+/* ---- Sticky table headers ---- */
+
+/* The navbar isn't position:fixed and .table-responsive only sets
+   overflow-x:auto (no bounded vertical scroll container anywhere in the app),
+   so this pins against normal page scroll with no offset math needed. */
+.table-responsive > table > thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bs-body-bg);
+}
+
+/* ---- Expandable row chevron (History) ---- */
+
+.qf-detail-toggle .bi-chevron-down {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.qf-detail-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-detail-toggle .bi-chevron-down {
+    transition: none;
+  }
+}
+
+.qf-detail-panel {
+  background: var(--bs-tertiary-bg);
+  padding: 1rem 1.25rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
 /* ---- Client-side table filter (site.js) ---- */
 
 .qf-table-filter {
@@ -401,6 +509,5 @@ body {
   text-align: center;
   color: var(--bs-secondary-color);
 }
-
 
 /* ---- End of client-side table filter ---- */

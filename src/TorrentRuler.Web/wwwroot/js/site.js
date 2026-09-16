@@ -11,7 +11,8 @@
         var card = input.closest('.qf-card');
         var table = card ? card.querySelector('table') : null;
         var tbody = table ? table.querySelector('tbody') : null;
-        if (!tbody) {
+        var cardList = card ? card.querySelector('.qf-row-card-list') : null;
+        if (!tbody && !cardList) {
             return;
         }
 
@@ -19,9 +20,15 @@
         var emptyRow = null;
 
         function dataRows() {
-            return Array.prototype.filter.call(tbody.rows, function (row) {
+            return tbody ? Array.prototype.filter.call(tbody.rows, function (row) {
                 return !row.classList.contains('qf-table-filter-empty');
-            });
+            }) : [];
+        }
+
+        function cardRows() {
+            return cardList ? Array.prototype.filter.call(cardList.children, function (el) {
+                return el.classList.contains('qf-row-card');
+            }) : [];
         }
 
         function apply() {
@@ -37,7 +44,11 @@
                 }
             });
 
-            if (q !== '' && !anyVisible) {
+            cardRows().forEach(function (el) {
+                el.hidden = q !== '' && el.textContent.toLowerCase().indexOf(q) === -1;
+            });
+
+            if (tbody && q !== '' && !anyVisible) {
                 if (!emptyRow) {
                     emptyRow = document.createElement('tr');
                     emptyRow.className = 'qf-table-filter-empty';

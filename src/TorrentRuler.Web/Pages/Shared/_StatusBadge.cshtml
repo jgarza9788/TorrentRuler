@@ -1,12 +1,12 @@
 @model TorrentRuler.Core.Domain.RunOutcome
 @{
-    var (cls, label) = Model switch
+    var (cls, icon, label) = Model switch
     {
-        TorrentRuler.Core.Domain.RunOutcome.Success => ("qf-badge-success", "Success"),
-        TorrentRuler.Core.Domain.RunOutcome.PartialFailure => ("qf-badge-warning", "Partial failure"),
-        TorrentRuler.Core.Domain.RunOutcome.Failed => ("qf-badge-danger", "Failed"),
-        TorrentRuler.Core.Domain.RunOutcome.Skipped => ("qf-badge-secondary", "Skipped"),
-        _ => ("qf-badge-secondary", Model.ToString())
+        TorrentRuler.Core.Domain.RunOutcome.Success => ("qf-badge-success", "bi-check-circle-fill", "Success"),
+        TorrentRuler.Core.Domain.RunOutcome.PartialFailure => ("qf-badge-warning", "bi-exclamation-triangle-fill", "Partial failure"),
+        TorrentRuler.Core.Domain.RunOutcome.Failed => ("qf-badge-danger", "bi-x-circle-fill", "Failed"),
+        TorrentRuler.Core.Domain.RunOutcome.Skipped => ("qf-badge-secondary", "bi-dash-circle", "Skipped"),
+        _ => ("qf-badge-secondary", "bi-question-circle", Model.ToString())
     };
 }
-<span class="qf-badge @cls"><span class="qf-badge-dot"></span>@label</span>
+<span class="qf-badge @cls"><i class="bi @icon" aria-hidden="true"></i>@label</span>

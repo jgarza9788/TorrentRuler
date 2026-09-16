@@ -2,59 +2,103 @@
 @model TorrentRuler.Web.Pages.History.IndexModel
 @{
     ViewData["Title"] = "Run history";
+    var hasFilters = Model.RuleId is not null || Model.Outcome is not null || Model.From is not null || Model.To is not null;
 }
 
-<div class="qf-card mb-3">
-    <div class="qf-card-body">
-        <form method="get" class="row g-2 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label small mb-1">Rule</label>
-                <select name="RuleId" class="form-select form-select-sm">
-                    <option value="">All rules</option>
-                    @foreach (var rule in Model.AllRules)
-                    {
-                        <option value="@rule.Id" selected="@(Model.RuleId == rule.Id)">@rule.Name</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Outcome</label>
-                <select name="Outcome" class="form-select form-select-sm">
-                    <option value="">Any</option>
-                    @foreach (var outcome in Enum.GetValues<TorrentRuler.Core.Domain.RunOutcome>())
-                    {
-                        <option value="@outcome" selected="@(Model.Outcome == outcome)">@outcome</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">From</label>
-                <input type="date" name="From" class="form-control form-control-sm" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">To</label>
-                <input type="date" name="To" class="form-control form-control-sm" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><span class="qf-icon qf-icon--filter" aria-hidden="true"></span>Filter</button>
-                <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--close" aria-hidden="true"></span>Clear</a>
-            </div>
-        </form>
+<button class="btn btn-sm btn-outline-secondary d-md-none w-100 mb-2 qf-ico-btn"
+        type="button" data-bs-toggle="collapse" data-bs-target="#historyFilters"
+        aria-expanded="false" aria-controls="historyFilters">
+    <i class="bi bi-funnel" aria-hidden="true"></i>Filters
+</button>
+
+<div class="collapse d-md-block" id="historyFilters">
+    <div class="qf-card mb-3">
+        <div class="qf-card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1" for="historyRuleId">Rule</label>
+                    <select id="historyRuleId" name="RuleId" class="form-select form-select-sm">
+                        <option value="">All rules</option>
+                        @foreach (var rule in Model.AllRules)
+                        {
+                            <option value="@rule.Id" selected="@(Model.RuleId == rule.Id)">@rule.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1" for="historyOutcome">Outcome</label>
+                    <select id="historyOutcome" name="Outcome" class="form-select form-select-sm">
+                        <option value="">Any</option>
+                        @foreach (var outcome in Enum.GetValues<TorrentRuler.Core.Domain.RunOutcome>())
+                        {
+                            <option value="@outcome" selected="@(Model.Outcome == outcome)">@outcome</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1" for="historyFrom">From</label>
+                    <input id="historyFrom" type="date" name="From" class="form-control form-control-sm" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1" for="historyTo">To</label>
+                    <input id="historyTo" type="date" name="To" class="form-control form-control-sm" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-funnel" aria-hidden="true"></i>Filter</button>
+                    <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-x-lg" aria-hidden="true"></i>Clear</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@if (hasFilters)
+{
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        @if (Model.RuleId is not null)
+        {
+            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+               asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
+                Rule: @Model.RuleNamesById.GetValueOrDefault(Model.RuleId.Value, "?")<i class="bi bi-x" aria-hidden="true"></i>
+            </a>
+        }
+        @if (Model.Outcome is not null)
+        {
+            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+               asp-route-RuleId="@Model.RuleId" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
+                Outcome: @Model.Outcome<i class="bi bi-x" aria-hidden="true"></i>
+            </a>
+        }
+        @if (Model.From is not null)
+        {
+            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+               asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
+                From: @Model.From.Value.ToString("MMM d")<i class="bi bi-x" aria-hidden="true"></i>
+            </a>
+        }
+        @if (Model.To is not null)
+        {
+            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+               asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")">
+                To: @Model.To.Value.ToString("MMM d")<i class="bi bi-x" aria-hidden="true"></i>
+            </a>
+        }
+        <a class="btn btn-sm btn-link text-decoration-none p-0 ms-1" asp-page="/History/Index">Clear all</a>
+    </div>
+}
 
 <div class="qf-card">
     <div class="qf-card-body p-0">
         @if (Model.Runs.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon qf-icon qf-icon--clock" aria-hidden="true"></div>
+                <div class="qf-empty-icon bi bi-clock-history" aria-hidden="true"></div>
                 <p class="mb-0">No runs match these filters.</p>
             </div>
         }
         else
         {
-            <div class="table-responsive">
+            <div class="d-none d-md-block table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead>
                     <tr>
@@ -65,7 +109,7 @@
                         <th>Outcome</th>
                         <th class="text-end">Matched</th>
                         <th class="text-end">Applied</th>
-                        <th class="text-end">Skipped</th>
+                        <th class="text-end d-none d-lg-table-cell">Skipped</th>
                         <th class="text-end">Failed</th>
                     </tr>
                     </thead>
@@ -79,11 +123,11 @@
                             <td>
                                 @if (details.Count > 0 || run.ErrorMessage is not null)
                                 {
-                                    <button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#@detailId" aria-label="Toggle details"><span class="qf-icon qf-icon--chevron" aria-hidden="true"></span></button>
+                                    <button class="btn btn-sm btn-link p-0 qf-detail-toggle" data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-label="Toggle details"><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
                                 }
                             </td>
                             <td>@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</td>
-                            <td class="text-secondary">@run.StartedAt.LocalDateTime.ToString("g")</td>
+                            <td class="text-secondary"><partial name="_RelativeTime" model="run.StartedAt" /></td>
                             <td class="text-secondary">@(duration is not null ? $"{duration.Value.TotalSeconds:0.0}s" : "—")</td>
                             <td>
                                 <partial name="_StatusBadge" model="run.Outcome" />
@@ -94,11 +138,11 @@
                             </td>
                             <td class="text-end">@run.MatchedCount</td>
                             <td class="text-end">@run.ActionsExecutedCount</td>
-                            <td class="text-end">@run.ActionsSkippedCount</td>
+                            <td class="text-end d-none d-lg-table-cell">@run.ActionsSkippedCount</td>
                             <td class="text-end @(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</td>
                         </tr>
                         <tr class="collapse" id="@detailId">
-                            <td colspan="9" class="bg-body-tertiary">
+                            <td colspan="9" class="qf-detail-panel">
                                 @if (run.ErrorMessage is not null)
                                 {
                                     <div class="alert alert-danger py-2 mb-2">@run.ErrorMessage</div>
@@ -125,6 +169,58 @@
                     }
                     </tbody>
                 </table>
+            </div>
+            <div class="d-md-none qf-row-card-list">
+            @foreach (var run in Model.Runs)
+            {
+                var detailId = $"details-mobile-{run.Id}";
+                var details = TorrentRuler.Web.Pages.History.IndexModel.ParseDetails(run.DetailsJson);
+                var duration = run.FinishedAt is not null ? (run.FinishedAt.Value - run.StartedAt) : (TimeSpan?)null;
+                var hasDetails = details.Count > 0 || run.ErrorMessage is not null;
+                <div class="qf-row-card">
+                    <div class="qf-row-card-top">
+                        <span class="qf-row-card-title flex-grow-1">@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</span>
+                        <partial name="_StatusBadge" model="run.Outcome" />
+                    </div>
+                    @if (run.WasDryRun)
+                    {
+                        <span class="qf-badge qf-badge-secondary mb-1">dry-run</span>
+                    }
+                    <dl class="qf-row-card-meta">
+                        <dt>Started</dt><dd><partial name="_RelativeTime" model="run.StartedAt" /></dd>
+                        <dt>Duration</dt><dd>@(duration is not null ? $"{duration.Value.TotalSeconds:0.0}s" : "—")</dd>
+                        <dt>Matched</dt><dd>@run.MatchedCount</dd>
+                        <dt>Applied</dt><dd>@run.ActionsExecutedCount</dd>
+                        <dt>Failed</dt><dd class="@(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</dd>
+                    </dl>
+                    @if (hasDetails)
+                    {
+                        <button class="btn btn-sm btn-outline-secondary w-100 mt-2 qf-ico-btn qf-detail-toggle justify-content-center" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-controls="@detailId">
+                            <i class="bi bi-chevron-down" aria-hidden="true"></i>Details
+                        </button>
+                        <div class="collapse mt-2" id="@detailId">
+                            <div class="qf-detail-panel">
+                                @if (run.ErrorMessage is not null)
+                                {
+                                    <div class="alert alert-danger py-2 mb-2">@run.ErrorMessage</div>
+                                }
+                                @foreach (var d in details)
+                                {
+                                    <div class="small mb-2">
+                                        <div class="qf-muted-mono">@d.TorrentHash</div>
+                                        <div>@d.ActionType &mdash; @d.Outcome</div>
+                                        @if (!string.IsNullOrEmpty(d.Error))
+                                        {
+                                            <div class="text-danger">@d.Error</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
             </div>
 
             @if (Model.TotalPages > 1)

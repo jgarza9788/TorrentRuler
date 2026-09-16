@@ -13,21 +13,21 @@
                 <input type="search" class="form-control form-control-sm qf-table-filter"
                        data-table-filter placeholder="Filter&hellip;" aria-label="Filter instances" />
             }
-            <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Add instance</a>
+            <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add instance"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add instance</span></a>
         </div>
     </div>
     <div class="qf-card-body p-0">
         @if (Model.Instances.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon qf-icon qf-icon--plug" aria-hidden="true"></div>
+                <div class="qf-empty-icon bi bi-plug-fill" aria-hidden="true"></div>
                 <p class="mb-2">No instances configured. torrentruler needs at least one qBittorrent instance to do anything.</p>
-                <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Add your first instance</a>
+                <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add your first instance</a>
             </div>
         }
         else
         {
-            <div class="table-responsive">
+            <div class="d-none d-md-block table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead>
                     <tr>
@@ -45,39 +45,78 @@
                         <tr>
                             <td>
                                 <form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@instance.Id">
-                                    <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent" title="@(instance.Enabled ? "Enabled - click to disable" : "Disabled - click to enable")">
-                                        @if (instance.Enabled)
-                                        {
-                                            <span class="qf-badge qf-badge-success"><span class="qf-badge-dot"></span>on</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="qf-badge qf-badge-secondary"><span class="qf-badge-dot"></span>off</span>
-                                        }
-                                    </button>
+                                    <div class="form-check form-switch qf-toggle-switch">
+                                        <input type="checkbox" class="form-check-input" role="switch"
+                                               @(instance.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                               aria-label="Toggle @instance.Name" />
+                                    </div>
                                 </form>
                             </td>
                             <td class="fw-medium">@instance.Name</td>
                             <td class="text-secondary">@instance.SourceType</td>
-                            <td class="qf-muted-mono">@instance.BaseUrl</td>
+                            <td class="qf-muted-mono text-truncate" style="max-width: 220px;" title="@instance.BaseUrl">@instance.BaseUrl</td>
                             <td>
                                 <form method="post" asp-page-handler="TestConnection" asp-route-id="@instance.Id"
                                       hx-post="?handler=TestConnection&id=@instance.Id" hx-target="#test-result-@instance.Id" hx-swap="innerHTML">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--rotate" aria-hidden="true"></span>Test</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Test</button>
                                 </form>
                                 <div id="test-result-@instance.Id" class="mt-1"></div>
                             </td>
                             <td class="text-end">
-                                <a asp-page="/Instances/Edit" asp-route-id="@instance.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--edit" aria-hidden="true"></span>Edit</a>
+                                <a asp-page="/Instances/Edit" asp-route-id="@instance.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="DeleteInstance" asp-route-id="@instance.Id" class="d-inline"
                                       onsubmit="return confirm('Delete instance &quot;@instance.Name&quot;? Rules targeting it will stop matching anything on it.');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><span class="qf-icon qf-icon--delete" aria-hidden="true"></span>Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </td>
                         </tr>
                     }
                     </tbody>
                 </table>
+            </div>
+            <div class="d-md-none qf-row-card-list">
+            @foreach (var instance in Model.Instances)
+            {
+                <div class="qf-row-card">
+                    <div class="qf-row-card-top">
+                        <form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@instance.Id">
+                            <div class="form-check form-switch qf-toggle-switch">
+                                <input type="checkbox" class="form-check-input" role="switch"
+                                       @(instance.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                       aria-label="Toggle @instance.Name" />
+                            </div>
+                        </form>
+                        <span class="qf-row-card-title flex-grow-1">@instance.Name</span>
+                        <div class="dropdown qf-row-card-actions">
+                            <button class="btn btn-sm btn-outline-secondary border-0" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for @instance.Name">
+                                <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-page="/Instances/Edit" asp-route-id="@instance.Id"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit</a></li>
+                                <li>
+                                    <form method="post" asp-page-handler="TestConnection" asp-route-id="@instance.Id"
+                                          hx-post="?handler=TestConnection&id=@instance.Id" hx-target="#test-result-mobile-@instance.Id" hx-swap="innerHTML">
+                                        <button type="submit" class="dropdown-item"><i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>Test connection</button>
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form method="post" asp-page-handler="DeleteInstance" asp-route-id="@instance.Id"
+                                          onsubmit="return confirm('Delete instance &quot;@instance.Name&quot;? Rules targeting it will stop matching anything on it.');">
+                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2" aria-hidden="true"></i>Delete</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <dl class="qf-row-card-meta">
+                        <dt>Type</dt><dd>@instance.SourceType</dd>
+                        <dt>Base URL</dt><dd class="qf-muted-mono" title="@instance.BaseUrl">@instance.BaseUrl</dd>
+                    </dl>
+                    <div id="test-result-mobile-@instance.Id" class="mt-2"></div>
+                </div>
+            }
             </div>
         }
     </div>
@@ -92,21 +131,21 @@
                 <input type="search" class="form-control form-control-sm qf-table-filter"
                        data-table-filter placeholder="Filter&hellip;" aria-label="Filter storage paths" />
             }
-            <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn text-nowrap"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Add storage path</a>
+            <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add storage path"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add storage path</span></a>
         </div>
     </div>
     <div class="qf-card-body p-0">
         @if (Model.StoragePaths.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon qf-icon qf-icon--folder" aria-hidden="true"></div>
+                <div class="qf-empty-icon bi bi-folder2" aria-hidden="true"></div>
                 <p class="mb-2">No storage paths monitored yet. Add one to use <code>storage.&lt;name&gt;.*</code> fields in rules.</p>
-                <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn"><span class="qf-icon qf-icon--add" aria-hidden="true"></span>Add a storage path</a>
+                <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add a storage path</a>
             </div>
         }
         else
         {
-            <div class="table-responsive">
+            <div class="d-none d-md-block table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead>
                     <tr>
@@ -123,32 +162,55 @@
                         <tr>
                             <td>
                                 <form method="post" asp-page-handler="ToggleStoragePath" asp-route-id="@path.Id">
-                                    <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent">
-                                        @if (path.Enabled)
-                                        {
-                                            <span class="qf-badge qf-badge-success"><span class="qf-badge-dot"></span>on</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="qf-badge qf-badge-secondary"><span class="qf-badge-dot"></span>off</span>
-                                        }
-                                    </button>
+                                    <div class="form-check form-switch qf-toggle-switch">
+                                        <input type="checkbox" class="form-check-input" role="switch"
+                                               @(path.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                               aria-label="Toggle @path.Name" />
+                                    </div>
                                 </form>
                             </td>
                             <td class="fw-medium">@path.Name</td>
-                            <td class="qf-muted-mono">@path.Path</td>
+                            <td class="qf-muted-mono text-truncate" style="max-width: 260px;" title="@path.Path">@path.Path</td>
                             <td class="text-secondary">every @path.FolderSizeScanIntervalMinutes min</td>
                             <td class="text-end">
-                                <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><span class="qf-icon qf-icon--edit" aria-hidden="true"></span>Edit</a>
+                                <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="DeleteStoragePath" asp-route-id="@path.Id" class="d-inline"
                                       onsubmit="return confirm('Delete storage path &quot;@path.Name&quot;?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><span class="qf-icon qf-icon--delete" aria-hidden="true"></span>Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </td>
                         </tr>
                     }
                     </tbody>
                 </table>
+            </div>
+            <div class="d-md-none qf-row-card-list">
+            @foreach (var path in Model.StoragePaths)
+            {
+                <div class="qf-row-card">
+                    <div class="qf-row-card-top" style="padding-right: 0;">
+                        <form method="post" asp-page-handler="ToggleStoragePath" asp-route-id="@path.Id">
+                            <div class="form-check form-switch qf-toggle-switch">
+                                <input type="checkbox" class="form-check-input" role="switch"
+                                       @(path.Enabled ? "checked" : "") onchange="this.form.submit()"
+                                       aria-label="Toggle @path.Name" />
+                            </div>
+                        </form>
+                        <span class="qf-row-card-title flex-grow-1">@path.Name</span>
+                    </div>
+                    <dl class="qf-row-card-meta">
+                        <dt>Path</dt><dd class="qf-muted-mono" title="@path.Path">@path.Path</dd>
+                        <dt>Scan interval</dt><dd>every @path.FolderSizeScanIntervalMinutes min</dd>
+                    </dl>
+                    <div class="d-flex gap-2 mt-2">
+                        <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                        <form method="post" asp-page-handler="DeleteStoragePath" asp-route-id="@path.Id" class="flex-grow-1"
+                              onsubmit="return confirm('Delete storage path &quot;@path.Name&quot;?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                        </form>
+                    </div>
+                </div>
+            }
             </div>
         }
     </div>
