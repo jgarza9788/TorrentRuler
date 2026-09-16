@@ -93,12 +93,12 @@
             </div>
 
             <div class="mt-4 d-flex gap-2 align-items-center">
-                <button type="submit" class="btn btn-primary qf-ico-btn"><i class="bi bi-save2" aria-hidden="true"></i>Save</button>
+                <button type="submit" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
                 <a asp-page="/Instances/Index" class="btn btn-outline-secondary">Cancel</a>
                 <button type="button" class="btn btn-outline-secondary ms-auto qf-ico-btn"
                         hx-post="?handler=TestConnection" hx-include="closest form"
                         hx-target="#edit-conn-test-result" hx-swap="innerHTML"
-                        hx-indicator="#edit-conn-test-spinner"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Test connection</button>
+                        hx-indicator="#edit-conn-test-spinner"><i class="ti ti-refresh" aria-hidden="true"></i>Test connection</button>
                 <span id="edit-conn-test-spinner" class="htmx-indicator small text-secondary qf-ico-btn">
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>testing&hellip;
                 </span>

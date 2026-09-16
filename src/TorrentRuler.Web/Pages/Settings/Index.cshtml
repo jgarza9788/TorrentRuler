@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="mt-3">
-                        <button type="submit" class="btn btn-primary qf-ico-btn"><i class="bi bi-save2" aria-hidden="true"></i>Save settings</button>
+                        <button type="submit" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save settings</button>
                     </div>
                 </form>
             </div>
@@ -74,7 +74,7 @@
         <div class="qf-card">
             <div class="qf-card-header">
                 <h2>Path mappings</h2>
-                <a asp-page="/Settings/EditPathMapping" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add mapping"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add mapping</span></a>
+                <a asp-page="/Settings/EditPathMapping" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add mapping"><i class="ti ti-plus" aria-hidden="true"></i><span class="d-none d-sm-inline">Add mapping</span></a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.PathMappingRules.Count == 0)
@@ -107,10 +107,10 @@
                                     <td class="text-secondary">&rarr;</td>
                                     <td class="qf-muted-mono text-truncate" style="max-width: 200px;" title="@rule.CanonicalPrefix">@rule.CanonicalPrefix</td>
                                     <td class="text-end">
-                                        <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                                        <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                                         <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="d-inline"
                                               onsubmit="return confirm('Delete path mapping &quot;@rule.SourcePrefix&quot;?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -136,10 +136,10 @@
                                 <dt>Canonical</dt><dd class="qf-muted-mono" title="@rule.CanonicalPrefix">@rule.CanonicalPrefix</dd>
                             </dl>
                             <div class="d-flex gap-2 mt-2">
-                                <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                                <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="flex-grow-1"
                                       onsubmit="return confirm('Delete path mapping &quot;@rule.SourcePrefix&quot;?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </div>
                         </div>
@@ -168,10 +168,10 @@
                 <h3 class="h6">Export</h3>
                 <p class="text-secondary small">Instance credentials are never included in an export.</p>
                 <div class="d-flex flex-wrap gap-2 mb-4">
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Json"><i class="bi bi-download" aria-hidden="true"></i>Config (JSON)</a>
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Yaml"><i class="bi bi-download" aria-hidden="true"></i>Config (YAML)</a>
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Json"><i class="bi bi-download" aria-hidden="true"></i>Rules (JSON)</a>
-                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Yaml"><i class="bi bi-download" aria-hidden="true"></i>Rules (YAML)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Json"><i class="ti ti-download" aria-hidden="true"></i>Config (JSON)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportConfig" asp-route-format="Yaml"><i class="ti ti-download" aria-hidden="true"></i>Config (YAML)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Json"><i class="ti ti-download" aria-hidden="true"></i>Rules (JSON)</a>
+                    <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Yaml"><i class="ti ti-download" aria-hidden="true"></i>Rules (YAML)</a>
                 </div>
 
                 <hr>
@@ -193,7 +193,7 @@
                     <div class="mb-2">
                         <input type="file" name="importFile" class="form-control form-control-sm" accept=".json,.yaml,.yml" />
                     </div>
-                    <button type="submit" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="bi bi-upload" aria-hidden="true"></i>Import</button>
+                    <button type="submit" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-upload" aria-hidden="true"></i>Import</button>
                 </form>
             </div>
         </div>

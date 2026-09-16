@@ -8,7 +8,7 @@
 <button class="btn btn-sm btn-outline-secondary d-md-none w-100 mb-2 qf-ico-btn"
         type="button" data-bs-toggle="collapse" data-bs-target="#historyFilters"
         aria-expanded="false" aria-controls="historyFilters">
-    <i class="bi bi-funnel" aria-hidden="true"></i>Filters
+    <i class="ti ti-filter" aria-hidden="true"></i>Filters
 </button>
 
 <div class="collapse d-md-block" id="historyFilters">
@@ -44,8 +44,8 @@
                     <input id="historyTo" type="date" name="To" class="form-control form-control-sm" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-funnel" aria-hidden="true"></i>Filter</button>
-                    <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-x-lg" aria-hidden="true"></i>Clear</a>
+                    <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-filter" aria-hidden="true"></i>Filter</button>
+                    <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-x" aria-hidden="true"></i>Clear</a>
                 </div>
             </form>
         </div>
@@ -59,28 +59,28 @@
         {
             <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
-                Rule: @Model.RuleNamesById.GetValueOrDefault(Model.RuleId.Value, "?")<i class="bi bi-x" aria-hidden="true"></i>
+                Rule: @Model.RuleNamesById.GetValueOrDefault(Model.RuleId.Value, "?")<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         @if (Model.Outcome is not null)
         {
             <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-RuleId="@Model.RuleId" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
-                Outcome: @Model.Outcome<i class="bi bi-x" aria-hidden="true"></i>
+                Outcome: @Model.Outcome<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         @if (Model.From is not null)
         {
             <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
-                From: @Model.From.Value.ToString("MMM d")<i class="bi bi-x" aria-hidden="true"></i>
+                From: @Model.From.Value.ToString("MMM d")<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         @if (Model.To is not null)
         {
             <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")">
-                To: @Model.To.Value.ToString("MMM d")<i class="bi bi-x" aria-hidden="true"></i>
+                To: @Model.To.Value.ToString("MMM d")<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         <a class="btn btn-sm btn-link text-decoration-none p-0 ms-1" asp-page="/History/Index">Clear all</a>
@@ -92,7 +92,7 @@
         @if (Model.Runs.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon bi bi-clock-history" aria-hidden="true"></div>
+                <div class="qf-empty-icon ti ti-history" aria-hidden="true"></div>
                 <p class="mb-0">No runs match these filters.</p>
             </div>
         }
@@ -123,7 +123,7 @@
                             <td>
                                 @if (details.Count > 0 || run.ErrorMessage is not null)
                                 {
-                                    <button class="btn btn-sm btn-link p-0 qf-detail-toggle" data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-label="Toggle details"><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                                    <button class="btn btn-sm btn-link p-0 qf-detail-toggle" data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-label="Toggle details"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
                                 }
                             </td>
                             <td>@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</td>
@@ -197,7 +197,7 @@
                     {
                         <button class="btn btn-sm btn-outline-secondary w-100 mt-2 qf-ico-btn qf-detail-toggle justify-content-center" type="button"
                                 data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-controls="@detailId">
-                            <i class="bi bi-chevron-down" aria-hidden="true"></i>Details
+                            <i class="ti ti-chevron-down" aria-hidden="true"></i>Details
                         </button>
                         <div class="collapse mt-2" id="@detailId">
                             <div class="qf-detail-panel">

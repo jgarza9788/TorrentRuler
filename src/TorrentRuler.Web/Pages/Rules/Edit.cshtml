@@ -22,7 +22,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">@(Model.IsNew ? "Add rule" : $"Edit rule: {Model.Input.Name}")</h1>
-    <button class="btn btn-outline-secondary btn-sm qf-ico-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#fieldRefPanel"><i class="bi bi-database" aria-hidden="true"></i>Field reference</button>
+    <button class="btn btn-outline-secondary btn-sm qf-ico-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#fieldRefPanel"><i class="ti ti-database" aria-hidden="true"></i>Field reference</button>
 </div>
 
 <div asp-validation-summary="All" class="text-danger mb-3"></div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="col-md-2">
                     <button type="button" class="btn btn-outline-primary w-100 qf-ico-btn"
-                            hx-post="?handler=PreviewSchedule" hx-target="#schedule-preview" hx-swap="innerHTML"><i class="bi bi-eye" aria-hidden="true"></i>Preview</button>
+                            hx-post="?handler=PreviewSchedule" hx-target="#schedule-preview" hx-swap="innerHTML"><i class="ti ti-eye" aria-hidden="true"></i>Preview</button>
                 </div>
             </div>
             <div class="form-text mb-2">Minimum interval is 5 minutes; faster schedules are rejected with an explanation.</div>
@@ -103,12 +103,12 @@
     <div class="qf-card mb-3">
         <div class="qf-card-header">
             <h2>Condition</h2>
-            <button class="btn btn-outline-secondary btn-sm qf-ico-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#fieldRefPanel"><i class="bi bi-database" aria-hidden="true"></i>Field reference</button>
+            <button class="btn btn-outline-secondary btn-sm qf-ico-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#fieldRefPanel"><i class="ti ti-database" aria-hidden="true"></i>Field reference</button>
             <div class="d-flex align-items-center gap-2">
                 <span class="qf-field-type" id="conditionModeLabel">@(Model.Input.UseAdvancedSql ? "Advanced SQL" : "Basic builder")</span>
                 <input type="hidden" asp-for="Input.UseAdvancedSql" id="useAdvancedSqlValue" />
                 <button type="button" class="btn btn-outline-secondary btn-sm text-nowrap qf-ico-btn" id="conditionModeToggle">
-                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i><span data-mode-label>@(Model.Input.UseAdvancedSql ? "Switch to basic" : "Switch to SQL")</span>
+                    <i class="ti ti-refresh" aria-hidden="true"></i><span data-mode-label>@(Model.Input.UseAdvancedSql ? "Switch to basic" : "Switch to SQL")</span>
                 </button>
             </div>
         </div>
@@ -153,7 +153,7 @@
                                         <template x-if="row.Operator !== 'In' && row.Operator !== 'NotIn' && row.Operator !== 'IsNull' && row.Operator !== 'IsNotNull'">
                                             <input class="form-control form-control-sm w-auto" x-model="row._rawValue" />
                                         </template>
-                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(root.Children, row)"><i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(root.Children, row)"><i class="ti ti-x" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
                                     </div>
                                 </template>
 
@@ -170,7 +170,7 @@
                                                 </template>
                                             </select>
                                             <span class="small text-secondary">matching:</span>
-                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(root.Children, row)"><i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(root.Children, row)"><i class="ti ti-x" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
                                         </div>
                                         <div class="d-flex flex-wrap gap-2 align-items-center ps-3">
                                             <select class="form-select form-select-sm w-auto" x-model="row.Condition._field" x-init="$nextTick(() => $el.value = row.Condition._field)" @@change="onFieldChange(row.Condition, true)">
@@ -197,7 +197,7 @@
                                                 <option value="Or">ANY of</option>
                                             </select>
                                             <span class="small text-secondary">(nested group):</span>
-                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto qf-ico-btn" @@click="removeRow(root.Children, row)"><i class="bi bi-x-lg" aria-hidden="true"></i>Remove group</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto qf-ico-btn" @@click="removeRow(root.Children, row)"><i class="ti ti-x" aria-hidden="true"></i>Remove group</button>
                                         </div>
 
                                         <template x-for="(subRow, subIdx) in row.Children" :key="subIdx">
@@ -225,7 +225,7 @@
                                                         <template x-if="subRow.Operator !== 'In' && subRow.Operator !== 'NotIn' && subRow.Operator !== 'IsNull' && subRow.Operator !== 'IsNotNull'">
                                                             <input class="form-control form-control-sm w-auto" x-model="subRow._rawValue" />
                                                         </template>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(row.Children, subRow)"><i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(row.Children, subRow)"><i class="ti ti-x" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
                                                     </div>
                                                 </template>
                                                 <template x-if="subRow.kind === 'exists'">
@@ -241,7 +241,7 @@
                                                                 </template>
                                                             </select>
                                                             <span class="small text-secondary">matching:</span>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(row.Children, subRow)"><i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeRow(row.Children, subRow)"><i class="ti ti-x" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
                                                         </div>
                                                         <div class="d-flex flex-wrap gap-2 align-items-center ps-3">
                                                             <select class="form-select form-select-sm w-auto" x-model="subRow.Condition._field" x-init="$nextTick(() => $el.value = subRow.Condition._field)" @@change="onFieldChange(subRow.Condition, true)">
@@ -262,8 +262,8 @@
                                         </template>
 
                                         <div class="d-flex gap-2 mt-2">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addSubComparison(row)"><i class="bi bi-plus-lg" aria-hidden="true"></i>Condition</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addSubExists(row)"><i class="bi bi-plus-lg" aria-hidden="true"></i>Related-source check</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addSubComparison(row)"><i class="ti ti-plus" aria-hidden="true"></i>Condition</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addSubExists(row)"><i class="ti ti-plus" aria-hidden="true"></i>Related-source check</button>
                                         </div>
                                     </div>
                                 </template>
@@ -271,14 +271,14 @@
                         </template>
 
                         <div class="d-flex gap-2 mt-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addComparison()"><i class="bi bi-plus-lg" aria-hidden="true"></i>Condition</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addExists()"><i class="bi bi-plus-lg" aria-hidden="true"></i>Related-source check</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addGroup()"><i class="bi bi-plus-lg" aria-hidden="true"></i>Group (nested AND/OR)</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addComparison()"><i class="ti ti-plus" aria-hidden="true"></i>Condition</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addExists()"><i class="ti ti-plus" aria-hidden="true"></i>Related-source check</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" @@click="addGroup()"><i class="ti ti-plus" aria-hidden="true"></i>Group (nested AND/OR)</button>
                         </div>
                     </div>
 
                     <div class="mt-2">
-                        <button type="button" class="btn btn-sm btn-outline-primary qf-ico-btn" hx-post="?handler=PreviewCondition" hx-target="#condition-sql-preview" hx-swap="innerHTML"><i class="bi bi-eye" aria-hidden="true"></i>Preview SQL</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary qf-ico-btn" hx-post="?handler=PreviewCondition" hx-target="#condition-sql-preview" hx-swap="innerHTML"><i class="ti ti-eye" aria-hidden="true"></i>Preview SQL</button>
                     </div>
                     <pre id="condition-sql-preview" class="qf-sql-preview mt-2" style="display:none"></pre>
                 </div>
@@ -291,7 +291,7 @@
                           placeholder="qbittorrent.*.category = 'linux' AND qbittorrent.*.size_gb > 5"></textarea>
                 <div class="form-text">A boolean WHERE-clause expression against the documented schema. Any key from the field reference can be used directly (e.g. <code>qbittorrent.*.active_days &gt;= 14</code>, <code>storage.&lt;name&gt;.used_percent &lt; 90</code>, <code>tautulli.*.play_count = 0</code>). A per-row field of a related source has no single value here &mdash; use one of its aggregates instead. Runs read-only, single-statement only.</div>
                 <button type="button" class="btn btn-sm btn-outline-primary mt-2 qf-ico-btn"
-                        hx-post="?handler=ValidateAdvancedSql" hx-target="#advanced-sql-preview" hx-swap="innerHTML"><i class="bi bi-check-lg" aria-hidden="true"></i>Validate</button>
+                        hx-post="?handler=ValidateAdvancedSql" hx-target="#advanced-sql-preview" hx-swap="innerHTML"><i class="ti ti-check" aria-hidden="true"></i>Validate</button>
                 <pre id="advanced-sql-preview" class="qf-sql-preview mt-2" style="display:none"></pre>
             </div>
         </div>
@@ -370,17 +370,17 @@
                             </span>
                         </template>
 
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeAction(idx)"><i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeAction(idx)"><i class="ti ti-x" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
                     </div>
                 </template>
 
-                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 qf-ico-btn" @@click="addAction('add_tags')"><i class="bi bi-plus-lg" aria-hidden="true"></i>Action</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 qf-ico-btn" @@click="addAction('add_tags')"><i class="ti ti-plus" aria-hidden="true"></i>Action</button>
             </div>
         </div>
     </div>
 
     <div class="d-flex gap-2 mb-2 align-items-center">
-        <button type="submit" formaction="?handler=Save" class="btn btn-primary qf-ico-btn"><i class="bi bi-save2" aria-hidden="true"></i>Save rule</button>
+        <button type="submit" formaction="?handler=Save" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save rule</button>
         <a asp-page="/Rules/Index" class="btn btn-outline-secondary">Cancel</a>
         <span id="dry-run-spinner" class="htmx-indicator small text-secondary qf-ico-btn">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>evaluating&hellip;
@@ -388,7 +388,7 @@
         <button type="button" class="btn btn-outline-primary ms-auto qf-ico-btn"
                 hx-post="?handler=DryRun" hx-include="closest form"
                 hx-target="#dry-run-result" hx-swap="innerHTML"
-                hx-indicator="#dry-run-spinner" hx-disabled-elt="this"><i class="bi bi-play-fill" aria-hidden="true"></i>Dry run</button>
+                hx-indicator="#dry-run-spinner" hx-disabled-elt="this"><i class="ti ti-player-play" aria-hidden="true"></i>Dry run</button>
         
     </div>
     <div class="form-text mb-2">Evaluates the rule as currently entered (including unsaved changes) and shows what it would match and do — nothing is applied.</div>
@@ -419,7 +419,7 @@
                 <div class="d-flex gap-2 mb-2">
                     <input type="search" class="form-control form-control-sm" placeholder="Search fields…" x-model="search" />
                     <button type="button" class="btn btn-outline-secondary btn-sm text-nowrap qf-ico-btn" :data-copy="visibleKeys">
-                        <i class="bi bi-clipboard" aria-hidden="true"></i><span data-copy-label>Copy all</span>
+                        <i class="ti ti-clipboard" aria-hidden="true"></i><span data-copy-label>Copy all</span>
                     </button>
                 </div>
                 <select class="form-select form-select-sm" x-model="typeFilter">
@@ -438,7 +438,7 @@
                             <div class="small text-secondary" x-text="row.description"></div>
                         </div>
                         <button type="button" class="btn btn-outline-secondary btn-sm text-nowrap qf-ico-btn" :data-copy="row.key">
-<i class="bi bi-clipboard" aria-hidden="true"></i><span data-copy-label>Copy</span>
+<i class="ti ti-clipboard" aria-hidden="true"></i><span data-copy-label>Copy</span>
                         </button>
                     </div>
                 </template>

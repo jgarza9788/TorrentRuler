@@ -23,21 +23,21 @@
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <a asp-page="/Instances/Index" class="qf-card qf-stat qf-stat-link">
-            <div class="qf-stat-icon"><i class="bi bi-plug-fill" aria-hidden="true"></i></div>
+            <div class="qf-stat-icon"><i class="ti ti-plug-connected" aria-hidden="true"></i></div>
             <div class="qf-stat-value">@Model.EnabledInstanceCount<span class="text-secondary fs-6">/@Model.TotalInstanceCount</span></div>
             <div class="qf-stat-label">Instances enabled</div>
         </a>
     </div>
     <div class="col-6 col-lg-3">
         <a asp-page="/Rules/Index" class="qf-card qf-stat qf-stat-link">
-            <div class="qf-stat-icon"><i class="bi bi-list-check" aria-hidden="true"></i></div>
+            <div class="qf-stat-icon"><i class="ti ti-checklist" aria-hidden="true"></i></div>
             <div class="qf-stat-value">@Model.EnabledRuleCount<span class="text-secondary fs-6">/@Model.TotalRuleCount</span></div>
             <div class="qf-stat-label">Rules enabled</div>
         </a>
     </div>
     <div class="col-6 col-lg-3">
         <a asp-page="/History/Index" class="qf-card qf-stat qf-stat-link">
-            <div class="qf-stat-icon"><i class="bi bi-check2-circle" aria-hidden="true"></i></div>
+            <div class="qf-stat-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
             <div class="qf-stat-value">@Model.MatchedLast24h</div>
             <div class="qf-stat-label">Matched, last 24h</div>
         </a>
@@ -45,7 +45,7 @@
     <div class="col-6 col-lg-3">
         <a asp-page="/History/Index" asp-route-Outcome="Failed"
            class="qf-card qf-stat qf-stat-link @(Model.FailedLast24h > 0 ? "qf-stat--danger" : "")">
-            <div class="qf-stat-icon"><i class="bi bi-x-circle-fill" aria-hidden="true"></i></div>
+            <div class="qf-stat-icon"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
             <div class="qf-stat-value">@Model.FailedLast24h</div>
             <div class="qf-stat-label">Failed runs, last 24h</div>
         </a>
@@ -57,15 +57,15 @@
         <div class="qf-card mb-3">
             <div class="qf-card-header">
                 <h2>Instances</h2>
-                <a asp-page="/Instances/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="bi bi-gear-fill" aria-hidden="true"></i>Manage</a>
+                <a asp-page="/Instances/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-settings" aria-hidden="true"></i>Manage</a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.Instances.Count == 0)
                 {
                     <div class="qf-empty">
-                        <div class="qf-empty-icon bi bi-plug-fill" aria-hidden="true"></div>
+                        <div class="qf-empty-icon ti ti-plug-connected" aria-hidden="true"></div>
                         <p class="mb-2">No data sources configured yet.</p>
-                        <a asp-page="/Instances/Index" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add an instance</a>
+                        <a asp-page="/Instances/Index" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Add an instance</a>
                     </div>
                 }
                 else
@@ -100,13 +100,13 @@
         <div class="qf-card">
             <div class="qf-card-header">
                 <h2>Recent runs</h2>
-<a asp-page="/History/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="bi bi-clock-history" aria-hidden="true"></i>Full history</a>
+<a asp-page="/History/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-history" aria-hidden="true"></i>Full history</a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.RecentRuns.Count == 0)
                 {
                     <div class="qf-empty">
-                        <div class="qf-empty-icon bi bi-clock-history" aria-hidden="true"></div>
+                        <div class="qf-empty-icon ti ti-history" aria-hidden="true"></div>
                         <p class="mb-0">No rules have run yet. Once a rule's schedule fires, its runs will show up here.</p>
                     </div>
                 }

@@ -19,10 +19,10 @@
     <link rel="icon" type="image/svg+xml" href="~/img/icon.svg" />
     <link rel="icon" href="~/favicon.ico" sizes="any" />
     <meta name="theme-color" content="#212529" />
-    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/tabler-icons/dist/tabler-icons.min.css" />
+    <!-- TRIAL: Tabler (Bootstrap-based) in place of stock Bootstrap -- see wwwroot/lib/tabler -->
+    <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TorrentRuler.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     @{
@@ -53,31 +53,31 @@
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn @(IsActive("/Index") ? "active" : "")"
                                        aria-current="@(IsActive("/Index") ? "page" : null)" asp-page="/Index">
-                                        <i class="bi bi-speedometer2" aria-hidden="true"></i>Dashboard
+                                        <i class="ti ti-dashboard" aria-hidden="true"></i>Dashboard
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn @(IsActive("/Rules") ? "active" : "")"
                                        aria-current="@(IsActive("/Rules") ? "page" : null)" asp-page="/Rules/Index">
-                                        <i class="bi bi-list-check" aria-hidden="true"></i>Rules
+                                        <i class="ti ti-checklist" aria-hidden="true"></i>Rules
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn @(IsActive("/Instances") ? "active" : "")"
                                        aria-current="@(IsActive("/Instances") ? "page" : null)" asp-page="/Instances/Index">
-                                        <i class="bi bi-plug-fill" aria-hidden="true"></i>Instances
+                                        <i class="ti ti-plug-connected" aria-hidden="true"></i>Instances
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn @(IsActive("/History") ? "active" : "")"
                                        aria-current="@(IsActive("/History") ? "page" : null)" asp-page="/History/Index">
-                                        <i class="bi bi-clock-history" aria-hidden="true"></i>History
+                                        <i class="ti ti-history" aria-hidden="true"></i>History
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn @(IsActive("/Settings") ? "active" : "")"
                                        aria-current="@(IsActive("/Settings") ? "page" : null)" asp-page="/Settings/Index">
-                                        <i class="bi bi-gear-fill" aria-hidden="true"></i>Settings
+                                        <i class="ti ti-settings" aria-hidden="true"></i>Settings
                                     </a>
                                 </li>
                             </ul>
@@ -85,25 +85,25 @@
                                 <li class="nav-item d-flex align-items-center">
                                     <div class="qf-theme-toggle" role="group" aria-label="Theme">
                                         <button type="button" class="btn" data-theme-choice="light" title="Light" aria-label="Light" aria-pressed="false">
-                                            <i class="bi bi-sun-fill" aria-hidden="true"></i>
+                                            <i class="ti ti-sun" aria-hidden="true"></i>
                                         </button>
                                         <button type="button" class="btn" data-theme-choice="dark" title="Dark" aria-label="Dark" aria-pressed="false">
-                                            <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+                                            <i class="ti ti-moon-stars" aria-hidden="true"></i>
                                         </button>
                                         <button type="button" class="btn" data-theme-choice="auto" title="Match system" aria-label="Match system" aria-pressed="false">
-                                            <i class="bi bi-circle-half" aria-hidden="true"></i>
+                                            <i class="ti ti-circle-half" aria-hidden="true"></i>
                                         </button>
                                     </div>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn" asp-page="/Account/ChangePassword">
-                                        <i class="bi bi-key-fill" aria-hidden="true"></i>Change password
+                                        <i class="ti ti-key" aria-hidden="true"></i>Change password
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <form method="post" action="/Logout">
                                         <button type="submit" class="btn btn-link nav-link qf-ico-btn">
-                                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>Log out
+                                            <i class="ti ti-logout" aria-hidden="true"></i>Log out
                                         </button>
                                     </form>
                                 </li>
@@ -121,7 +121,7 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/tabler/dist/js/tabler.min.js"></script>
     <script>
         (function () {
             var buttons = document.querySelectorAll('[data-theme-choice]');

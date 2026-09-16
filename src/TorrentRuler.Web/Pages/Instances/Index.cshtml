@@ -13,16 +13,16 @@
                 <input type="search" class="form-control form-control-sm qf-table-filter"
                        data-table-filter placeholder="Filter&hellip;" aria-label="Filter instances" />
             }
-            <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add instance"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add instance</span></a>
+            <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add instance"><i class="ti ti-plus" aria-hidden="true"></i><span class="d-none d-sm-inline">Add instance</span></a>
         </div>
     </div>
     <div class="qf-card-body p-0">
         @if (Model.Instances.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon bi bi-plug-fill" aria-hidden="true"></div>
+                <div class="qf-empty-icon ti ti-plug-connected" aria-hidden="true"></div>
                 <p class="mb-2">No instances configured. torrentruler needs at least one qBittorrent instance to do anything.</p>
-                <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add your first instance</a>
+                <a asp-page="/Instances/Edit" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Add your first instance</a>
             </div>
         }
         else
@@ -58,15 +58,15 @@
                             <td>
                                 <form method="post" asp-page-handler="TestConnection" asp-route-id="@instance.Id"
                                       hx-post="?handler=TestConnection&id=@instance.Id" hx-target="#test-result-@instance.Id" hx-swap="innerHTML">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Test</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-refresh" aria-hidden="true"></i>Test</button>
                                 </form>
                                 <div id="test-result-@instance.Id" class="mt-1"></div>
                             </td>
                             <td class="text-end">
-                                <a asp-page="/Instances/Edit" asp-route-id="@instance.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                                <a asp-page="/Instances/Edit" asp-route-id="@instance.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="DeleteInstance" asp-route-id="@instance.Id" class="d-inline"
                                       onsubmit="return confirm('Delete instance &quot;@instance.Name&quot;? Rules targeting it will stop matching anything on it.');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -90,21 +90,21 @@
                         <div class="dropdown qf-row-card-actions">
                             <button class="btn btn-sm btn-outline-secondary border-0" type="button"
                                     data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for @instance.Name">
-                                <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                                <i class="ti ti-dots-vertical" aria-hidden="true"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" asp-page="/Instances/Edit" asp-route-id="@instance.Id"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit</a></li>
+                                <li><a class="dropdown-item" asp-page="/Instances/Edit" asp-route-id="@instance.Id"><i class="ti ti-pencil me-2" aria-hidden="true"></i>Edit</a></li>
                                 <li>
                                     <form method="post" asp-page-handler="TestConnection" asp-route-id="@instance.Id"
                                           hx-post="?handler=TestConnection&id=@instance.Id" hx-target="#test-result-mobile-@instance.Id" hx-swap="innerHTML">
-                                        <button type="submit" class="dropdown-item"><i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>Test connection</button>
+                                        <button type="submit" class="dropdown-item"><i class="ti ti-refresh me-2" aria-hidden="true"></i>Test connection</button>
                                     </form>
                                 </li>
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
                                     <form method="post" asp-page-handler="DeleteInstance" asp-route-id="@instance.Id"
                                           onsubmit="return confirm('Delete instance &quot;@instance.Name&quot;? Rules targeting it will stop matching anything on it.');">
-                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2" aria-hidden="true"></i>Delete</button>
+                                        <button type="submit" class="dropdown-item text-danger"><i class="ti ti-trash me-2" aria-hidden="true"></i>Delete</button>
                                     </form>
                                 </li>
                             </ul>
@@ -131,16 +131,16 @@
                 <input type="search" class="form-control form-control-sm qf-table-filter"
                        data-table-filter placeholder="Filter&hellip;" aria-label="Filter storage paths" />
             }
-            <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add storage path"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline">Add storage path</span></a>
+            <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add storage path"><i class="ti ti-plus" aria-hidden="true"></i><span class="d-none d-sm-inline">Add storage path</span></a>
         </div>
     </div>
     <div class="qf-card-body p-0">
         @if (Model.StoragePaths.Count == 0)
         {
             <div class="qf-empty">
-                <div class="qf-empty-icon bi bi-folder2" aria-hidden="true"></div>
+                <div class="qf-empty-icon ti ti-folder" aria-hidden="true"></div>
                 <p class="mb-2">No storage paths monitored yet. Add one to use <code>storage.&lt;name&gt;.*</code> fields in rules.</p>
-                <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add a storage path</a>
+                <a asp-page="/Instances/EditStoragePath" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Add a storage path</a>
             </div>
         }
         else
@@ -173,10 +173,10 @@
                             <td class="qf-muted-mono text-truncate" style="max-width: 260px;" title="@path.Path">@path.Path</td>
                             <td class="text-secondary">every @path.FolderSizeScanIntervalMinutes min</td>
                             <td class="text-end">
-                                <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                                <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="DeleteStoragePath" asp-route-id="@path.Id" class="d-inline"
                                       onsubmit="return confirm('Delete storage path &quot;@path.Name&quot;?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -203,10 +203,10 @@
                         <dt>Scan interval</dt><dd>every @path.FolderSizeScanIntervalMinutes min</dd>
                     </dl>
                     <div class="d-flex gap-2 mt-2">
-                        <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="bi bi-pencil-square" aria-hidden="true"></i>Edit</a>
+                        <a asp-page="/Instances/EditStoragePath" asp-route-id="@path.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                         <form method="post" asp-page-handler="DeleteStoragePath" asp-route-id="@path.Id" class="flex-grow-1"
                               onsubmit="return confirm('Delete storage path &quot;@path.Name&quot;?');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                         </form>
                     </div>
                 </div>
