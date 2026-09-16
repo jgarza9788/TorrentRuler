@@ -382,7 +382,9 @@
     <div class="d-flex gap-2 mb-2 align-items-center">
         <button type="submit" formaction="?handler=Save" class="btn btn-primary qf-ico-btn"><i class="bi bi-save2" aria-hidden="true"></i>Save rule</button>
         <a asp-page="/Rules/Index" class="btn btn-outline-secondary">Cancel</a>
-        <span id="dry-run-spinner" class="htmx-indicator small text-secondary">evaluating…</span>
+        <span id="dry-run-spinner" class="htmx-indicator small text-secondary qf-ico-btn">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>evaluating&hellip;
+        </span>
         <button type="button" class="btn btn-outline-primary ms-auto qf-ico-btn"
                 hx-post="?handler=DryRun" hx-include="closest form"
                 hx-target="#dry-run-result" hx-swap="innerHTML"

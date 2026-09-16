@@ -31,6 +31,15 @@ RUN dotnet publish src/TorrentRuler.Web/TorrentRuler.Web.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
+# Not read from .git (excluded from the build context, see .dockerignore) -- pass them in with
+# `docker build --build-arg GIT_SHA=$(git rev-parse --short HEAD) --build-arg GIT_BRANCH=$(git
+# branch --show-current)` (docker-compose.yml does this from GIT_SHA/GIT_BRANCH env vars). Purely
+# cosmetic: only feeds the Settings > Info card: BuildInfo.cs falls back to "unknown" if unset.
+ARG GIT_SHA=unknown
+ARG GIT_BRANCH=unknown
+ENV TORRENTRULER_GIT_SHA=$GIT_SHA \
+    TORRENTRULER_GIT_BRANCH=$GIT_BRANCH
+
 # tzdata: rules resolve arbitrary IANA zone IDs at runtime (CronValidator,
 # RuleSchedulerService), and compose passes TZ. Alpine ships none by default.
 # su-exec: ~20 KB busybox-native stand-in for gosu (~2 MB); the entrypoint uses it

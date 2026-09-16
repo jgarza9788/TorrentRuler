@@ -174,6 +174,8 @@
                     <a class="btn btn-sm btn-outline-secondary qf-ico-btn" asp-page-handler="ExportRules" asp-route-format="Yaml"><i class="bi bi-download" aria-hidden="true"></i>Rules (YAML)</a>
                 </div>
 
+                <hr>
+
                 <h3 class="h6">Import</h3>
                 <form method="post" asp-page-handler="ImportConfig" enctype="multipart/form-data">
                     <div class="mb-2">
@@ -196,4 +198,40 @@
             </div>
         </div>
     </div>
+
+    <div class="col-lg-5">
+        <div class="qf-card">
+            <div class="qf-card-header">
+                <h2>Info</h2>
+            </div>
+            <div class="qf-card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-5 text-secondary fw-normal">Branch</dt>
+                    <dd class="col-7 qf-muted-mono text-truncate mb-2" title="@Model.GitBranch">@Model.GitBranch</dd>
+
+                    <dt class="col-5 text-secondary fw-normal">Commit</dt>
+                    <dd class="col-7 qf-muted-mono mb-2">@Model.GitCommit</dd>
+
+                    <dt class="col-5 text-secondary fw-normal">Built</dt>
+                    <dd class="col-7 mb-2">
+                        @if (Model.BuildTimeUtc is not null)
+                        {
+                            <partial name="_RelativeTime" model="new DateTimeOffset(Model.BuildTimeUtc.Value, TimeSpan.Zero)" />
+                        }
+                        else
+                        {
+                            <span>unknown</span>
+                        }
+                    </dd>
+
+                    <dt class="col-5 text-secondary fw-normal">.NET runtime</dt>
+                    <dd class="col-7 mb-2">@Model.RuntimeVersion</dd>
+
+                    <dt class="col-5 text-secondary fw-normal">Environment</dt>
+                    <dd class="col-7 mb-0">@Model.EnvironmentName</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
 </div>

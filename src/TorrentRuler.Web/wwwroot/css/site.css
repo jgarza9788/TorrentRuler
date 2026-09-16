@@ -1,3 +1,7 @@
+
+
+
+
 /* ---- Fonts ---- */
 
 /* No local @font-face and no --bs-font-monospace override: icon glyphs come
@@ -12,6 +16,22 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45em;
+}
+
+/* A tiny nudge on the icon (not the whole button/label) reads as "alive"
+   without the jitter of moving the text too. */
+.qf-ico-btn .bi {
+  transition: transform 0.12s ease;
+}
+
+.qf-ico-btn:hover .bi {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-ico-btn .bi {
+    transition: none;
+  }
 }
 
 html {
@@ -87,9 +107,12 @@ body {
 }
 
 .qf-logo-link {
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.25rem 0.25rem 0.6rem;
+
+
 }
 
 .qf-logo {
@@ -111,10 +134,24 @@ body {
 
 /* Blue (Bootstrap primary) is the app's one accent color for interactive
    chrome; the logo's gold gradient stays confined to the logo mark itself. */
+.qf-navbar .nav-link {
+  border-radius: 0.5rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
 .qf-navbar .nav-link.active {
   color: var(--bs-primary);
   background-color: rgba(var(--bs-primary-rgb), 0.12);
-  border-radius: 0.5rem;
+}
+
+.qf-navbar .nav-link:hover:not(.active) {
+  background-color: var(--bs-tertiary-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-navbar .nav-link {
+    transition: none;
+  }
 }
 
 .qf-content {
@@ -129,7 +166,10 @@ body {
   background: var(--bs-body-bg);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: 0.75rem;
-  box-shadow: 0 0.4rem 1rem rgba(var(--bs-emphasis-color-rgb), 0.08);
+  /* 
+  box-shadow: 0 0.4rem 1rem rgba(var(--bs-emphasis-color-rgb), 0.08); 
+  */
+  box-shadow: 0 0.4rem 1rem rgba(0,0,0, 0.20); 
 }
 
 .qf-card-header {
@@ -169,13 +209,32 @@ body {
 .qf-stat-link:focus-visible {
   color: inherit;
   transform: translateY(-2px);
+  /*
   box-shadow: 0 0.6rem 1.25rem rgba(var(--bs-emphasis-color-rgb), 0.14);
+  */
+  box-shadow: 0 0.6rem 1.25rem rgba(0,0,0, 0.40);
 }
 
 .qf-stat-icon {
   font-size: 1.15rem;
   color: var(--bs-secondary-color);
   margin-bottom: 0.35rem;
+  transition: transform 0.15s ease;
+}
+
+.qf-stat-link:hover .qf-stat-icon {
+  transform: scale(1.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-stat-link,
+  .qf-stat-icon {
+    transition: none;
+  }
+
+  .qf-stat-link:hover {
+    transform: none;
+  }
 }
 
 .qf-stat .qf-stat-value {
@@ -284,6 +343,17 @@ body {
   height: 1.4em;
   margin: 0;
   cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.qf-toggle-switch .form-check-input:active {
+  transform: scale(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-toggle-switch .form-check-input {
+    transition: none;
+  }
 }
 
 /* ---- Mobile row cards (table alternative under md) ---- */
@@ -301,6 +371,20 @@ body {
   border-radius: 0.6rem;
   background: var(--bs-body-bg);
   padding: 0.9rem 1rem;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* Table rows already shade on hover (see "Table row hover" below); this gives
+   the mobile card list the same tactile parity. */
+.qf-row-card:hover {
+  border-color: var(--bs-border-color);
+  box-shadow: 0 0.2rem 0.6rem rgba(var(--bs-emphasis-color-rgb), 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-row-card {
+    transition: none;
+  }
 }
 
 .qf-row-card-top {
@@ -346,6 +430,63 @@ body {
   position: absolute;
   top: 0.6rem;
   right: 0.5rem;
+}
+
+.qf-row-card-actions .btn {
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.qf-row-card-actions .btn:hover,
+.qf-row-card-actions .btn:focus-visible {
+  transform: scale(1.12);
+}
+
+/* The three dots read as "more" closed and rotate to look like an ellipsis
+   turned on its side -- a small hint that the menu underneath is open. */
+.qf-row-card-actions .bi-three-dots-vertical {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.qf-row-card-actions .btn[aria-expanded="true"] .bi-three-dots-vertical {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-row-card-actions .btn,
+  .qf-row-card-actions .bi-three-dots-vertical {
+    transition: none;
+  }
+}
+
+/* ---- Dropdown open animation (kebab menus) ---- */
+
+.dropdown-menu.show {
+  animation: qf-dropdown-in 0.14s ease;
+  transform-origin: top right;
+}
+
+@keyframes qf-dropdown-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.dropdown-item {
+  transition: transform 0.08s ease;
+}
+
+.dropdown-item:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-menu.show {
+    animation: none;
+  }
+
+  .dropdown-item {
+    transition: none;
+  }
 }
 
 /* ---- Condition / action builder ---- */
@@ -497,6 +638,54 @@ body {
   background: var(--bs-tertiary-bg);
   padding: 1rem 1.25rem;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* ---- Button press feedback ---- */
+
+/* Scoped to cards/row-cards rather than every .btn app-wide so it doesn't
+   touch the navbar's theme-toggle segments or nav-link buttons, which already
+   have their own distinct hover/active language. */
+.qf-card .btn,
+.qf-row-card .btn {
+  transition: transform 0.08s ease;
+}
+
+.qf-card .btn:active,
+.qf-row-card .btn:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-card .btn,
+  .qf-row-card .btn {
+    transition: none;
+  }
+}
+
+/* ---- htmx loading state ---- */
+
+/* htmx adds .htmx-request to the triggering element itself whenever no
+   hx-indicator is set (Test / Preview / Preview SQL / Validate buttons across
+   the app) -- spinning whatever icon is already in the button needs no extra
+   markup. The two buttons with an explicit hx-indicator (Test connection,
+   Dry run) get a real Bootstrap spinner in that indicator span instead. */
+.htmx-request {
+  pointer-events: none;
+}
+
+.htmx-request .bi {
+  animation: qf-spin 0.7s linear infinite;
+}
+
+@keyframes qf-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htmx-request .bi {
+    animation: none;
+    opacity: 0.6;
+  }
 }
 
 /* ---- Client-side table filter (site.js) ---- */

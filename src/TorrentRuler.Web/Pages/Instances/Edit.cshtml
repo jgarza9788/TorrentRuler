@@ -99,7 +99,9 @@
                         hx-post="?handler=TestConnection" hx-include="closest form"
                         hx-target="#edit-conn-test-result" hx-swap="innerHTML"
                         hx-indicator="#edit-conn-test-spinner"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Test connection</button>
-                <span id="edit-conn-test-spinner" class="htmx-indicator small text-secondary">testing…</span>
+                <span id="edit-conn-test-spinner" class="htmx-indicator small text-secondary qf-ico-btn">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>testing&hellip;
+                </span>
             </div>
             <div id="edit-conn-test-result" class="mt-2"></div>
             <div class="form-text">Tests the values entered above (leave the password / API key blank to reuse the saved one).</div>

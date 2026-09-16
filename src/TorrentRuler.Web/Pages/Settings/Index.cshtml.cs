@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using TorrentRuler.Core.Domain;
 using TorrentRuler.Infrastructure.Config;
 using TorrentRuler.Infrastructure.Persistence;
+using TorrentRuler.Web.Diagnostics;
 using TorrentRuler.Web.Logging;
 
 namespace TorrentRuler.Web.Pages.Settings;
 
-public class IndexModel(AppDbContext db, IConfigPortabilityService configService) : PageModel
+public class IndexModel(AppDbContext db, IConfigPortabilityService configService, IHostEnvironment hostEnvironment) : PageModel
 {
     [BindProperty]
     public SettingsInput Input { get; set; } = new();
@@ -19,6 +20,12 @@ public class IndexModel(AppDbContext db, IConfigPortabilityService configService
     public string? ImportError { get; set; }
     public string? ImportSuccess { get; set; }
     public bool SettingsSaved { get; set; }
+
+    public string GitBranch => BuildInfo.GitBranch;
+    public string GitCommit => BuildInfo.GitCommit;
+    public DateTime? BuildTimeUtc => BuildInfo.BuildTimeUtc;
+    public string RuntimeVersion => BuildInfo.RuntimeVersion;
+    public string EnvironmentName => hostEnvironment.EnvironmentName;
 
     public async Task OnGetAsync(CancellationToken ct)
     {
