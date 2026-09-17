@@ -400,8 +400,66 @@ body {
   right: 0.5rem;
 }
 
-/* Bootstrap's own outline-button hover (background/color fade-in) already
-   applies here -- no extra rules needed. */
+/* ---- Outline buttons: filled by default, tinted on hover ---- */
+
+/* Tabler's outline-* classes are hollow (transparent bg) until hover, when
+   they fade to a solid fill. Fill them in from the start instead, using the
+   same --tblr-btn-border-color / --tblr-btn-hover-color tokens Tabler already
+   sets per-color, so this stays generic across every outline variant. */
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info,
+.btn-outline-light,
+.btn-outline-dark {
+  --tblr-btn-bg: var(--tblr-btn-border-color);
+  --tblr-btn-color: var(--tblr-btn-hover-color);
+}
+
+/* Hover now tints toward the same darkened shade solid buttons use, rather
+   than swapping to a flat fill -- the "-darken" tokens are per-color, so
+   these can't be folded into the generic rule above. */
+.btn-outline-primary {
+  --tblr-btn-hover-bg: var(--tblr-primary-darken);
+  --tblr-btn-hover-border-color: var(--tblr-primary-darken);
+}
+
+.btn-outline-secondary {
+  --tblr-btn-hover-bg: var(--tblr-secondary-darken);
+  --tblr-btn-hover-border-color: var(--tblr-secondary-darken);
+}
+
+.btn-outline-success {
+  --tblr-btn-hover-bg: var(--tblr-success-darken);
+  --tblr-btn-hover-border-color: var(--tblr-success-darken);
+}
+
+.btn-outline-danger {
+  --tblr-btn-hover-bg: var(--tblr-danger-darken);
+  --tblr-btn-hover-border-color: var(--tblr-danger-darken);
+}
+
+.btn-outline-warning {
+  --tblr-btn-hover-bg: var(--tblr-warning-darken);
+  --tblr-btn-hover-border-color: var(--tblr-warning-darken);
+}
+
+.btn-outline-info {
+  --tblr-btn-hover-bg: var(--tblr-info-darken);
+  --tblr-btn-hover-border-color: var(--tblr-info-darken);
+}
+
+.btn-outline-light {
+  --tblr-btn-hover-bg: var(--tblr-light-darken);
+  --tblr-btn-hover-border-color: var(--tblr-light-darken);
+}
+
+.btn-outline-dark {
+  --tblr-btn-hover-bg: var(--tblr-dark-darken);
+  --tblr-btn-hover-border-color: var(--tblr-dark-darken);
+}
 
 /* ---- Dropdown fade (kebab menus) ---- */
 
