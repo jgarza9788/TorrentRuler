@@ -9,36 +9,36 @@
         <h2>@(Model.IsNew ? "Add storage path" : $"Edit storage path: {Model.Input.Name}")</h2>
     </div>
     <div class="qf-card-body">
-        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <div asp-validation-summary="All" class="has-text-danger mb-3"></div>
 
         <form method="post">
             <input type="hidden" asp-for="Input.Id" />
 
-            <div class="row g-3">
-                <div class="col-md-5">
-                    <label asp-for="Input.Name" class="form-label"></label>
-                    <input asp-for="Input.Name" class="form-control" placeholder="downloads" />
-                    <div class="form-text">Referenced in rules as <code>storage.@("{name}")​.used_percent</code>, etc.</div>
+            <div class="columns is-multiline is-variable is-3">
+                <div class="column is-5-tablet">
+                    <label asp-for="Input.Name" class="label"></label>
+                    <input asp-for="Input.Name" class="input" placeholder="downloads" />
+                    <div class="help">Referenced in rules as <code>storage.@("{name}")​.used_percent</code>, etc.</div>
                 </div>
-                <div class="col-md-7">
-                    <label asp-for="Input.Path" class="form-label"></label>
-                    <input asp-for="Input.Path" class="form-control qf-muted-mono" placeholder="/downloads" />
+                <div class="column is-7-tablet">
+                    <label asp-for="Input.Path" class="label"></label>
+                    <input asp-for="Input.Path" class="input qf-muted-mono" placeholder="/downloads" />
                 </div>
-                <div class="col-md-6">
-                    <label asp-for="Input.FolderSizeScanIntervalMinutes" class="form-label"></label>
-                    <input asp-for="Input.FolderSizeScanIntervalMinutes" type="number" class="form-control" />
+                <div class="column is-6-tablet">
+                    <label asp-for="Input.FolderSizeScanIntervalMinutes" class="label"></label>
+                    <input asp-for="Input.FolderSizeScanIntervalMinutes" type="number" class="input" />
                 </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <div class="form-check">
-                        <input asp-for="Input.Enabled" class="form-check-input" />
-                        <label asp-for="Input.Enabled" class="form-check-label"></label>
+                <div class="column is-6-tablet is-flex is-align-items-end">
+                    <div class="qf-check">
+                        <input asp-for="Input.Enabled" />
+                        <label asp-for="Input.Enabled"></label>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
-                <a asp-page="/Instances/Index" class="btn btn-outline-secondary">Cancel</a>
+            <div class="mt-4 is-flex is-gap-2">
+                <button type="submit" class="button is-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
+                <a asp-page="/Instances/Index" class="button">Cancel</a>
             </div>
         </form>
     </div>

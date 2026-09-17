@@ -5,7 +5,7 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,32 +14,39 @@
     <link rel="icon" href="~/favicon.ico" sizes="any" />
     <meta name="theme-color" content="#212529" />
     <link rel="stylesheet" href="~/lib/tabler-icons/dist/tabler-icons.min.css" />
-    <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="~/lib/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <div class="container" style="max-width: 420px; margin-top: 4rem;">
-        <h1 class="h3 mb-3">Welcome to torrentruler</h1>
-        <p class="text-muted">Create the admin account to get started.</p>
+        <h1 class="title is-4 mb-3">Welcome to torrentruler</h1>
+        <p class="has-text-weak">Create the admin account to get started.</p>
 
-        <div asp-validation-summary="All" class="text-danger"></div>
+        <div asp-validation-summary="All" class="has-text-danger"></div>
 
         <form method="post">
-            <div class="mb-3">
-                <label asp-for="Input.Username" class="form-label"></label>
-                <input asp-for="Input.Username" class="form-control" autofocus autocomplete="username" />
-                <span asp-validation-for="Input.Username" class="text-danger"></span>
+            <div class="field mb-3">
+                <label asp-for="Input.Username" class="label"></label>
+                <div class="control">
+                    <input asp-for="Input.Username" class="input" autofocus autocomplete="username" />
+                </div>
+                <span asp-validation-for="Input.Username" class="help is-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Input.Password" class="form-label"></label>
-                <input asp-for="Input.Password" type="password" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            <div class="field mb-3">
+                <label asp-for="Input.Password" class="label"></label>
+                <div class="control">
+                    <input asp-for="Input.Password" type="password" class="input" autocomplete="new-password" />
+                </div>
+                <span asp-validation-for="Input.Password" class="help is-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
-                <input asp-for="Input.ConfirmPassword" type="password" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            <div class="field mb-3">
+                <label asp-for="Input.ConfirmPassword" class="label"></label>
+                <div class="control">
+                    <input asp-for="Input.ConfirmPassword" type="password" class="input" autocomplete="new-password" />
+                </div>
+                <span asp-validation-for="Input.ConfirmPassword" class="help is-danger"></span>
             </div>
-            <button type="submit" class="btn btn-primary w-100 qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Create admin account</button>
+            <button type="submit" class="button is-primary is-fullwidth qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Create admin account</button>
         </form>
     </div>
 </body>

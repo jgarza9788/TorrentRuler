@@ -2,7 +2,7 @@
 
 @if (!Model.Ok)
 {
-    <div class="alert alert-danger py-2 px-3 mb-0">
+    <div class="notification is-danger is-light py-2 px-3 mb-0">
         <strong>Dry run failed.</strong>
         <div class="small mt-1" style="white-space: pre-wrap; word-break: break-word;">@Model.Error</div>
     </div>
@@ -11,7 +11,7 @@ else
 {
     <div class="qf-card">
         <div class="qf-card-body">
-            <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="is-flex is-align-items-center is-gap-2 mb-2">
                 <span class="qf-badge @(Model.MatchedCount > 0 ? "qf-badge-success" : "qf-badge-secondary")">
                     <span class="qf-badge-dot"></span>@Model.MatchedCount matched
                 </span>
@@ -28,25 +28,25 @@ else
             }
             else
             {
-                <ul class="list-unstyled mb-0 small">
+                <ul class="mb-0 small">
                     @foreach (var line in Model.Actions)
                     {
                         <li class="mb-1">
-                            <span class="fw-medium">@line.Description</span>
+                            <span class="has-text-weight-medium">@line.Description</span>
                             &mdash;
-                            <span class="text-success">@line.WouldChange would change</span>@if (line.AlreadyMatching > 0)
+                            <span class="has-text-success">@line.WouldChange would change</span>@if (line.AlreadyMatching > 0)
                             {
                                 <span class="text-secondary">, @line.AlreadyMatching already match</span>
                             }@if (line.Failed > 0)
                             {
-                                <span class="text-danger">, @line.Failed could not be read</span>
+                                <span class="has-text-danger">, @line.Failed could not be read</span>
                             }
                         </li>
                     }
                 </ul>
             }
 
-            <div class="form-text mt-2">Preview only — nothing was changed.</div>
+            <div class="help mt-2">Preview only — nothing was changed.</div>
 
             @if (Model.SampleMatchedHashes.Count > 0)
             {

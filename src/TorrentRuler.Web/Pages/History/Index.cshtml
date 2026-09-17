@@ -5,47 +5,51 @@
     var hasFilters = Model.RuleId is not null || Model.Outcome is not null || Model.From is not null || Model.To is not null;
 }
 
-<button class="btn btn-sm btn-outline-secondary d-md-none w-100 mb-2 qf-ico-btn"
-        type="button" data-bs-toggle="collapse" data-bs-target="#historyFilters"
+<button class="button is-small is-hidden-tablet is-fullwidth mb-2 qf-ico-btn"
+        type="button" data-collapse-target="#historyFilters"
         aria-expanded="false" aria-controls="historyFilters">
     <i class="ti ti-filter" aria-hidden="true"></i>Filters
 </button>
 
-<div class="collapse d-md-block" id="historyFilters">
+<div class="qf-collapse-mobile-only" id="historyFilters">
     <div class="qf-card mb-3">
         <div class="qf-card-body">
-            <form method="get" class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small mb-1" for="historyRuleId">Rule</label>
-                    <select id="historyRuleId" name="RuleId" class="form-select form-select-sm">
-                        <option value="">All rules</option>
-                        @foreach (var rule in Model.AllRules)
-                        {
-                            <option value="@rule.Id" selected="@(Model.RuleId == rule.Id)">@rule.Name</option>
-                        }
-                    </select>
+            <form method="get" class="columns is-multiline is-variable is-2 is-align-items-end">
+                <div class="column is-3-tablet">
+                    <label class="label small mb-1" for="historyRuleId">Rule</label>
+                    <div class="select is-small is-fullwidth">
+                        <select id="historyRuleId" name="RuleId">
+                            <option value="">All rules</option>
+                            @foreach (var rule in Model.AllRules)
+                            {
+                                <option value="@rule.Id" selected="@(Model.RuleId == rule.Id)">@rule.Name</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small mb-1" for="historyOutcome">Outcome</label>
-                    <select id="historyOutcome" name="Outcome" class="form-select form-select-sm">
-                        <option value="">Any</option>
-                        @foreach (var outcome in Enum.GetValues<TorrentRuler.Core.Domain.RunOutcome>())
-                        {
-                            <option value="@outcome" selected="@(Model.Outcome == outcome)">@outcome</option>
-                        }
-                    </select>
+                <div class="column is-2-tablet">
+                    <label class="label small mb-1" for="historyOutcome">Outcome</label>
+                    <div class="select is-small is-fullwidth">
+                        <select id="historyOutcome" name="Outcome">
+                            <option value="">Any</option>
+                            @foreach (var outcome in Enum.GetValues<TorrentRuler.Core.Domain.RunOutcome>())
+                            {
+                                <option value="@outcome" selected="@(Model.Outcome == outcome)">@outcome</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small mb-1" for="historyFrom">From</label>
-                    <input id="historyFrom" type="date" name="From" class="form-control form-control-sm" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+                <div class="column is-2-tablet">
+                    <label class="label small mb-1" for="historyFrom">From</label>
+                    <input id="historyFrom" type="date" name="From" class="input is-small" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small mb-1" for="historyTo">To</label>
-                    <input id="historyTo" type="date" name="To" class="form-control form-control-sm" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+                <div class="column is-2-tablet">
+                    <label class="label small mb-1" for="historyTo">To</label>
+                    <input id="historyTo" type="date" name="To" class="input is-small" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-filter" aria-hidden="true"></i>Filter</button>
-                    <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-x" aria-hidden="true"></i>Clear</a>
+                <div class="column is-3-tablet">
+                    <button type="submit" class="button is-small is-primary qf-ico-btn"><i class="ti ti-filter" aria-hidden="true"></i>Filter</button>
+                    <a asp-page="/History/Index" class="button is-small qf-ico-btn"><i class="ti ti-x" aria-hidden="true"></i>Clear</a>
                 </div>
             </form>
         </div>
@@ -54,36 +58,36 @@
 
 @if (hasFilters)
 {
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <div class="is-flex is-flex-wrap-wrap is-align-items-center is-gap-2 mb-3">
         @if (Model.RuleId is not null)
         {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+            <a class="tag qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
                 Rule: @Model.RuleNamesById.GetValueOrDefault(Model.RuleId.Value, "?")<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         @if (Model.Outcome is not null)
         {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+            <a class="tag qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-RuleId="@Model.RuleId" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
                 Outcome: @Model.Outcome<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         @if (Model.From is not null)
         {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+            <a class="tag qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
                 From: @Model.From.Value.ToString("MMM d")<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
         @if (Model.To is not null)
         {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
+            <a class="tag qf-ico-btn text-decoration-none" asp-page="/History/Index"
                asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")">
                 To: @Model.To.Value.ToString("MMM d")<i class="ti ti-x" aria-hidden="true"></i>
             </a>
         }
-        <a class="btn btn-sm btn-link text-decoration-none p-0 ms-1" asp-page="/History/Index">Clear all</a>
+        <a class="button is-small is-text text-decoration-none p-0 ms-1" asp-page="/History/Index">Clear all</a>
     </div>
 }
 
@@ -98,8 +102,8 @@
         }
         else
         {
-            <div class="d-none d-md-block table-responsive">
-                <table class="table table-sm align-middle mb-0">
+            <div class="is-hidden-touch table-container">
+                <table class="table is-narrow align-middle mb-0">
                     <thead>
                     <tr>
                         <th></th>
@@ -107,10 +111,10 @@
                         <th>Started</th>
                         <th>Duration</th>
                         <th>Outcome</th>
-                        <th class="text-end">Matched</th>
-                        <th class="text-end">Applied</th>
-                        <th class="text-end d-none d-lg-table-cell">Skipped</th>
-                        <th class="text-end">Failed</th>
+                        <th class="has-text-right">Matched</th>
+                        <th class="has-text-right">Applied</th>
+                        <th class="has-text-right is-hidden-touch">Skipped</th>
+                        <th class="has-text-right">Failed</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -123,7 +127,7 @@
                             <td>
                                 @if (details.Count > 0 || run.ErrorMessage is not null)
                                 {
-                                    <button class="btn btn-sm btn-link p-0 qf-detail-toggle" data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-label="Toggle details"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+                                    <button class="button is-small is-text p-0 qf-detail-toggle" data-collapse-target="#@detailId" aria-expanded="false" aria-label="Toggle details"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
                                 }
                             </td>
                             <td>@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</td>
@@ -136,20 +140,20 @@
                                     <span class="qf-badge qf-badge-secondary ms-1">dry-run</span>
                                 }
                             </td>
-                            <td class="text-end">@run.MatchedCount</td>
-                            <td class="text-end">@run.ActionsExecutedCount</td>
-                            <td class="text-end d-none d-lg-table-cell">@run.ActionsSkippedCount</td>
-                            <td class="text-end @(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</td>
+                            <td class="has-text-right">@run.MatchedCount</td>
+                            <td class="has-text-right">@run.ActionsExecutedCount</td>
+                            <td class="has-text-right is-hidden-touch">@run.ActionsSkippedCount</td>
+                            <td class="has-text-right @(run.ActionsFailedCount > 0 ? "has-text-danger has-text-weight-semibold" : "")">@run.ActionsFailedCount</td>
                         </tr>
-                        <tr class="collapse" id="@detailId">
+                        <tr class="qf-collapse" id="@detailId">
                             <td colspan="9" class="qf-detail-panel">
                                 @if (run.ErrorMessage is not null)
                                 {
-                                    <div class="alert alert-danger py-2 mb-2">@run.ErrorMessage</div>
+                                    <div class="notification is-danger is-light py-2 mb-2">@run.ErrorMessage</div>
                                 }
                                 @if (details.Count > 0)
                                 {
-                                    <table class="table table-sm mb-0">
+                                    <table class="table is-narrow mb-0">
                                         <thead><tr><th>Torrent hash</th><th>Action</th><th>Outcome</th><th>Error</th></tr></thead>
                                         <tbody>
                                         @foreach (var d in details)
@@ -158,7 +162,7 @@
                                                 <td class="qf-muted-mono">@d.TorrentHash</td>
                                                 <td>@d.ActionType</td>
                                                 <td>@d.Outcome</td>
-                                                <td class="text-danger">@d.Error</td>
+                                                <td class="has-text-danger">@d.Error</td>
                                             </tr>
                                         }
                                         </tbody>
@@ -170,7 +174,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="d-md-none qf-row-card-list">
+            <div class="is-hidden-desktop qf-row-card-list">
             @foreach (var run in Model.Runs)
             {
                 var detailId = $"details-mobile-{run.Id}";
@@ -179,7 +183,7 @@
                 var hasDetails = details.Count > 0 || run.ErrorMessage is not null;
                 <div class="qf-row-card">
                     <div class="qf-row-card-top">
-                        <span class="qf-row-card-title flex-grow-1">@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</span>
+                        <span class="qf-row-card-title is-flex-grow-1">@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</span>
                         <partial name="_StatusBadge" model="run.Outcome" />
                     </div>
                     @if (run.WasDryRun)
@@ -191,19 +195,19 @@
                         <dt>Duration</dt><dd>@(duration is not null ? $"{duration.Value.TotalSeconds:0.0}s" : "—")</dd>
                         <dt>Matched</dt><dd>@run.MatchedCount</dd>
                         <dt>Applied</dt><dd>@run.ActionsExecutedCount</dd>
-                        <dt>Failed</dt><dd class="@(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</dd>
+                        <dt>Failed</dt><dd class="@(run.ActionsFailedCount > 0 ? "has-text-danger has-text-weight-semibold" : "")">@run.ActionsFailedCount</dd>
                     </dl>
                     @if (hasDetails)
                     {
-                        <button class="btn btn-sm btn-outline-secondary w-100 mt-2 qf-ico-btn qf-detail-toggle justify-content-center" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-controls="@detailId">
+                        <button class="button is-small is-fullwidth mt-2 qf-ico-btn qf-detail-toggle is-justify-content-center" type="button"
+                                data-collapse-target="#@detailId" aria-expanded="false" aria-controls="@detailId">
                             <i class="ti ti-chevron-down" aria-hidden="true"></i>Details
                         </button>
-                        <div class="collapse mt-2" id="@detailId">
+                        <div class="qf-collapse mt-2" id="@detailId">
                             <div class="qf-detail-panel">
                                 @if (run.ErrorMessage is not null)
                                 {
-                                    <div class="alert alert-danger py-2 mb-2">@run.ErrorMessage</div>
+                                    <div class="notification is-danger is-light py-2 mb-2">@run.ErrorMessage</div>
                                 }
                                 @foreach (var d in details)
                                 {
@@ -212,7 +216,7 @@
                                         <div>@d.ActionType &mdash; @d.Outcome</div>
                                         @if (!string.IsNullOrEmpty(d.Error))
                                         {
-                                            <div class="text-danger">@d.Error</div>
+                                            <div class="has-text-danger">@d.Error</div>
                                         }
                                     </div>
                                 }
@@ -225,12 +229,12 @@
 
             @if (Model.TotalPages > 1)
             {
-                <nav class="p-3">
-                    <ul class="pagination pagination-sm mb-0">
+                <nav class="pagination is-small p-3" role="navigation" aria-label="pagination">
+                    <ul class="pagination-list mb-0">
                         @for (var p = 1; p <= Model.TotalPages; p++)
                         {
-                            <li class="page-item @(p == Model.PageNumber ? "active" : "")">
-                                <a class="page-link" asp-page="/History/Index"
+                            <li>
+                                <a class="pagination-link @(p == Model.PageNumber ? "is-current is-selected" : "")" asp-page="/History/Index"
                                    asp-route-PageNumber="@p" asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome"
                                    asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">@p</a>
                             </li>

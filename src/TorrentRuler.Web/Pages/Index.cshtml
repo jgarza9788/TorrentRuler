@@ -6,7 +6,7 @@
 
 @if (Model.Settings.GlobalKillSwitch || Model.Settings.GlobalDryRun)
 {
-    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
+    <div class="notification is-warning is-light is-flex is-align-items-center is-gap-2 mb-3" role="alert">
         <strong>Heads up:</strong>
         @if (Model.Settings.GlobalKillSwitch)
         {
@@ -16,33 +16,33 @@
         {
             <span>global dry-run is <strong>ON</strong> &mdash; actions are being previewed, not applied.</span>
         }
-        <a asp-page="/Settings/Index" class="ms-auto btn btn-sm btn-outline-warning">Settings</a>
+        <a asp-page="/Settings/Index" class="ms-auto button is-small is-warning is-light">Settings</a>
     </div>
 }
 
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
+<div class="columns is-multiline is-variable is-3 mb-4">
+    <div class="column is-6-mobile is-3-desktop">
         <a asp-page="/Instances/Index" class="qf-card qf-stat qf-stat-link">
             <div class="qf-stat-icon"><i class="ti ti-plug-connected" aria-hidden="true"></i></div>
-            <div class="qf-stat-value">@Model.EnabledInstanceCount<span class="text-secondary fs-6">/@Model.TotalInstanceCount</span></div>
+            <div class="qf-stat-value">@Model.EnabledInstanceCount<span class="text-secondary is-size-6">/@Model.TotalInstanceCount</span></div>
             <div class="qf-stat-label">Instances enabled</div>
         </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="column is-6-mobile is-3-desktop">
         <a asp-page="/Rules/Index" class="qf-card qf-stat qf-stat-link">
             <div class="qf-stat-icon"><i class="ti ti-checklist" aria-hidden="true"></i></div>
-            <div class="qf-stat-value">@Model.EnabledRuleCount<span class="text-secondary fs-6">/@Model.TotalRuleCount</span></div>
+            <div class="qf-stat-value">@Model.EnabledRuleCount<span class="text-secondary is-size-6">/@Model.TotalRuleCount</span></div>
             <div class="qf-stat-label">Rules enabled</div>
         </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="column is-6-mobile is-3-desktop">
         <a asp-page="/History/Index" class="qf-card qf-stat qf-stat-link">
             <div class="qf-stat-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
             <div class="qf-stat-value">@Model.MatchedLast24h</div>
             <div class="qf-stat-label">Matched, last 24h</div>
         </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="column is-6-mobile is-3-desktop">
         <a asp-page="/History/Index" asp-route-Outcome="Failed"
            class="qf-card qf-stat qf-stat-link @(Model.FailedLast24h > 0 ? "qf-stat--danger" : "")">
             <div class="qf-stat-icon"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
@@ -52,12 +52,12 @@
     </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-lg-5">
+<div class="columns is-multiline is-variable is-3">
+    <div class="column is-5-desktop">
         <div class="qf-card mb-3">
             <div class="qf-card-header">
                 <h2>Instances</h2>
-                <a asp-page="/Instances/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-settings" aria-hidden="true"></i>Manage</a>
+                <a asp-page="/Instances/Index" class="button is-small is-primary is-light qf-ico-btn"><i class="ti ti-settings" aria-hidden="true"></i>Manage</a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.Instances.Count == 0)
@@ -65,12 +65,12 @@
                     <div class="qf-empty">
                         <div class="qf-empty-icon ti ti-plug-connected" aria-hidden="true"></div>
                         <p class="mb-2">No data sources configured yet.</p>
-                        <a asp-page="/Instances/Index" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Add an instance</a>
+                        <a asp-page="/Instances/Index" class="button is-small is-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Add an instance</a>
                     </div>
                 }
                 else
                 {
-                    <table class="table table-sm mb-0">
+                    <table class="table is-narrow mb-0">
                         <tbody>
                         @foreach (var instance in Model.Instances)
                         {
@@ -85,7 +85,7 @@
                                         <span class="qf-badge qf-badge-secondary"><span class="qf-badge-dot"></span>off</span>
                                     }
                                 </td>
-                                <td class="fw-medium">@instance.Name</td>
+                                <td class="has-text-weight-medium">@instance.Name</td>
                                 <td class="text-secondary">@instance.SourceType</td>
                             </tr>
                         }
@@ -96,11 +96,11 @@
         </div>
     </div>
 
-    <div class="col-lg-7">
+    <div class="column is-7-desktop">
         <div class="qf-card">
             <div class="qf-card-header">
                 <h2>Recent runs</h2>
-<a asp-page="/History/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-history" aria-hidden="true"></i>Full history</a>
+<a asp-page="/History/Index" class="button is-small is-primary is-light qf-ico-btn"><i class="ti ti-history" aria-hidden="true"></i>Full history</a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.RecentRuns.Count == 0)
@@ -112,16 +112,16 @@
                 }
                 else
                 {
-                    <div class="table-responsive">
-                        <table class="table table-sm mb-0 align-middle">
+                    <div class="table-container">
+                        <table class="table is-narrow mb-0 align-middle">
                             <thead>
                             <tr>
                                 <th>Rule</th>
                                 <th>Started</th>
                                 <th>Outcome</th>
-                                <th class="text-end">Matched</th>
-                                <th class="text-end">Applied</th>
-                                <th class="text-end">Failed</th>
+                                <th class="has-text-right">Matched</th>
+                                <th class="has-text-right">Applied</th>
+                                <th class="has-text-right">Failed</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -131,9 +131,9 @@
                                     <td>@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</td>
                                     <td class="text-secondary"><partial name="_RelativeTime" model="run.StartedAt" /></td>
                                     <td><partial name="_StatusBadge" model="run.Outcome" /></td>
-                                    <td class="text-end">@run.MatchedCount</td>
-                                    <td class="text-end">@run.ActionsExecutedCount</td>
-                                    <td class="text-end @(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</td>
+                                    <td class="has-text-right">@run.MatchedCount</td>
+                                    <td class="has-text-right">@run.ActionsExecutedCount</td>
+                                    <td class="has-text-right @(run.ActionsFailedCount > 0 ? "has-text-danger has-text-weight-semibold" : "")">@run.ActionsFailedCount</td>
                                 </tr>
                             }
                             </tbody>

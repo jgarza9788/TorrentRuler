@@ -1,22 +1,129 @@
 
-:root{
-  --tblr-border-color-translucent: light-dark(
-    var(--tblr-gray-500), 
-    var(--tblr-dark-mode-border-color-translucent));
+/* EXPERIMENT: Bulma in place of Tabler/Bootstrap. Bulma's own tokens are HSL triples per
+   color (--bulma-<name>-h/-s/-l) rather than Tabler's single --tblr-<name> custom property,
+   so overrides below set the -l (lightness) channel rather than a whole color. */
 
-  --tblr-border-color: light-dark(
-    var(--tblr-gray-900), 
-    var(--tblr-gray-700));
+:root {
+  /* The app's one accent color for interactive chrome (see "Nav active-link indicator"
+     below) -- hsl(209deg, 94%, 42%) is the same blue used before this rewrite. Setting it
+     on --bulma-primary reskins every .is-primary component (buttons, tags, etc.) at once. */
+  --bulma-primary-h: 209deg;
+  --bulma-primary-s: 94%;
+  --bulma-primary-l: 42%;
+  /* Bulma precomputes its shade/contrast scale (-05-l, -invert-l, ...) as fixed values sized
+     for the *default* teal primary at build time -- they don't recompute from -h/-s/-l above,
+     so the "invert" (on-primary text/icon) lightness needs a direct override too, or button
+     text renders dark-on-dark against this blue. */
+  --bulma-primary-invert-l: 97%;
+  /* Same fixed-value problem for the plain RGB triplet some rules (below, the active nav-link
+     tint) build rgba() from instead of the HSL channels -- the RGB equivalent of the HSL
+     override above. */
+  --bulma-primary-rgb: 6, 110, 208;
+
+  /* Bulma's default border lightness (86% / 93%) is too pale to read as an edge against a
+     white card -- darken it in light mode only. Dark mode already gets its own values from
+     Bulma's [data-theme=dark] rules (loaded before this file), which this must not clobber:
+     a bare :root override would win over those (equal specificity, later in the cascade), so
+     the darker values are scoped to explicit light / system-light-and-unset-theme instead. */
+  --bulma-border-l: 86%;
+  --bulma-border-weak-l: 93%;
 }
 
+:root[data-theme="light"] {
+  --bulma-border-l: 45%;
+  --bulma-border-weak-l: 65%;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bulma-border-l: 45%;
+    --bulma-border-weak-l: 65%;
+  }
+}
+
+/* ---- Utility classes Bulma doesn't ship ----
+   Bulma's helper set covers flexbox/spacing/display (is-flex, is-align-items-*, mb-*, ...)
+   but leaves a handful of small, purely-cosmetic conveniences out. Named to match what the
+   markup already reaches for rather than inventing new class names for the same idea. */
+
+.small {
+  font-size: 0.875em;
+}
+
+.text-nowrap {
+  white-space: nowrap;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-decoration-none {
+  text-decoration: none;
+}
+
+.align-middle {
+  vertical-align: middle;
+}
+
+.text-secondary,
+.text-muted {
+  color: var(--bulma-text-weak);
+}
+
+/* Bulma's margin/padding helpers are physical (ml-/mr-) -- these were authored against
+   Bootstrap's logical me-/ms- names. Same spacing scale (0.25rem per step), just aliased. */
+.ms-1 { margin-left: 0.25rem; }
+.ms-2 { margin-left: 0.5rem; }
+.ms-auto { margin-left: auto; }
+.me-1 { margin-right: 0.25rem; }
+.me-2 { margin-right: 0.5rem; }
+.me-auto { margin-right: auto; }
+
+.border-bottom {
+  border-bottom: 1px solid var(--bulma-border-weak);
+}
+
+/* Generic collapse toggle -- replaces Bootstrap's data-bs-toggle="collapse". Paired with the
+   data-collapse-target click handler in site.js, which flips .is-active on the target and
+   aria-expanded on the trigger. .qf-collapse is collapsible at any viewport (row details);
+   .qf-collapse-mobile-only is forced open from the tablet breakpoint up, matching the old
+   d-md-block escape hatch on the mobile filters panel. */
+.qf-collapse:not(.is-active) {
+  display: none;
+}
+
+.qf-collapse-mobile-only:not(.is-active) {
+  display: none;
+}
+
+@media screen and (min-width: 769px) {
+  .qf-collapse-mobile-only {
+    display: block !important;
+  }
+}
+
+.border-0 {
+  border: 0 !important;
+}
+
+/* Bulma's own .checkbox/.radio wrap the <input> inside the <label> and generate their own
+   text; this app's markup instead uses two sibling asp-for tag helpers (an <input> and a
+   <label>) so the label text comes from each property's [Display] attribute. Native
+   checkboxes need no reset from Bulma either way -- this only lays the pair out inline. */
+.qf-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
 
 /* ---- Fonts ---- */
 
-/* No local @font-face and no --tblr-font-monospace override: icon glyphs come
-   from the self-hosted Tabler Icons webfont (wwwroot/lib/tabler-icons), which
-   carries symbols only and no text face. The monospace surfaces
-   (.qf-sql-preview / .qf-field-key / .qf-muted-mono) therefore fall through to
-   Tabler's own --tblr-font-monospace stack -- Menlo / Consolas and friends. */
+/* No local @font-face and no font-family override: icon glyphs come from the self-hosted
+   Tabler Icons webfont (wwwroot/lib/tabler-icons), which carries symbols only and no text
+   face -- unaffected by the CSS framework underneath it. */
 
 /* Pairs an icon with a text label inside a button or link: aligns the glyph to
    the label's optical centre and spaces it. Omit on icon-only controls. */
@@ -24,9 +131,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45em;
-  /* Sits next to a shrinkable sibling (e.g. the card-header filter input) in a
-     flex row -- without this, Tabler's nested-flex .btn can get squeezed
-     below its own label's content width and clip the last character(s). */
   flex-shrink: 0;
 }
 
@@ -39,11 +143,12 @@ html {
 }
 
 body {
-  background-color: var(--tblr-tertiary-bg);
+  background-color: var(--bulma-scheme-main-ter);
 }
 
 .qf-navbar {
-  background-color: var(--tblr-body-bg);
+  background-color: var(--bulma-scheme-main);
+  border-bottom: 1px solid var(--bulma-border-weak);
 }
 
 .qf-brand {
@@ -52,23 +157,20 @@ body {
 }
 
 /* Segmented pill: a recessed track holding three equal segments, the selected
-   one raised. Every colour is a Bootstrap token, so it inverts correctly under
-   data-bs-theme="dark" with no separate dark rules. */
+   one raised. Every colour is a Bulma token, so it inverts correctly under
+   data-theme="dark" with no separate dark rules. */
 .qf-theme-toggle {
   display: inline-flex;
   align-items: stretch;
   margin-right: 0.75rem;
   padding: 0.1875rem;
-  background-color: var(--tblr-tertiary-bg);
-  border: 1px solid var(--tblr-border-color-translucent);
+  background-color: var(--bulma-scheme-main-ter);
+  border: 1px solid var(--bulma-border-weak);
   border-radius: 999px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-.qf-theme-toggle .btn {
-  --tblr-btn-hover-bg: transparent;
-  --tblr-btn-active-bg: transparent;
-  --tblr-btn-active-border-color: transparent;
+.qf-theme-toggle .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -76,34 +178,29 @@ body {
   padding: 0.25rem 0.6rem;
   border: 0;
   border-radius: 999px;
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
   background-color: transparent;
   box-shadow: none;
   transition: color 0.12s ease, background-color 0.12s ease;
 }
 
-.qf-theme-toggle .btn .ti {
+.qf-theme-toggle .button .ti {
   font-size: 0.95rem;
 }
 
-.qf-theme-toggle .btn:hover {
-  color: var(--tblr-emphasis-color);
+.qf-theme-toggle .button:hover {
+  color: var(--bulma-text-strong);
 }
 
-.qf-theme-toggle .btn:focus-visible {
-  outline: 2px solid var(--tblr-primary);
+.qf-theme-toggle .button:focus-visible {
+  outline: 2px solid var(--bulma-primary);
   outline-offset: 2px;
   z-index: 1;
 }
 
 .qf-logo-link {
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.25rem 0.25rem 0.6rem;
-
   color: unset;
-
 }
 
 .qf-logo {
@@ -113,34 +210,34 @@ body {
 }
 
 /* Raised chip for the selected segment. */
-.qf-theme-toggle .btn.active,
-.qf-theme-toggle .btn.active:hover {
-  background-color: var(--tblr-primary);
+.qf-theme-toggle .button.is-active,
+.qf-theme-toggle .button.is-active:hover {
+  background-color: var(--bulma-primary);
   color: #fff;
-  border-color: transparent;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 /* ---- Nav active-link indicator ---- */
 
-/* Blue (Bootstrap primary) is the app's one accent color for interactive
-   chrome; the logo's gold gradient stays confined to the logo mark itself. */
-.qf-navbar .nav-link {
+/* Blue is the app's one accent color for interactive chrome; the logo's gold gradient
+   stays confined to the logo mark itself. */
+.qf-navbar .navbar-item.is-active {
+  color: var(--bulma-primary);
+  background-color: rgba(var(--bulma-primary-rgb), 0.12);
+}
+
+.qf-navbar .navbar-item {
   border-radius: 0.5rem;
   transition: color 0.15s ease, background-color 0.15s ease;
 }
 
-.qf-navbar .nav-link.active {
-  color: var(--tblr-primary);
-  background-color: rgba(var(--tblr-primary-rgb), 0.12);
-}
-
-.qf-navbar .nav-link:hover:not(.active) {
-  background-color: var(--tblr-tertiary-bg);
+.qf-navbar .navbar-item:hover:not(.is-active) {
+  background-color: var(--bulma-scheme-main-ter);
+  color: inherit;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .qf-navbar .nav-link {
+  .qf-navbar .navbar-item {
     transition: none;
   }
 }
@@ -154,18 +251,15 @@ body {
 /* ---- Cards & sections ---- */
 
 .qf-card {
-  background: var(--tblr-body-bg);
-  border: 1px solid var(--tblr-border-color-translucent);
+  background: var(--bulma-scheme-main);
+  border: 1px solid var(--bulma-border-weak);
   border-radius: 0.75rem;
-  /* 
-  box-shadow: 0 0.4rem 1rem rgba(var(--tblr-emphasis-color-rgb), 0.08); 
-  */
-  box-shadow: 0 0.4rem 1rem rgba(0,0,0, 0.20); 
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.20);
 }
 
 .qf-card-header {
   padding: 0.9rem 1.25rem;
-  border-bottom: 1px solid var(--tblr-border-color-translucent);
+  border-bottom: 1px solid var(--bulma-border-weak);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -200,21 +294,18 @@ body {
 .qf-stat-link:focus-visible {
   color: inherit;
   transform: translateY(-2px);
-  /*
-  box-shadow: 0 0.6rem 1.25rem rgba(var(--tblr-emphasis-color-rgb), 0.14);
-  */
-  box-shadow: 0 0.6rem 1.25rem rgba(0,0,0, 0.40);
+  box-shadow: 0 0.6rem 1.25rem rgba(0, 0, 0, 0.40);
 }
 
 .qf-stat-icon {
   font-size: 1.15rem;
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
   margin-bottom: 0.35rem;
   transition: color 0.15s ease;
 }
 
 .qf-stat-link:hover:not(.qf-stat--danger) .qf-stat-icon {
-  color: var(--tblr-emphasis-color);
+  color: var(--bulma-text-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -235,7 +326,7 @@ body {
 }
 
 .qf-stat .qf-stat-label {
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -243,12 +334,12 @@ body {
 }
 
 .qf-stat--danger {
-  border-color: rgba(var(--tblr-danger-rgb), 0.4);
+  border-color: rgba(var(--bulma-danger-rgb), 0.4);
 }
 
 .qf-stat--danger .qf-stat-icon,
 .qf-stat--danger .qf-stat-value {
-  color: var(--tblr-danger);
+  color: var(--bulma-danger);
 }
 
 /* ---- Empty / loading / error states ---- */
@@ -256,7 +347,7 @@ body {
 .qf-empty {
   text-align: center;
   padding: 2.5rem 1.5rem;
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
 }
 
 .qf-empty .qf-empty-icon {
@@ -266,6 +357,8 @@ body {
 }
 
 /* ---- Status badges ---- */
+/* Fully custom (not Bulma .tag) -- colours are hardcoded, so this survives the framework
+   swap unchanged except for the theme-attribute rename in the dark-mode block below. */
 
 .qf-badge {
   display: inline-flex;
@@ -299,16 +392,16 @@ body {
 .qf-badge-secondary .qf-badge-dot { background: #6c757d; }
 
 @media (prefers-color-scheme: dark) {
-  html:not([data-bs-theme="light"]) .qf-badge-success { background: rgba(25, 135, 84, 0.2); color: #75dda3; }
-  html:not([data-bs-theme="light"]) .qf-badge-danger { background: rgba(220, 53, 69, 0.2); color: #ea868f; }
-  html:not([data-bs-theme="light"]) .qf-badge-warning { background: rgba(255, 193, 7, 0.2); color: #ffda6a; }
-  html:not([data-bs-theme="light"]) .qf-badge-secondary { background: rgba(173, 181, 189, 0.2); color: #ced4da; }
+  :root:not([data-theme="light"]) .qf-badge-success { background: rgba(25, 135, 84, 0.2); color: #75dda3; }
+  :root:not([data-theme="light"]) .qf-badge-danger { background: rgba(220, 53, 69, 0.2); color: #ea868f; }
+  :root:not([data-theme="light"]) .qf-badge-warning { background: rgba(255, 193, 7, 0.2); color: #ffda6a; }
+  :root:not([data-theme="light"]) .qf-badge-secondary { background: rgba(173, 181, 189, 0.2); color: #ced4da; }
 }
 
-[data-bs-theme="dark"] .qf-badge-success { background: rgba(25, 135, 84, 0.2); color: #75dda3; }
-[data-bs-theme="dark"] .qf-badge-danger { background: rgba(220, 53, 69, 0.2); color: #ea868f; }
-[data-bs-theme="dark"] .qf-badge-warning { background: rgba(255, 193, 7, 0.2); color: #ffda6a; }
-[data-bs-theme="dark"] .qf-badge-secondary { background: rgba(173, 181, 189, 0.2); color: #ced4da; }
+[data-theme="dark"] .qf-badge-success { background: rgba(25, 135, 84, 0.2); color: #75dda3; }
+[data-theme="dark"] .qf-badge-danger { background: rgba(220, 53, 69, 0.2); color: #ea868f; }
+[data-theme="dark"] .qf-badge-warning { background: rgba(255, 193, 7, 0.2); color: #ffda6a; }
+[data-theme="dark"] .qf-badge-secondary { background: rgba(173, 181, 189, 0.2); color: #ced4da; }
 
 /* ---- Toggle switches (table status columns) ---- */
 
@@ -322,11 +415,56 @@ body {
   padding: 0;
 }
 
-.qf-toggle-switch .form-check-input {
+/* Bulma has no switch component -- Bootstrap's form-switch supplied the pill-track +
+   sliding-thumb visual before, via a background-image trick on .form-check-input[role=switch].
+   Rebuilt here from a bare <input type="checkbox" role="switch">, appearance:none'd so no
+   browser checkbox chrome shows through. */
+.qf-toggle-switch input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
   width: 2.5em;
   height: 1.4em;
   margin: 0;
+  padding: 0;
+  position: relative;
+  background-color: var(--bulma-border);
+  border: none;
+  border-radius: 999px;
   cursor: pointer;
+  vertical-align: middle;
+  transition: background-color 0.15s ease;
+}
+
+.qf-toggle-switch input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 0.15em;
+  left: 0.15em;
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.qf-toggle-switch input[type="checkbox"]:checked {
+  background-color: var(--bulma-primary);
+}
+
+.qf-toggle-switch input[type="checkbox"]:checked::before {
+  transform: translateX(1.1em);
+}
+
+.qf-toggle-switch input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--bulma-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-toggle-switch input[type="checkbox"],
+  .qf-toggle-switch input[type="checkbox"]::before {
+    transition: none;
+  }
 }
 
 /* ---- Mobile row cards (table alternative under md) ---- */
@@ -340,21 +478,16 @@ body {
 
 .qf-row-card {
   position: relative;
-  border: 1px solid var(--tblr-border-color-translucent);
+  border: 1px solid var(--bulma-border-weak);
   border-radius: 0.6rem;
-  background: var(--tblr-body-bg);
+  background: var(--bulma-scheme-main);
   padding: 0.9rem 1rem;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-/* Table rows already shade on hover (see "Table row hover" below); this gives
-   the mobile card list the same tactile parity. */
 .qf-row-card:hover {
-  border-color: var(--tblr-border-color);
-  /*
-  box-shadow: 0 0.2rem 0.6rem rgba(var(--tblr-emphasis-color-rgb), 0.08);
-  */
-  box-shadow: 0 0.2rem 0.6rem rgba(0,0,0, 0.08);
+  border-color: var(--bulma-border);
+  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -389,7 +522,7 @@ body {
 }
 
 .qf-row-card-meta dt {
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
   font-weight: 500;
 }
 
@@ -408,188 +541,95 @@ body {
   right: 0.5rem;
 }
 
-/* ---- Outline buttons: filled by default, tinted on hover ---- */
-
-/* Tabler's outline-* classes are hollow (transparent bg) until hover, when
-   they fade to a solid fill. Fill them in from the start instead, using the
-   same --tblr-btn-border-color / --tblr-btn-hover-color tokens Tabler already
-   sets per-color, so this stays generic across every outline variant. */
-.btn-outline-primary,
-.btn-outline-secondary,
-.btn-outline-success,
-.btn-outline-danger,
-.btn-outline-warning,
-.btn-outline-info,
-.btn-outline-light,
-.btn-outline-dark {
-  --tblr-btn-bg: var(--tblr-btn-border-color);
-  --tblr-btn-color: var(--tblr-btn-hover-color);
-}
-
-/* Hover now tints toward the same darkened shade solid buttons use, rather
-   than swapping to a flat fill -- the "-darken" tokens are per-color, so
-   these can't be folded into the generic rule above. */
-.btn-outline-primary {
-  --tblr-btn-hover-bg: var(--tblr-primary-darken);
-  --tblr-btn-hover-border-color: var(--tblr-primary-darken);
-}
-
-.btn-outline-secondary {
-  --tblr-btn-hover-bg: var(--tblr-secondary-darken);
-  --tblr-btn-hover-border-color: var(--tblr-secondary-darken);
-}
-
-.btn-outline-success {
-  --tblr-btn-hover-bg: var(--tblr-success-darken);
-  --tblr-btn-hover-border-color: var(--tblr-success-darken);
-}
-
-.btn-outline-danger {
-  --tblr-btn-hover-bg: var(--tblr-danger-darken);
-  --tblr-btn-hover-border-color: var(--tblr-danger-darken);
-}
-
-.btn-outline-warning {
-  --tblr-btn-hover-bg: var(--tblr-warning-darken);
-  --tblr-btn-hover-border-color: var(--tblr-warning-darken);
-}
-
-.btn-outline-info {
-  --tblr-btn-hover-bg: var(--tblr-info-darken);
-  --tblr-btn-hover-border-color: var(--tblr-info-darken);
-}
-
-.btn-outline-light {
-  --tblr-btn-hover-bg: var(--tblr-light-darken);
-  --tblr-btn-hover-border-color: var(--tblr-light-darken);
-}
-
-.btn-outline-dark {
-  --tblr-btn-hover-bg: var(--tblr-dark-darken);
-  --tblr-btn-hover-border-color: var(--tblr-dark-darken);
-}
-
-/* --tblr-secondary itself lightens in dark mode (gray-400) so it stays
-   legible as text/borders on a dark background -- but filled in as a button
-   background it reads too light/washed out next to the rest of the dark UI.
-   Use a darker neutral gray for the fill instead, one step lighter on hover. */
-@media (prefers-color-scheme: dark) {
-  html:not([data-bs-theme="light"]) .btn-outline-secondary {
-    --tblr-btn-bg: var(--tblr-gray-600);
-    --tblr-btn-border-color: var(--tblr-gray-600);
-    --tblr-btn-hover-bg: var(--tblr-gray-500);
-    --tblr-btn-hover-border-color: var(--tblr-gray-500);
-  }
-}
-
-[data-bs-theme="dark"] .btn-outline-secondary {
-  --tblr-btn-bg: var(--tblr-gray-600);
-  --tblr-btn-border-color: var(--tblr-gray-600);
-  --tblr-btn-hover-bg: var(--tblr-gray-500);
-  --tblr-btn-hover-border-color: var(--tblr-gray-500);
-}
-
-/* ---- Dropdown fade (kebab menus) ---- */
-
-/* Bootstrap doesn't animate dropdowns out of the box -- .show only toggles
-   `display`, which can't transition, so a fade would only ever play on open
-   and cut instantly on close. Keeping the menu always laid out (it's already
-   position:absolute, so this doesn't affect surrounding layout) and driving
-   visibility off opacity instead gives a real, gentle fade both ways. */
-.dropdown-menu {
-  display: block;
-  position: fixed;
-  top: -9999px;
-  left: -9999px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
-}
-
-.dropdown-menu.show {
-  position: absolute;
-  top: auto;
-  left: auto;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.15s ease, visibility 0s linear 0s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dropdown-menu,
-  .dropdown-menu.show {
-    transition: none;
-  }
-}
-
 /* ---- Condition / action builder ---- */
 
 .qf-cond-group {
-  border: 1px dashed var(--tblr-border-color);
+  border: 1px dashed var(--bulma-border);
   border-radius: 0.5rem;
   padding: 0.85rem;
-  background: var(--tblr-tertiary-bg);
+  background: var(--bulma-scheme-main-ter);
 }
 
 .qf-cond-row {
-  background: var(--tblr-body-bg);
-  border: 1px solid var(--tblr-border-color-translucent);
+  background: var(--bulma-scheme-main);
+  border: 1px solid var(--bulma-border-weak);
   border-radius: 0.4rem;
   padding: 0.6rem 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .qf-sql-preview {
-  font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--bulma-family-code, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.85rem;
-  background: var(--tblr-tertiary-bg);
-  border: 1px solid var(--tblr-border-color-translucent);
+  background: var(--bulma-scheme-main-ter);
+  border: 1px solid var(--bulma-border-weak);
   border-radius: 0.4rem;
   padding: 0.75rem;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-/* ---- Field reference panel ---- */
+/* ---- Field reference panel (custom drawer -- Bulma has no offcanvas component) ---- */
+
+.qf-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 440px;
+  max-width: 100vw;
+  background: var(--bulma-scheme-main);
+  border-left: 1px solid var(--bulma-border-weak);
+  box-shadow: -0.5rem 0 1.5rem rgba(0, 0, 0, 0.25);
+  z-index: 40;
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+}
+
+.qf-drawer.is-active {
+  transform: translateX(0);
+}
+
+.qf-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 39;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-drawer {
+    transition: none;
+  }
+}
 
 .qf-field-row {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--tblr-border-color-translucent);
+  border-bottom: 1px solid var(--bulma-border-weak);
   cursor: pointer;
 }
 
 .qf-field-row:hover {
-  background: var(--tblr-tertiary-bg);
+  background: var(--bulma-scheme-main-ter);
 }
 
 .qf-field-key {
-  font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--bulma-family-code, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.85rem;
 }
 
 .qf-field-type {
   font-size: 0.72rem;
   text-transform: uppercase;
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
 }
 
 /* ---- Misc ---- */
 
 .qf-muted-mono {
-  font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--bulma-family-code, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.85em;
-  color: var(--tblr-secondary-color);
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--tblr-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+  color: var(--bulma-text-weak);
 }
 
 /* ---- Advanced SQL editor (CodeMirror) ---- */
@@ -597,42 +637,25 @@ body {
 /* Two classes, so this beats upstream's one-class `.CodeMirror { height: 300px }`.
    Colours come from CodeMirror's own default / material-darker themes. */
 .CodeMirror.qf-sql-editor {
-  /* height: auto; */
   height: 12rem;
   min-height: 12rem;
-  font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--bulma-family-code, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.85rem;
-  border: 1px solid var(--tblr-border-color);
+  border: 1px solid var(--bulma-border);
   border-radius: 0.375rem;
 }
 
 /* ---- Table row hover ---- */
 
-/* Applied to every .table rather than only the ones tagged .table-hover, so a
-   new table picks the behaviour up for free. Bootstrap paints cell state with
-   an inset box-shadow over the cell background, so a plain `tr:hover
-   { background }` is covered up -- set its state variables instead and let its
-   own rule do the painting. Scoped to > tbody > tr so headers and footers stay
-   put, and .collapse detail rows (History) aren't treated as hoverable items. */
+/* Bulma's .table has no hover-state CSS variables to hook like Tabler's did, so this just
+   paints tbody rows directly. Applied to every .table rather than only ones with an
+   is-hoverable modifier, so a new table picks the behaviour up for free. */
 .table > tbody > tr:not(.collapse):hover > * {
-  --tblr-table-color-state: var(--tblr-table-hover-color);
-  --tblr-table-bg-state: var(--tblr-table-hover-bg);
-}
-
-/* Nudged up from Bootstrap's 0.075: every table here is .table-sm, and at that
-   row height the stock tint is easy to miss. Still an rgba of the theme's
-   emphasis colour, so it reads under both themes and layers over a striped or
-   active row instead of replacing it. */
-.table {
-  /* Transparent cells let the card (or the tertiary strip behind History's
-     nested detail table) show through; row state is painted by the box-shadow
-     above, so hover still lands. */
-  --tblr-table-bg: transparent;
-  --tblr-table-hover-bg: rgba(var(--tblr-emphasis-color-rgb), 0.09);
+  background-color: rgba(var(--bulma-text-rgb), 0.06);
 }
 
 .table > tbody > tr > * {
-  transition: box-shadow 0.12s ease, color 0.12s ease;
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -643,14 +666,11 @@ body {
 
 /* ---- Sticky table headers ---- */
 
-/* The navbar isn't position:fixed and .table-responsive only sets
-   overflow-x:auto (no bounded vertical scroll container anywhere in the app),
-   so this pins against normal page scroll with no offset math needed. */
-.table-responsive > table > thead > tr > th {
+.table-container > table > thead > tr > th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--tblr-body-bg);
+  background: var(--bulma-scheme-main);
 }
 
 /* ---- Expandable row chevron (History) ---- */
@@ -671,7 +691,7 @@ body {
 }
 
 .qf-detail-panel {
-  background: var(--tblr-tertiary-bg);
+  background: var(--bulma-scheme-main-ter);
   padding: 1rem 1.25rem;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
 }
@@ -682,7 +702,7 @@ body {
    hx-indicator is set (Test / Preview / Preview SQL / Validate buttons across
    the app) -- spinning whatever icon is already in the button needs no extra
    markup. The two buttons with an explicit hx-indicator (Test connection,
-   Dry run) get a real Bootstrap spinner in that indicator span instead. */
+   Dry run) get a spinner in that indicator span instead (see .qf-spinner). */
 .htmx-request {
   pointer-events: none;
 }
@@ -702,6 +722,26 @@ body {
   }
 }
 
+/* Bulma has no spinner component -- a plain border-based one, reusing the same qf-spin
+   keyframe as the icon spinner above. */
+.qf-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 0.15em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: qf-spin 0.7s linear infinite;
+  vertical-align: -0.15em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qf-spinner {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
 /* ---- Client-side table filter (site.js) ---- */
 
 .qf-table-filter {
@@ -710,7 +750,7 @@ body {
 
 .qf-table-filter-empty td {
   text-align: center;
-  color: var(--tblr-secondary-color);
+  color: var(--bulma-text-weak);
 }
 
 /* ---- End of client-side table filter ---- */

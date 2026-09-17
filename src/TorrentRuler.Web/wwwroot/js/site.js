@@ -95,3 +95,25 @@
         Array.prototype.forEach.call(inputs, initTableFilter);
     });
 })();
+
+// Generic collapse toggle.
+// Replaces Bootstrap's data-bs-toggle="collapse" / data-bs-target -- any element with
+// data-collapse-target="#id" shows/hides that element (see .qf-collapse / .qf-collapse-mobile-only
+// in site.css) and mirrors the open state onto its own aria-expanded.
+(function () {
+    'use strict';
+
+    document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('[data-collapse-target]');
+        if (!trigger) {
+            return;
+        }
+        var target = document.querySelector(trigger.getAttribute('data-collapse-target'));
+        if (!target) {
+            return;
+        }
+        var willOpen = !target.classList.contains('is-active');
+        target.classList.toggle('is-active', willOpen);
+        trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+})();

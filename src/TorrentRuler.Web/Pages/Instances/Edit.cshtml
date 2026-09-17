@@ -19,92 +19,94 @@
         <h2>@(Model.IsNew ? "Add instance" : $"Edit instance: {Model.Input.Name}")</h2>
     </div>
     <div class="qf-card-body">
-        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <div asp-validation-summary="All" class="has-text-danger mb-3"></div>
 
         <form method="post"
               x-data="{ sourceType: '@Model.Input.SourceType', get guide() { return window.qfSourceGuide[this.sourceType]; } }">
             <input type="hidden" asp-for="Input.Id" />
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="Input.Name" class="form-label"></label>
-                    <input asp-for="Input.Name" class="form-control" />
+            <div class="columns is-multiline is-variable is-3">
+                <div class="column is-6-tablet">
+                    <label asp-for="Input.Name" class="label"></label>
+                    <input asp-for="Input.Name" class="input" />
                 </div>
-                <div class="col-md-6">
-                    <label asp-for="Input.SourceType" class="form-label"></label>
+                <div class="column is-6-tablet">
+                    <label asp-for="Input.SourceType" class="label"></label>
                     @* Options are built from the guide rather than GetEnumSelectList so their values are
                        enum names, which is what keys window.qfSourceGuide. Model binding accepts names. *@
-                    <select asp-for="Input.SourceType" class="form-select" x-model="sourceType">
-                        @foreach (var (value, label) in Model.SourceTypeOptions)
-                        {
-                            <option value="@value">@label</option>
-                        }
-                    </select>
+                    <div class="select is-fullwidth">
+                        <select asp-for="Input.SourceType" x-model="sourceType">
+                            @foreach (var (value, label) in Model.SourceTypeOptions)
+                            {
+                                <option value="@value">@label</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-                <div class="col-12">
-                    <label asp-for="Input.BaseUrl" class="form-label"></label>
-                    <input asp-for="Input.BaseUrl" class="form-control"
+                <div class="column is-12">
+                    <label asp-for="Input.BaseUrl" class="label"></label>
+                    <input asp-for="Input.BaseUrl" class="input"
                            placeholder="@Model.Guide.BaseUrlPlaceholder" :placeholder="guide.baseUrlPlaceholder" />
-                    <div class="form-text" x-text="guide.baseUrl">@Model.Guide.BaseUrl</div>
+                    <div class="help" x-text="guide.baseUrl">@Model.Guide.BaseUrl</div>
                 </div>
 
-                <div class="col-md-6">
-                    <label asp-for="Input.Username" class="form-label"></label>
-                    <input asp-for="Input.Username" class="form-control" autocomplete="off" />
-                    <div class="form-text" x-text="guide.username">@Model.Guide.Username</div>
+                <div class="column is-6-tablet">
+                    <label asp-for="Input.Username" class="label"></label>
+                    <input asp-for="Input.Username" class="input" autocomplete="off" />
+                    <div class="help" x-text="guide.username">@Model.Guide.Username</div>
                 </div>
-                <div class="col-md-6">
-                    <label asp-for="Input.Password" class="form-label"></label>
-                    <input asp-for="Input.Password" type="password" class="form-control" autocomplete="new-password"
+                <div class="column is-6-tablet">
+                    <label asp-for="Input.Password" class="label"></label>
+                    <input asp-for="Input.Password" type="password" class="input" autocomplete="new-password"
                            placeholder="@(Model.Input.HasExistingPassword ? "Leave blank to keep existing" : "")" />
-                    <div class="form-text" x-text="guide.password">@Model.Guide.Password</div>
+                    <div class="help" x-text="guide.password">@Model.Guide.Password</div>
                 </div>
-                <div class="col-12">
-                    <label asp-for="Input.ApiKey" class="form-label"></label>
-                    <input asp-for="Input.ApiKey" type="password" class="form-control" autocomplete="new-password"
+                <div class="column is-12">
+                    <label asp-for="Input.ApiKey" class="label"></label>
+                    <input asp-for="Input.ApiKey" type="password" class="input" autocomplete="new-password"
                            placeholder="@(Model.Input.HasExistingApiKey ? "Leave blank to keep existing" : "")" />
-                    <div class="form-text" x-text="guide.apiKey">@Model.Guide.ApiKey</div>
+                    <div class="help" x-text="guide.apiKey">@Model.Guide.ApiKey</div>
                 </div>
 
-                <div class="col-md-4">
-                    <label asp-for="Input.TimeoutSeconds" class="form-label"></label>
-                    <input asp-for="Input.TimeoutSeconds" type="number" class="form-control" />
+                <div class="column is-4-tablet">
+                    <label asp-for="Input.TimeoutSeconds" class="label"></label>
+                    <input asp-for="Input.TimeoutSeconds" type="number" class="input" />
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <input asp-for="Input.VerifySsl" class="form-check-input" />
-                        <label asp-for="Input.VerifySsl" class="form-check-label"></label>
+                <div class="column is-4-tablet is-flex is-align-items-end">
+                    <div class="qf-check">
+                        <input asp-for="Input.VerifySsl" />
+                        <label asp-for="Input.VerifySsl"></label>
                     </div>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <input asp-for="Input.Enabled" class="form-check-input" />
-                        <label asp-for="Input.Enabled" class="form-check-label"></label>
+                <div class="column is-4-tablet is-flex is-align-items-end">
+                    <div class="qf-check">
+                        <input asp-for="Input.Enabled" />
+                        <label asp-for="Input.Enabled"></label>
                     </div>
                 </div>
 
-                <div class="col-12">
-                    <label asp-for="Input.ExtraConfigJson" class="form-label"></label>
-                    <textarea asp-for="Input.ExtraConfigJson" class="form-control qf-muted-mono" rows="3"
+                <div class="column is-12">
+                    <label asp-for="Input.ExtraConfigJson" class="label"></label>
+                    <textarea asp-for="Input.ExtraConfigJson" class="textarea qf-muted-mono" rows="3"
                               placeholder="@Model.Guide.ExtraConfigPlaceholder"
                               :placeholder="guide.extraConfigPlaceholder"></textarea>
-                    <div class="form-text" x-text="guide.extraConfig">@Model.Guide.ExtraConfig</div>
+                    <div class="help" x-text="guide.extraConfig">@Model.Guide.ExtraConfig</div>
                 </div>
             </div>
 
-            <div class="mt-4 d-flex gap-2 align-items-center">
-                <button type="submit" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
-                <a asp-page="/Instances/Index" class="btn btn-outline-secondary">Cancel</a>
-                <button type="button" class="btn btn-outline-secondary ms-auto qf-ico-btn"
+            <div class="mt-4 is-flex is-gap-2 is-align-items-center">
+                <button type="submit" class="button is-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
+                <a asp-page="/Instances/Index" class="button">Cancel</a>
+                <button type="button" class="button ms-auto qf-ico-btn"
                         hx-post="?handler=TestConnection" hx-include="closest form"
                         hx-target="#edit-conn-test-result" hx-swap="innerHTML"
                         hx-indicator="#edit-conn-test-spinner"><i class="ti ti-refresh" aria-hidden="true"></i>Test connection</button>
                 <span id="edit-conn-test-spinner" class="htmx-indicator small text-secondary qf-ico-btn">
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>testing&hellip;
+                    <span class="qf-spinner" role="status" aria-hidden="true"></span>testing&hellip;
                 </span>
             </div>
             <div id="edit-conn-test-result" class="mt-2"></div>
-            <div class="form-text">Tests the values entered above (leave the password / API key blank to reuse the saved one).</div>
+            <div class="help">Tests the values entered above (leave the password / API key blank to reuse the saved one).</div>
         </form>
     </div>
 </div>

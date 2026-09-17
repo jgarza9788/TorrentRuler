@@ -453,14 +453,21 @@ function initAdvancedSqlEditor() {
     // this Bootstrap build reads the attribute only, so an untagged page is light.
     function syncTheme() {
         editor.setOption('theme',
-            document.documentElement.getAttribute('data-bs-theme') === 'dark'
+            document.documentElement.getAttribute('data-theme') === 'dark'
                 ? 'material-darker' : 'default');
     }
     syncTheme();
-    new MutationObserver(syncTheme).observe(document.documentElement, { attributeFilter: ['data-bs-theme'] });
+    new MutationObserver(syncTheme).observe(document.documentElement, { attributeFilter: ['data-theme'] });
 }
 
 document.addEventListener('DOMContentLoaded', initAdvancedSqlEditor);
+
+// Open/closed state for the field-reference drawer (qf-drawer, Bulma has no offcanvas
+// component). A store rather than component-local state because the trigger buttons and the
+// drawer itself are DOM siblings, not nested under one x-data.
+document.addEventListener('alpine:init', () => {
+    Alpine.store('fieldPanel', { open: false });
+});
 
 // The field reference lists ready-to-paste keys: one row per (source, field), including the
 // "<type>.*" any-instance form, so what is copied out of the panel is exactly what goes into a

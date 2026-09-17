@@ -9,32 +9,32 @@
         <h2>@(Model.IsNew ? "Add path mapping" : "Edit path mapping")</h2>
     </div>
     <div class="qf-card-body">
-        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <div asp-validation-summary="All" class="has-text-danger mb-3"></div>
 
         <form method="post">
             <input type="hidden" asp-for="Input.Id" />
 
-            <div class="row g-3">
-                <div class="col-12">
-                    <label asp-for="Input.SourcePrefix" class="form-label"></label>
-                    <input asp-for="Input.SourcePrefix" class="form-control qf-muted-mono" placeholder="/downloads" />
+            <div class="columns is-multiline is-variable is-3">
+                <div class="column is-12">
+                    <label asp-for="Input.SourcePrefix" class="label"></label>
+                    <input asp-for="Input.SourcePrefix" class="input qf-muted-mono" placeholder="/downloads" />
                 </div>
-                <div class="col-12">
-                    <label asp-for="Input.CanonicalPrefix" class="form-label"></label>
-                    <input asp-for="Input.CanonicalPrefix" class="form-control qf-muted-mono" placeholder="/media/downloads" />
-                    <div class="form-text">Any path starting with the source prefix is rewritten onto this prefix before comparison, so a qBittorrent mount and a Plex/Jellyfin mount for the same underlying files match.</div>
+                <div class="column is-12">
+                    <label asp-for="Input.CanonicalPrefix" class="label"></label>
+                    <input asp-for="Input.CanonicalPrefix" class="input qf-muted-mono" placeholder="/media/downloads" />
+                    <div class="help">Any path starting with the source prefix is rewritten onto this prefix before comparison, so a qBittorrent mount and a Plex/Jellyfin mount for the same underlying files match.</div>
                 </div>
-                <div class="col-12">
-                    <div class="form-check">
-                        <input asp-for="Input.Enabled" class="form-check-input" />
-                        <label asp-for="Input.Enabled" class="form-check-label"></label>
+                <div class="column is-12">
+                    <div class="qf-check">
+                        <input asp-for="Input.Enabled" />
+                        <label asp-for="Input.Enabled"></label>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
-                <a asp-page="/Settings/Index" class="btn btn-outline-secondary">Cancel</a>
+            <div class="mt-4 is-flex is-gap-2">
+                <button type="submit" class="button is-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save</button>
+                <a asp-page="/Settings/Index" class="button">Cancel</a>
             </div>
         </form>
     </div>

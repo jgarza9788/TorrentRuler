@@ -5,7 +5,7 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,25 +14,30 @@
     <link rel="icon" href="~/favicon.ico" sizes="any" />
     <meta name="theme-color" content="#212529" />
     <link rel="stylesheet" href="~/lib/tabler-icons/dist/tabler-icons.min.css" />
-    <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="~/lib/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <div class="container" style="max-width: 380px; margin-top: 6rem;">
-        <h1 class="h3 mb-3">torrentruler</h1>
+        <h1 class="title is-4 mb-3">torrentruler</h1>
 
-        <div asp-validation-summary="All" class="text-danger"></div>
+        <div asp-validation-summary="All" class="has-text-danger"></div>
 
         <form method="post">
             <input type="hidden" asp-for="ReturnUrl" />
-            <div class="mb-3">
-                <label asp-for="Input.Username" class="form-label"></label>
-                <input asp-for="Input.Username" class="form-control" autofocus autocomplete="username" />
+            <div class="field mb-3">
+                <label asp-for="Input.Username" class="label"></label>
+                <div class="control">
+                    <input asp-for="Input.Username" class="input" autofocus autocomplete="username" />
+                </div>
             </div>
-            <div class="mb-3">
-                <label asp-for="Input.Password" class="form-label"></label>
-                <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" />
+            <div class="field mb-3">
+                <label asp-for="Input.Password" class="label"></label>
+                <div class="control">
+                    <input asp-for="Input.Password" type="password" class="input" autocomplete="current-password" />
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100 qf-ico-btn"><i class="ti ti-login" aria-hidden="true"></i>Log in</button>
+            <button type="submit" class="button is-primary is-fullwidth qf-ico-btn"><i class="ti ti-login" aria-hidden="true"></i>Log in</button>
         </form>
     </div>
 </body>

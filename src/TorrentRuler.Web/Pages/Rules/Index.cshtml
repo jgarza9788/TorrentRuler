@@ -7,13 +7,13 @@
 <div class="qf-card">
     <div class="qf-card-header">
         <h2>Rules</h2>
-        <div class="d-flex align-items-center gap-2">
+        <div class="is-flex is-align-items-center is-gap-2">
             @if (Model.Rules.Count > 0)
             {
-                <input type="search" class="form-control form-control-sm qf-table-filter"
+                <input type="search" class="input is-small qf-table-filter"
                        data-table-filter placeholder="Filter&hellip;" aria-label="Filter rules" />
             }
-            <a asp-page="/Rules/Edit" class="btn btn-sm btn-primary qf-ico-btn text-nowrap" aria-label="Add rule"><i class="ti ti-plus" aria-hidden="true"></i><span class="d-none d-sm-inline">Add rule</span></a>
+            <a asp-page="/Rules/Edit" class="button is-small is-primary qf-ico-btn text-nowrap" aria-label="Add rule"><i class="ti ti-plus" aria-hidden="true"></i><span class="is-hidden-mobile">Add rule</span></a>
         </div>
     </div>
     <div class="qf-card-body p-0">
@@ -22,21 +22,21 @@
             <div class="qf-empty">
                 <div class="qf-empty-icon ti ti-checklist" aria-hidden="true"></div>
                 <p class="mb-2">No rules yet. A rule is a schedule, a condition, and one or more actions.</p>
-                <a asp-page="/Rules/Edit" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Create your first rule</a>
+                <a asp-page="/Rules/Edit" class="button is-small is-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Create your first rule</a>
             </div>
         }
         else
         {
-            <div class="d-none d-md-block table-responsive">
-                <table class="table table-sm align-middle mb-0">
+            <div class="is-hidden-touch table-container">
+                <table class="table is-narrow align-middle mb-0">
                     <thead>
                     <tr>
                         <th>Status</th>
-                        <th class="d-none d-lg-table-cell">Priority</th>
+                        <th class="is-hidden-touch">Priority</th>
                         <th>Name</th>
                         <th>Schedule</th>
                         <th>Last run</th>
-                        <th class="text-end">Actions</th>
+                        <th class="has-text-right">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -45,16 +45,16 @@
                         <tr>
                             <td>
                                 <form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@rule.Id">
-                                    <div class="form-check form-switch qf-toggle-switch">
-                                        <input type="checkbox" class="form-check-input" role="switch"
+                                    <div class="qf-toggle-switch">
+                                        <input type="checkbox" role="switch"
                                                @(rule.Enabled ? "checked" : "") onchange="this.form.submit()"
                                                aria-label="Toggle @rule.Name" />
                                     </div>
                                 </form>
                             </td>
-                            <td class="text-secondary d-none d-lg-table-cell">@rule.Priority</td>
+                            <td class="text-secondary is-hidden-touch">@rule.Priority</td>
                             <td>
-                                <div class="fw-medium">@rule.Name</div>
+                                <div class="has-text-weight-medium">@rule.Name</div>
                                 @if (!string.IsNullOrEmpty(rule.Description))
                                 {
                                     <div class="small text-secondary">@rule.Description</div>
@@ -78,17 +78,17 @@
                                     <span>never</span>
                                 }
                             </td>
-                            <td class="text-end">
-                                <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-success qf-ico-btn"><i class="ti ti-player-play" aria-hidden="true"></i>Run now</button>
+                            <td class="has-text-right">
+                                <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" class="is-inline-block">
+                                    <button type="submit" class="button is-small is-success is-light qf-ico-btn"><i class="ti ti-player-play" aria-hidden="true"></i>Run now</button>
                                 </form>
-                                <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
-                                <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-clipboard" aria-hidden="true"></i>Duplicate</button>
+                                <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="button is-small qf-ico-btn"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
+                                <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id" class="is-inline-block">
+                                    <button type="submit" class="button is-small qf-ico-btn"><i class="ti ti-clipboard" aria-hidden="true"></i>Duplicate</button>
                                 </form>
-                                <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id" class="d-inline"
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id" class="is-inline-block"
                                       onsubmit="return confirm('Delete rule &quot;@rule.Name&quot;?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+                                    <button type="submit" class="button is-small is-danger is-light qf-ico-btn"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -96,39 +96,39 @@
                     </tbody>
                 </table>
             </div>
-            <div class="d-md-none qf-row-card-list">
+            <div class="is-hidden-desktop qf-row-card-list">
             @foreach (var rule in Model.Rules)
             {
                 <div class="qf-row-card">
                     <div class="qf-row-card-top">
                         <form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@rule.Id">
-                            <div class="form-check form-switch qf-toggle-switch">
-                                <input type="checkbox" class="form-check-input" role="switch"
+                            <div class="qf-toggle-switch">
+                                <input type="checkbox" role="switch"
                                        @(rule.Enabled ? "checked" : "") onchange="this.form.submit()"
                                        aria-label="Toggle @rule.Name" />
                             </div>
                         </form>
-                        <span class="qf-row-card-title flex-grow-1">@rule.Name</span>
-                        <div class="dropdown qf-row-card-actions">
-                            <button class="btn btn-sm btn-outline-secondary border-0" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for @rule.Name">
-                                <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" asp-page="/Rules/Edit" asp-route-id="@rule.Id"><i class="ti ti-pencil me-2" aria-hidden="true"></i>Edit</a></li>
-                                <li>
+                        <span class="qf-row-card-title is-flex-grow-1">@rule.Name</span>
+                        <div class="dropdown is-right qf-row-card-actions" :class="{ 'is-active': open }" x-data="{ open: false }" @@click.outside="open = false">
+                            <div class="dropdown-trigger">
+                                <button class="button is-small border-0" type="button"
+                                        @@click="open = !open" aria-haspopup="true" :aria-expanded="open.toString()" aria-label="Actions for @rule.Name">
+                                    <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="dropdown-menu" role="menu">
+                                <div class="dropdown-content">
+                                    <a class="dropdown-item" asp-page="/Rules/Edit" asp-route-id="@rule.Id"><i class="ti ti-pencil me-2" aria-hidden="true"></i>Edit</a>
                                     <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id">
                                         <button type="submit" class="dropdown-item"><i class="ti ti-clipboard me-2" aria-hidden="true"></i>Duplicate</button>
                                     </form>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
+                                    <hr class="dropdown-divider" />
                                     <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id"
                                           onsubmit="return confirm('Delete rule &quot;@rule.Name&quot;?');">
-                                        <button type="submit" class="dropdown-item text-danger"><i class="ti ti-trash me-2" aria-hidden="true"></i>Delete</button>
+                                        <button type="submit" class="dropdown-item has-text-danger"><i class="ti ti-trash me-2" aria-hidden="true"></i>Delete</button>
                                     </form>
-                                </li>
-                            </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     @if (!string.IsNullOrEmpty(rule.Description))
@@ -157,7 +157,7 @@
                         </dd>
                     </dl>
                     <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" class="mt-2">
-                        <button type="submit" class="btn btn-sm btn-outline-success qf-ico-btn w-100">
+                        <button type="submit" class="button is-small is-success is-light qf-ico-btn is-fullwidth">
                             <i class="ti ti-player-play" aria-hidden="true"></i>Run now
                         </button>
                     </form>
