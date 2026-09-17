@@ -10,7 +10,7 @@
         (function () {
             var stored = null;
             try { stored = localStorage.getItem('torrentruler-theme'); } catch (e) {}
-            var theme = stored || 'auto';
+            var theme = stored || 'dark';
             if (theme !== 'auto') {
                 document.documentElement.setAttribute('data-bs-theme', theme);
             }
@@ -143,7 +143,7 @@
             });
             var stored = null;
             try { stored = localStorage.getItem('torrentruler-theme'); } catch (e) {}
-            apply(stored || 'auto');
+            apply(stored || 'dark');
         })();
     </script>
     <script src="~/lib/htmx/htmx.min.js"></script>

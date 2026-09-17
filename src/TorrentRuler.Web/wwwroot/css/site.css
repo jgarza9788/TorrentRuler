@@ -1,5 +1,14 @@
 
+:root{
+  --tblr-border-color-translucent: light-dark(
+    var(--tblr-gray-500), 
+    var(--tblr-dark-mode-border-color-translucent));
 
+  --tblr-border-color: light-dark(
+    var(--tblr-gray-900), 
+    var(--tblr-gray-700));
+    
+}
 
 
 /* ---- Fonts ---- */
@@ -459,6 +468,26 @@ body {
 .btn-outline-dark {
   --tblr-btn-hover-bg: var(--tblr-dark-darken);
   --tblr-btn-hover-border-color: var(--tblr-dark-darken);
+}
+
+/* --tblr-secondary itself lightens in dark mode (gray-400) so it stays
+   legible as text/borders on a dark background -- but filled in as a button
+   background it reads too light/washed out next to the rest of the dark UI.
+   Use a darker neutral gray for the fill instead, one step lighter on hover. */
+@media (prefers-color-scheme: dark) {
+  html:not([data-bs-theme="light"]) .btn-outline-secondary {
+    --tblr-btn-bg: var(--tblr-gray-600);
+    --tblr-btn-border-color: var(--tblr-gray-600);
+    --tblr-btn-hover-bg: var(--tblr-gray-500);
+    --tblr-btn-hover-border-color: var(--tblr-gray-500);
+  }
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  --tblr-btn-bg: var(--tblr-gray-600);
+  --tblr-btn-border-color: var(--tblr-gray-600);
+  --tblr-btn-hover-bg: var(--tblr-gray-500);
+  --tblr-btn-hover-border-color: var(--tblr-gray-500);
 }
 
 /* ---- Dropdown fade (kebab menus) ---- */

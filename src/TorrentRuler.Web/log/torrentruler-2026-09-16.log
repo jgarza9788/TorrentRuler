@@ -1,0 +1,9 @@
+2026-09-16 20:48:37.7867|WARN |XmlKeyManager|No XML encryptor configured. Key {b4d41416-5bdf-4bf6-9d3a-f80f18e944fa} may be persisted to storage in unencrypted form.
+2026-09-16 20:48:37.9976|INFO |Lifetime|Now listening on: http://localhost:5248
+2026-09-16 20:48:37.9976|INFO |Lifetime|Application started. Press Ctrl+C to shut down.
+2026-09-16 20:48:37.9976|INFO |Lifetime|Hosting environment: Development
+2026-09-16 20:48:37.9976|INFO |Lifetime|Content root path: C:\Users\JGarza\GitHub\qbt_auto_dev\src\TorrentRuler.Web
+2026-09-16 21:13:51.2836|INFO |Lifetime|Now listening on: http://localhost:5248
+2026-09-16 21:13:51.2982|INFO |Lifetime|Application started. Press Ctrl+C to shut down.
+2026-09-16 21:13:51.2982|INFO |Lifetime|Hosting environment: Development
+2026-09-16 21:13:51.2982|INFO |Lifetime|Content root path: C:\Users\JGarza\GitHub\qbt_auto_dev\src\TorrentRuler.Web
