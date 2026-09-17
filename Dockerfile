@@ -28,17 +28,32 @@ RUN dotnet publish src/TorrentRuler.Web/TorrentRuler.Web.csproj \
         -c Release -r $RID --self-contained false \
         -o /app --no-restore
 
+# Derive the Settings > Info card's commit/branch straight from the build context's .git dir,
+# so a plain `docker build .` / `docker compose build` picks them up with no host-side steps.
+# Kept after the publish step above so committing (with no code change) doesn't bust the
+# restore/publish cache -- only this cheap layer re-runs. Falls back to "unknown" if .git is
+# somehow missing (e.g. building from a source tarball) rather than failing the build.
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+COPY .git/ .git/
+RUN { \
+        echo "TORRENTRULER_GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"; \
+        echo "TORRENTRULER_GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo unknown)"; \
+    } > /build-info.env
+
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
-# Not read from .git (excluded from the build context, see .dockerignore) -- pass them in with
-# `docker build --build-arg GIT_SHA=$(git rev-parse --short HEAD) --build-arg GIT_BRANCH=$(git
-# branch --show-current)` (docker-compose.yml does this from GIT_SHA/GIT_BRANCH env vars). Purely
-# cosmetic: only feeds the Settings > Info card: BuildInfo.cs falls back to "unknown" if unset.
-ARG GIT_SHA=unknown
-ARG GIT_BRANCH=unknown
+# The auto-derived /build-info.env (above) is the default; these ARGs remain as a manual
+# override for cases it can't cover (e.g. building from a tarball with no .git, or CI wanting
+# a friendlier label than the raw branch name). Left unset, ENV below is empty and
+# docker-entrypoint.sh falls back to /build-info.env at container start. Purely cosmetic --
+# only feeds the Settings > Info card; BuildInfo.cs treats empty/"unknown" as unset.
+ARG GIT_SHA=
+ARG GIT_BRANCH=
 ENV TORRENTRULER_GIT_SHA=$GIT_SHA \
     TORRENTRULER_GIT_BRANCH=$GIT_BRANCH
+COPY --from=build /build-info.env /build-info.env
 
 # tzdata: rules resolve arbitrary IANA zone IDs at runtime (CronValidator,
 # RuleSchedulerService), and compose passes TZ. Alpine ships none by default.

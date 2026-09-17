@@ -2,10 +2,13 @@
 **/obj/
 **/data/
 **/log/
-.git/
 .vs/
 .vscode/
 *.md
+
+# .git IS sent as build context (not excluded) -- the Dockerfile's build stage reads it to
+# derive the Settings > Info card's commit/branch. It's copied into a build-stage layer only
+# and discarded before the final image, so it never ends up in what actually ships.
 
 # Never copied by the Dockerfile (it takes only the sln, the csproj files, src/
 # and the entrypoint) -- listed so they aren't uploaded as build context either.

@@ -10,12 +10,12 @@ services:
     build:
       context: /home/tbp/projects/torrentruler/
       dockerfile: Dockerfile
-      # Cosmetic only (Settings > Info card). Populate with e.g.:
-      #   GIT_SHA=$(git rev-parse --short HEAD) GIT_BRANCH=$(git branch --show-current) docker compose build
-      # Left unset, the card just shows "unknown".
+      # Cosmetic only (Settings > Info card). The Dockerfile auto-derives these from .git
+      # during the build, so a plain `docker compose build` already picks them up -- these
+      # only matter if you want to override with something else (e.g. a release tag).
       args:
-        GIT_SHA: ${GIT_SHA:-unknown}
-        GIT_BRANCH: ${GIT_BRANCH:-unknown}
+        GIT_SHA: ${GIT_SHA:-}
+        GIT_BRANCH: ${GIT_BRANCH:-}
 
     container_name: torrentruler
     ports:
