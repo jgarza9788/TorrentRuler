@@ -650,6 +650,11 @@ body {
 /* Bulma's .table has no hover-state CSS variables to hook like Tabler's did, so this just
    paints tbody rows directly. Applied to every .table rather than only ones with an
    is-hoverable modifier, so a new table picks the behaviour up for free. */
+
+.table {
+  width: 100%;
+}   
+
 .table > tbody > tr:not(.collapse):hover > * {
   background-color: rgba(var(--bulma-text-rgb), 0.06);
 }
