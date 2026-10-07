@@ -11,4 +11,7 @@ public interface IRuleRunner
     /// <see cref="RulePreview.Error"/>.
     /// </summary>
     Task<RulePreview> DryRunAsync(RuleDraft draft, CancellationToken ct = default);
+
+    /// <summary>Builds a fresh snapshot from the cached source data (refreshing stale sources first). Caller owns disposal. Used by the SQL sandbox.</summary>
+    Task<TorrentRuler.Snapshot.SnapshotDatabase> BuildSandboxSnapshotAsync(CancellationToken ct = default);
 }

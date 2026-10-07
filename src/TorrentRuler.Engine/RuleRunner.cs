@@ -151,6 +151,9 @@ public class RuleRunner(
         }
     }
 
+    public async Task<SnapshotDatabase> BuildSandboxSnapshotAsync(CancellationToken ct = default) =>
+        (await BuildSnapshotAsync(ct)).Snapshot;
+
     private async Task<(List<Instance> Instances, FieldResolutionContext Resolution, SnapshotDatabase Snapshot, int TorrentCount)> BuildSnapshotAsync(CancellationToken ct)
     {
         var instances = await db.Instances.Where(i => i.Enabled).ToListAsync(ct);

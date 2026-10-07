@@ -26,6 +26,8 @@ public static class SourceFieldCatalog
         ("days_since(timestamp)", "Days between now and an ISO-8601 timestamp column. NULL if the timestamp is NULL."),
         ("size_gb(bytes)", "Converts a byte count to gigabytes (decimal, 1e9). NULL if bytes is NULL."),
         ("path_matches(a, b)", "True if two normalized path_keys are equal, or one contains the other."),
+        ("fuzzy_match(a, b, t)", "True if a and b are at least t similar (0-1, case-insensitive edit-distance ratio). Use to join paths that differ slightly, e.g. fuzzy_match(t.path_key, j.path_key, 0.85)."),
+        ("fuzzy_score(a, b)", "Similarity of a and b from 0 (nothing alike) to 1 (identical). NULL if either is NULL."),
         ("regexp(pattern, text)", "True if text matches the .NET regex pattern; also usable as 'text REGEXP pattern'. Case-insensitive unless the pattern has (?-i). NULL if either argument is NULL.")
     ];
 

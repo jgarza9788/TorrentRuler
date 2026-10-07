@@ -209,5 +209,49 @@ internal static class SnapshotSchema
             }
             return CompileRegex(pattern).IsMatch(input) ? 1L : 0L;
         });
+
+        // fuzzy_score(a, b) -> similarity in [0,1] (1 = identical, case-insensitive), based on
+        // Levenshtein edit distance relative to the longer string. NULL if either is NULL.
+        connection.CreateFunction<string?, string?, double?>("fuzzy_score", (a, b) =>
+            a is null || b is null ? null : Similarity(a, b));
+
+        // fuzzy_match(a, b, t) -> 1 if fuzzy_score(a, b) >= t (t in 0..1), else 0. NULL inputs
+        // never match. Intended for joining path_keys that differ slightly between sources.
+        connection.CreateFunction<string?, string?, double?, long>("fuzzy_match", (a, b, t) =>
+            a is null || b is null || t is null ? 0 : Similarity(a, b) >= t.Value ? 1 : 0);
+    }
+
+    internal static double Similarity(string a, string b)
+    {
+        if (a.Length == 0 && b.Length == 0)
+        {
+            return 1;
+        }
+
+        var maxLen = Math.Max(a.Length, b.Length);
+        return 1.0 - (double)Levenshtein(a.ToLowerInvariant(), b.ToLowerInvariant()) / maxLen;
+    }
+
+    private static int Levenshtein(string a, string b)
+    {
+        var prev = new int[b.Length + 1];
+        var curr = new int[b.Length + 1];
+        for (var j = 0; j <= b.Length; j++)
+        {
+            prev[j] = j;
+        }
+
+        for (var i = 1; i <= a.Length; i++)
+        {
+            curr[0] = i;
+            for (var j = 1; j <= b.Length; j++)
+            {
+                var cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                curr[j] = Math.Min(Math.Min(curr[j - 1] + 1, prev[j] + 1), prev[j - 1] + cost);
+            }
+            (prev, curr) = (curr, prev);
+        }
+
+        return prev[b.Length];
     }
 }

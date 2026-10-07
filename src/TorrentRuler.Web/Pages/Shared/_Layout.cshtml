@@ -75,6 +75,12 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link qf-ico-btn @(IsActive("/Sandbox") ? "active" : "")"
+                                       aria-current="@(IsActive("/Sandbox") ? "page" : null)" asp-page="/Sandbox/Index">
+                                        <i class="ti ti-terminal-2" aria-hidden="true"></i>SQL
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link qf-ico-btn @(IsActive("/Settings") ? "active" : "")"
                                        aria-current="@(IsActive("/Settings") ? "page" : null)" asp-page="/Settings/Index">
                                         <i class="ti ti-settings" aria-hidden="true"></i>Settings

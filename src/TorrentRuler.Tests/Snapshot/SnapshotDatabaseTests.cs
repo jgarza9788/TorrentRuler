@@ -239,6 +239,22 @@ public class SnapshotDatabaseTests : IDisposable
     }
 
     [Theory]
+    [InlineData("/media/tv/show", "/media/tv/show", 0.99, 1)]
+    [InlineData("/media/tv/Show", "/media/tv/show", 1.0, 1)]       // case-insensitive
+    [InlineData("/media/tv/show", "/media/tv/shows", 0.9, 1)]      // one edit in 15 chars
+    [InlineData("/media/tv/show", "/data/movies/other", 0.8, 0)]
+    public void Udf_FuzzyMatch_AppliesThreshold(string a, string b, double t, long expected)
+    {
+        using var cmd = _db.Connection.CreateCommand();
+        cmd.CommandText = "SELECT fuzzy_match($a, $b, $t)";
+        cmd.Parameters.AddWithValue("$a", a);
+        cmd.Parameters.AddWithValue("$b", b);
+        cmd.Parameters.AddWithValue("$t", t);
+
+        Assert.Equal(expected, (long)cmd.ExecuteScalar()!);
+    }
+
+    [Theory]
     [InlineData("Show.S01E02.1080p.mkv", @"s\d{2}e\d{2}", 1)]      // case-insensitive by default
     [InlineData("Show.S01E02.1080p.mkv", @"(?-i)s\d{2}e\d{2}", 0)] // inline flag forces case-sensitivity
     [InlineData("Movie.2160p.mkv", "1080p|2160p", 1)]

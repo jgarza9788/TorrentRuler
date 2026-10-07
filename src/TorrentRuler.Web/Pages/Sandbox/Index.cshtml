@@ -1,0 +1,61 @@
+@page
+@model TorrentRuler.Web.Pages.Sandbox.IndexModel
+@{
+    ViewData["Title"] = "SQL sandbox";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">SQL sandbox</h1>
+    <span class="text-muted small">Read-only, against the current snapshot. Helpers: days_since, size_gb, path_matches, regexp, fuzzy_match(a, b, t), fuzzy_score(a, b)</span>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-3">
+        <div class="qf-card">
+            <div class="qf-card-body">
+                <h2 class="h6">Tables</h2>
+                @foreach (var t in Model.Tables)
+                {
+                    <details class="mb-1">
+                        <summary><code>@t.Name</code> <span class="text-muted small">(@t.RowCount)</span></summary>
+                        <div class="small ps-3">
+                            @foreach (var c in t.Columns)
+                            {
+                                <div><code>@c</code></div>
+                            }
+                        </div>
+                    </details>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        <form method="post">
+            <textarea asp-for="Sql" class="form-control font-monospace mb-2" rows="8" spellcheck="false"
+                      onkeydown="if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { this.form.requestSubmit(); }"></textarea>
+            <button type="submit" class="btn btn-primary btn-sm qf-ico-btn"><i class="ti ti-player-play" aria-hidden="true"></i>Run (Ctrl+Enter)</button>
+        </form>
+
+        @if (Model.Error is not null)
+        {
+            <div class="alert alert-danger mt-3">@Model.Error</div>
+        }
+        else if (Model.Ran)
+        {
+            <div class="text-muted small mt-3 mb-1">
+                @Model.Rows.Count row(s) in @Model.ElapsedMs ms@(Model.Truncated ? $" — truncated to {TorrentRuler.Web.Pages.Sandbox.IndexModel.MaxRows}" : "")
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped font-monospace small">
+                    <thead><tr>@foreach (var c in Model.Columns) { <th>@c</th> }</tr></thead>
+                    <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr>@foreach (var v in row) { <td>@(v is null ? "NULL" : v.ToString())</td> }</tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
