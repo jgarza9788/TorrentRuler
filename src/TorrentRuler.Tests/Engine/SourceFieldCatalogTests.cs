@@ -87,14 +87,17 @@ public class SourceFieldCatalogTests : IDisposable
     }
 
     [Fact]
-    public void AllMediaHistoryTypes_ShareTheSameFieldVocabulary()
+    public void MediaHistoryTypes_OnlyExposeFieldsTheirAdapterCanPopulate()
     {
-        var expected = SourceFieldCatalog.Types[SourceNaming.TypeKey(SourceType.Jellyfin)].Fields.Keys.Order().ToList();
-
         foreach (var type in SourceNaming.MediaHistoryTypes)
         {
-            Assert.Equal(expected, SourceFieldCatalog.Types[SourceNaming.TypeKey(type)].Fields.Keys.Order().ToList());
+            var fields = SourceFieldCatalog.Types[SourceNaming.TypeKey(type)].Fields.Values;
+            Assert.Equal(SourceNaming.ProvidesMedia(type), fields.Any(f => f.KindFilter == SourceFieldCatalog.KindMedia));
+            Assert.Equal(SourceNaming.ProvidesWatchHistory(type), fields.Any(f => f.KindFilter == SourceFieldCatalog.KindHistory));
         }
+
+        Assert.False(SourceFieldCatalog.Types["jellyfin"].Fields.ContainsKey("days_since_last_watched"));
+        Assert.True(SourceFieldCatalog.Types["tautulli"].Fields.ContainsKey("days_since_last_watched"));
     }
 
     [Fact]

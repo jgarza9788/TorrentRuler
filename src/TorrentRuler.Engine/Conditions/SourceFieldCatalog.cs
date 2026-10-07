@@ -9,10 +9,9 @@ namespace TorrentRuler.Engine.Conditions;
 /// key listed here -- and it is also what the field reference panel introspects instead of
 /// hand-maintaining a field list.
 ///
-/// Every media/history source type shares one field set, because they share one table shape.
-/// That is deliberate: which of those fields actually carry values for a given source is a
-/// property of the adapter, not of the query language, and a field a source never populates
-/// simply reads NULL rather than being a different key on every type.
+/// Media/history source types share one table shape, but each type only exposes the fields its
+/// adapter can populate: media sources (Plex, Jellyfin) get the media fields, history sources
+/// (Tautulli, Jellystat, Jellyglance) get the watch-history fields.
 /// </summary>
 public static class SourceFieldCatalog
 {
@@ -56,10 +55,19 @@ public static class SourceFieldCatalog
         };
 
         // One shared field set across the six media/history types -- one table shape, one vocabulary.
-        var mediaHistoryFields = MediaHistoryFields();
+        var allMediaHistoryFields = MediaHistoryFields();
         foreach (var type in SourceNaming.MediaHistoryTypes)
         {
             var key = SourceNaming.TypeKey(type);
+            // Only expose fields this source's adapter can actually populate.
+            var mediaHistoryFields = allMediaHistoryFields
+                .Where(f => f.Value.KindFilter switch
+                {
+                    KindMedia => SourceNaming.ProvidesMedia(type),
+                    KindHistory => SourceNaming.ProvidesWatchHistory(type),
+                    _ => true
+                })
+                .ToDictionary(f => f.Key, f => f.Value, StringComparer.Ordinal);
             types[key] = new SourceTypeDefinition
             {
                 TypeKey = key,

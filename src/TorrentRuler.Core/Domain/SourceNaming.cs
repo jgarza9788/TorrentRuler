@@ -33,4 +33,11 @@ public static class SourceNaming
     /// <summary>Every source type that contributes media-library items and/or watch events, i.e. everything but the anchor.</summary>
     public static IEnumerable<SourceType> MediaHistoryTypes =>
         Enum.GetValues<SourceType>().Where(t => t != AnchorType);
+
+    /// <summary>True for sources whose adapter reports library items (Plex, Jellyfin).</summary>
+    public static bool ProvidesMedia(SourceType type) => type is SourceType.Plex or SourceType.Jellyfin;
+
+    /// <summary>True for sources whose adapter reports playback events (Tautulli, Jellystat, Jellyglance).</summary>
+    public static bool ProvidesWatchHistory(SourceType type) =>
+        type is SourceType.Tautulli or SourceType.Jellystat or SourceType.Jellyglance;
 }

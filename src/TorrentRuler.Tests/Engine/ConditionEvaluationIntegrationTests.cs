@@ -265,10 +265,9 @@ public class ConditionEvaluationIntegrationTests : IDisposable
             _compiler.Compile(Cmp("jellyfin.*.media_count", ComparisonOperator.Gt, Json(0))));
         Assert.Equal("in-library", Assert.Single(inLibrary).TorrentHash);
 
-        // A media row has no watched_at, so a history field must not see it.
-        var watched = await _compiler.ExecuteAsync(_db,
+        // Jellyfin reports no watch history, so history fields are not offered for it at all.
+        Assert.Throws<ConditionCompileException>(() =>
             _compiler.Compile(Cmp("jellyfin.*.play_count", ComparisonOperator.Gt, Json(0))));
-        Assert.Empty(watched);
     }
 
     /// <summary>Three torrents -- watched recently, watched long ago, never watched -- with Tautulli history.</summary>

@@ -340,12 +340,12 @@ Prefix each with `qbittorrent.<instance>.` or `qbittorrent.*.`.
 
 #### `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance`
 
-These five share one vocabulary, because they all describe the same two kinds of row: a
-**library item** (your media server knows about this file) and a **playback event**
-(somebody watched it). Which of them a given source actually reports is up to that
-source — today Plex and Jellyfin report library items, and Tautulli, Jellystat
-and Jellyglance report playback events. A field a source never reports
-simply reads NULL rather than being an error.
+These five describe two kinds of row: a **library item** (your media server knows about
+this file) and a **playback event** (somebody watched it). Each source only offers the
+fields it can actually populate — Plex and Jellyfin report library items (the `media`
+fields), while Tautulli, Jellystat and Jellyglance report playback events (the `history`
+fields). Using a field a source doesn't offer, e.g. `jellyfin.*.play_count`, is a
+compile error rather than silently reading NULL.
 
 Per-row fields — usable at the top level (auto-correlated) or inside a related-source
 check:
@@ -651,7 +651,8 @@ enum, so a new media/history source is a small, well-defined change:
    its own table.
 
 `SourceFieldCatalogTests` will then check the new type's fields actually compile and
-execute against the real schema, and that it shares the media/history vocabulary.
+execute against the real schema, and that it only exposes fields its adapter can populate
+(set `SourceNaming.ProvidesMedia` / `ProvidesWatchHistory` for the new type).
 
 EF Core migrations live in `src/TorrentRuler.Infrastructure/Persistence/Migrations`; add
 a new one with:
