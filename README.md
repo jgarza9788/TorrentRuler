@@ -76,7 +76,7 @@ type you pick, so it tells you which fields that particular source actually uses
 | `Plex` | Library items — what your library knows about a file | API key = your Plex token | `X-Plex-Token` header |
 | `Jellyfin` | Library items | API key | `Authorization: MediaBrowser Token="…"` |
 | `Tautulli` | Playback events — who watched what, when | API key | `?apikey=` query parameter |
-| `Jellystat` | Playback events | API key | `X-Api-Key` header |
+| `Jellystat` | Playback events | API key | `x-api-token` header |
 | `Jellyglance` | Playback events | API key | `X-Api-Key` header |
 
 Credentials are encrypted at rest with ASP.NET Core Data Protection (the key ring lives

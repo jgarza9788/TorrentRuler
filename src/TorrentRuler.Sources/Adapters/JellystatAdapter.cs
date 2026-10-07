@@ -15,7 +15,7 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
     public override SourceType SourceType => SourceType.Jellystat;
 
     protected override string DefaultHistoryPath => "/api/getHistory";
-    protected override string DefaultResultsPath => "";
+    protected override string DefaultResultsPath => "results";
 
     protected override IReadOnlyDictionary<string, string> DefaultFieldMap => new Dictionary<string, string>
     {
@@ -30,7 +30,7 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
     {
         if (!string.IsNullOrEmpty(connection.ApiKey))
         {
-            request.Headers.Add("X-Api-Key", connection.ApiKey);
+            request.Headers.Add("x-api-token", connection.ApiKey);
         }
     }
 }

@@ -60,6 +60,13 @@ internal static class JsonPathResolver
     public static DateTimeOffset? GetUnixSeconds(JsonElement element, string? fieldName)
     {
         var value = GetDouble(element, fieldName);
-        return value is > 0 ? DateTimeOffset.FromUnixTimeSeconds((long)value.Value) : null;
+        if (value is > 0)
+        {
+            return DateTimeOffset.FromUnixTimeSeconds((long)value.Value);
+        }
+
+        // Some sources (e.g. Jellystat) report ISO-8601 timestamps rather than epoch seconds.
+        return DateTimeOffset.TryParse(GetString(element, fieldName), System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed) ? parsed : null;
     }
 }
