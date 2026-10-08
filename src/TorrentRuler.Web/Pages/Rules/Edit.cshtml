@@ -287,8 +287,14 @@
             <div id="advancedSqlBuilder" style="display:@(Model.Input.UseAdvancedSql ? "block" : "none")">
                 
                 <label asp-for="Input.AdvancedSqlWhere" class="form-label"></label>
+                <div class="form-text mt-0 mb-1" id="advancedSqlColumnsHint">
+                    <i class="ti ti-info-circle" aria-hidden="true"></i>
+                    A rule's query returns two columns, <code>instance_id</code> and <code>torrent_hash</code>: one row per torrent to act on.
+                    The fixed start below selects them for you, so write only the condition after <code>WHERE</code>.
+                </div>
                 <pre class="qf-sql-preview mb-1" aria-label="Fixed start of the query (read-only)">@TorrentRuler.Engine.Conditions.AdvancedSql.AdvancedSqlExecutor.WhereClausePrefix</pre>
                 <textarea asp-for="Input.AdvancedSqlWhere" class="form-control qf-muted-mono" rows="4"
+                          aria-describedby="advancedSqlColumnsHint"
                           placeholder="qbittorrent.*.category = 'linux' AND qbittorrent.*.size_gb > 5"></textarea>
                 <div class="form-text">A boolean WHERE-clause expression against the documented schema. Any key from the field reference can be used directly (e.g. <code>qbittorrent.*.active_days &gt;= 14</code>, <code>storage.&lt;name&gt;.used_percent &lt; 90</code>, <code>tautulli.*.play_count = 0</code>). A per-row field of a related source has no single value here &mdash; use one of its aggregates instead. Runs read-only, single-statement only.</div>
                 <button type="button" class="btn btn-sm btn-outline-primary mt-2 qf-ico-btn"
