@@ -908,3 +908,52 @@ body {
   visibility: hidden;
   margin-left: auto;
 }
+
+/* ---- Connection status (_InstanceStatus.cshtml) ---- */
+.qf-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 0.15rem;
+}
+
+.qf-dot-ok { background: var(--tblr-success); box-shadow: 0 0 0 3px rgba(var(--tblr-success-rgb), 0.2); }
+.qf-dot-fail { background: var(--tblr-danger); box-shadow: 0 0 0 3px rgba(var(--tblr-danger-rgb), 0.2); }
+.qf-dot-unknown { background: var(--tblr-secondary-color); opacity: 0.6; }
+
+.qf-conn-status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.qf-conn-status .qf-conn-error {
+  flex-basis: 100%;
+  max-width: 22rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Instances: URL cell, storage usage ---- */
+.qf-url-cell {
+  max-width: 260px;
+}
+
+.qf-icon-link {
+  color: var(--tblr-secondary-color);
+  line-height: 1;
+}
+
+.qf-icon-link:hover {
+  color: var(--tblr-primary);
+}
+
+.qf-usage-bar {
+  height: 0.45rem;
+  max-width: 14rem;
+}

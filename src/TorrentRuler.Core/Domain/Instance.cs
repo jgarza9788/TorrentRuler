@@ -30,4 +30,13 @@ public class Instance
 
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+
+    // Outcome of the most recent connection test run from the Instances page (null = never tested).
+    // Tests of unsaved values on the edit form are not recorded: they may not match what's stored.
+    public DateTimeOffset? LastTestedAt { get; set; }
+    public bool? LastTestSucceeded { get; set; }
+    public int? LastTestLatencyMs { get; set; }
+
+    /// <summary>The adapter's message, truncated to 500 characters.</summary>
+    public string? LastTestMessage { get; set; }
 }

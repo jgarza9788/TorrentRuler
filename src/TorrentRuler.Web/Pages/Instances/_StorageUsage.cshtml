@@ -1,0 +1,16 @@
+@using TorrentRuler.Web
+@model TorrentRuler.Core.Domain.SourceData.StorageUsageRecord
+@* Used/free bar for one storage path, or why it couldn't be read. *@
+@if (!Model.Available)
+{
+    <span class="text-danger small" title="@Model.Error"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Unavailable</span>
+}
+else
+{
+    var tone = Model.UsedPercent >= 90 ? "bg-danger" : Model.UsedPercent >= 75 ? "bg-warning" : "bg-primary";
+    <div class="progress qf-usage-bar" role="progressbar" aria-label="Disk used"
+         aria-valuenow="@Model.UsedPercent.ToString("0")" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar @tone" style="width: @Model.UsedPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+    </div>
+    <div class="small text-secondary mt-1">@Format.Bytes(Model.FreeBytes) free of @Format.Bytes(Model.TotalBytes) (@Model.UsedPercent.ToString("0")% used)</div>
+}

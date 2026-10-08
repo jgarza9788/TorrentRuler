@@ -49,9 +49,9 @@ public class StorageUsageService : IStorageUsageService
         }
     }
 
-    public async Task<long?> GetOrComputeFolderSizeAsync(StoragePathConfig config, CancellationToken ct = default)
+    public async Task<long?> GetOrComputeFolderSizeAsync(StoragePathConfig config, CancellationToken ct = default, bool force = false)
     {
-        if (_folderSizeCache.TryGetValue(config.Id, out var cached) &&
+        if (!force && _folderSizeCache.TryGetValue(config.Id, out var cached) &&
             DateTimeOffset.UtcNow - cached.ComputedAt < TimeSpan.FromMinutes(config.FolderSizeScanIntervalMinutes))
         {
             return cached.Size;

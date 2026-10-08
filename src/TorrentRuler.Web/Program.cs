@@ -64,6 +64,7 @@ builder.Services.AddScoped<IFieldContextProvider, FieldContextProvider>();
 builder.Services.AddSingleton<AdvancedSqlExecutor>();
 builder.Services.AddSingleton<IActionExecutor, ActionExecutor>();
 builder.Services.AddScoped<IRuleRunner, RuleRunner>();
+builder.Services.AddScoped<TorrentRuler.Web.Pages.Instances.InstanceConnectionTester>();
 builder.Services.AddSingleton<RuleRunGate>();
 builder.Services.AddHostedService<RuleSchedulerService>();
 

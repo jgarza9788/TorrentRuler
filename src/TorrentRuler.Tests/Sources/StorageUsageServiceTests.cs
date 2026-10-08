@@ -60,4 +60,26 @@ public class StorageUsageServiceTests
             dir.Delete(recursive: true);
         }
     }
+
+    [Fact]
+    public async Task GetOrComputeFolderSizeAsync_Force_RescansWithinTheInterval()
+    {
+        var service = new StorageUsageService();
+        var dir = Directory.CreateTempSubdirectory("torrentruler-test-");
+        try
+        {
+            await File.WriteAllBytesAsync(Path.Combine(dir.FullName, "a.bin"), new byte[1000]);
+            var config = new StoragePathConfig { Id = 5, Name = "scratch", Path = dir.FullName, FolderSizeScanIntervalMinutes = 60 };
+            await service.GetOrComputeFolderSizeAsync(config);
+            await File.WriteAllBytesAsync(Path.Combine(dir.FullName, "b.bin"), new byte[500]);
+
+            Assert.Equal(1000, await service.GetOrComputeFolderSizeAsync(config));
+            Assert.Equal(1500, await service.GetOrComputeFolderSizeAsync(config, force: true));
+            Assert.Equal(1500, service.GetUsage(config).FolderSizeBytes);
+        }
+        finally
+        {
+            dir.Delete(recursive: true);
+        }
+    }
 }

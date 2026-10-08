@@ -78,6 +78,13 @@ async function seed() {
     ]) {
       await addInstance(page, base, i);
     }
+
+    // A storage path with real contents (this repo's docs folder) so usage and folder size show.
+    await page.goto(`${base}/Instances/EditStoragePath`);
+    await page.fill('#Input_Name', 'docs');
+    await page.fill('#Input_Path', path.resolve(here, '../../docs'));
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.waitForLoadState('networkidle');
   }
 
   // A couple of runs so History and the dashboard have rows (they fail: the instances are fake).

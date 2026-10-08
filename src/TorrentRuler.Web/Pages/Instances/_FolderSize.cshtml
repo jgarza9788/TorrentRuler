@@ -1,0 +1,12 @@
+@using TorrentRuler.Web
+@model (TorrentRuler.Core.Domain.SourceData.StorageUsageRecord Usage, int IntervalMinutes)
+@* The cached recursive folder size and when it was scanned (scans run during refreshes, or via "Scan now"). *@
+@if (Model.Usage.FolderSizeBytes is { } size && Model.Usage.FolderSizeComputedAt is { } at)
+{
+    <span>@Format.Bytes(size)</span>
+    <span class="small text-secondary d-block">scanned <partial name="_RelativeTime" model="at" />, every @Model.IntervalMinutes min</span>
+}
+else
+{
+    <span class="small text-secondary">Not scanned yet · every @Model.IntervalMinutes min</span>
+}

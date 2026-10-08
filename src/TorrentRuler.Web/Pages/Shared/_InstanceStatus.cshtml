@@ -1,0 +1,23 @@
+@model TorrentRuler.Core.Domain.Instance
+@* An instance's last recorded connection test: a coloured dot, latency, and when. Shared by the
+   Instances list (swapped in by the Test button) and the dashboard. *@
+@{
+    var (dot, text) = Model.LastTestSucceeded switch
+    {
+        true => ("qf-dot-ok", $"Connected · {Model.LastTestLatencyMs} ms"),
+        false => ("qf-dot-fail", "Failed"),
+        null => ("qf-dot-unknown", "Never tested")
+    };
+}
+<span class="qf-conn-status" id="instance-status-@Model.Id">
+    <span class="qf-dot @dot" aria-hidden="true"></span>
+    <span>@text</span>
+    @if (Model.LastTestedAt is { } at)
+    {
+        <span class="text-secondary">· <partial name="_RelativeTime" model="at" /></span>
+    }
+    @if (Model.LastTestSucceeded == false && !string.IsNullOrEmpty(Model.LastTestMessage))
+    {
+        <span class="d-block small text-danger qf-conn-error" title="@Model.LastTestMessage">@Model.LastTestMessage</span>
+    }
+</span>
