@@ -14,6 +14,9 @@ namespace TorrentRuler.Sources.Adapters;
 /// placement, and JSON field names, all of which are supplied by the subclass (and
 /// further overridable per-instance via ExtraConfigJson, see RestHistoryConfig).
 /// </summary>
+/// <summary>What a per-item details lookup found out about one watched item. Anything it couldn't find is null.</summary>
+public sealed record HistoryItemDetails(string? Path, string? MediaType, string? Genres, double? TimePlayed);
+
 public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClientFactory) : ISourceAdapter
 {
     public abstract SourceType SourceType { get; }
@@ -68,14 +71,14 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
     protected virtual int? PageCount(JsonElement root) => null;
 
     /// <summary>
-    /// Looks up a file path for each item id whose history rows came back without one. The default
-    /// can't; a source with a per-item details endpoint overrides it. A missing entry in the result
-    /// just leaves that row's path NULL, so one failed lookup never fails the fetch.
+    /// Looks up what the history itself doesn't carry -- file path, type, genres, time played -- for each
+    /// distinct item id. The default can't; a source with a per-item details endpoint overrides it. A
+    /// missing entry in the result just leaves those columns NULL, so one failed lookup never fails the fetch.
     /// </summary>
-    protected virtual Task<IReadOnlyDictionary<string, string>> ResolveItemPathsAsync(
+    protected virtual Task<IReadOnlyDictionary<string, HistoryItemDetails>> ResolveItemDetailsAsync(
         HttpClient client, SourceConnectionInfo connection, RestHistoryConfig config,
         IReadOnlyCollection<string> itemIds, CancellationToken ct) =>
-        Task.FromResult<IReadOnlyDictionary<string, string>>(new Dictionary<string, string>());
+        Task.FromResult<IReadOnlyDictionary<string, HistoryItemDetails>>(new Dictionary<string, HistoryItemDetails>());
 
     private async Task<List<WatchHistoryRecord>> FetchHistoryAsync(SourceConnectionInfo connection, RestHistoryConfig config, CancellationToken ct)
     {
@@ -116,23 +119,24 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
 
         var keyField = config.FieldMap.GetValueOrDefault("externalKey");
         var pathField = config.FieldMap.GetValueOrDefault("filePath");
-        var idsWithoutPath = items
-            .Where(i => string.IsNullOrEmpty(JsonPathResolver.GetString(i, pathField)))
+        var itemIds = items
             .Select(i => JsonPathResolver.GetString(i, keyField))
             .OfType<string>()
             .Where(id => id.Length > 0)
             .ToHashSet(StringComparer.Ordinal);
-        var resolvedPaths = idsWithoutPath.Count > 0
-            ? await ResolveItemPathsAsync(client, connection, config, idsWithoutPath, ct)
-            : new Dictionary<string, string>();
+        var details = itemIds.Count > 0
+            ? await ResolveItemDetailsAsync(client, connection, config, itemIds, ct)
+            : new Dictionary<string, HistoryItemDetails>();
 
         return items.Select(item =>
         {
             var externalKey = JsonPathResolver.GetString(item, keyField);
+            var itemDetails = externalKey is not null ? details.GetValueOrDefault(externalKey) : null;
+            // A path the history row already carries wins over the looked-up one.
             var filePath = JsonPathResolver.GetString(item, pathField);
-            if (string.IsNullOrEmpty(filePath) && externalKey is not null)
+            if (string.IsNullOrEmpty(filePath))
             {
-                filePath = resolvedPaths.GetValueOrDefault(externalKey);
+                filePath = itemDetails?.Path;
             }
 
             return new WatchHistoryRecord
@@ -142,6 +146,9 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
                 SourceType = SourceType,
                 ExternalKey = externalKey,
                 MediaTitle = JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("title")),
+                MediaType = itemDetails?.MediaType ?? JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("mediaType")),
+                Genres = itemDetails?.Genres,
+                TimePlayed = itemDetails?.TimePlayed,
                 FilePath = filePath,
                 UserName = JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("user")),
                 WatchedAt = JsonPathResolver.GetUnixSeconds(item, config.FieldMap.GetValueOrDefault("watchedAt")),

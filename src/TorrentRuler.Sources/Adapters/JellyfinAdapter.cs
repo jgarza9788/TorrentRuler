@@ -36,7 +36,7 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
         using var client = httpClientFactory.CreateClient(connection);
         using var cts = HttpTimeouts.Create(ct, connection.TimeoutSeconds);
 
-        using var request = BuildRequest(connection, "/Items?Recursive=true&IncludeItemTypes=Movie,Episode&Fields=Path,DateCreated");
+        using var request = BuildRequest(connection, "/Items?Recursive=true&IncludeItemTypes=Movie,Episode&Fields=Path,DateCreated,Genres");
         using var response = await client.SendAsync(request, cts.Token);
         await AdapterHttp.EnsureSuccessAsync(response, "Jellyfin", cts.Token);
         var payload = await response.Content.ReadFromJsonAsync<JellyfinItemsResponse>(cancellationToken: cts.Token);
@@ -49,6 +49,7 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
             ExternalKey = i.Id,
             Title = i.Name,
             MediaType = i.Type,
+            Genres = i.Genres is { Count: > 0 } ? string.Join(",", i.Genres.Where(g => !string.IsNullOrWhiteSpace(g))) : null,
             FilePaths = string.IsNullOrEmpty(i.Path) ? [] : [i.Path],
             AddedAt = i.DateCreated
         }).ToList();
@@ -84,6 +85,7 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
         [JsonPropertyName("Name")] public string Name { get; set; } = "";
         [JsonPropertyName("Type")] public string Type { get; set; } = "";
         [JsonPropertyName("Path")] public string? Path { get; set; }
+        [JsonPropertyName("Genres")] public List<string>? Genres { get; set; }
         [JsonPropertyName("DateCreated")] public DateTimeOffset? DateCreated { get; set; }
     }
 }

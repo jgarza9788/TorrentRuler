@@ -131,12 +131,14 @@ internal static class SnapshotSchema
             external_key TEXT,
             title TEXT,
             media_type TEXT,
+            genres TEXT,
             file_path TEXT,
             path_key TEXT,
             added_at TEXT,
             user_name TEXT,
             watched_at TEXT,
-            percent_complete REAL
+            percent_complete REAL,
+            time_played REAL
         );
         CREATE INDEX ix_{table}_path_key ON {table}(path_key, kind, instance);
         CREATE INDEX ix_{table}_instance ON {table}(instance);

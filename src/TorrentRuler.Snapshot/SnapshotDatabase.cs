@@ -219,12 +219,14 @@ public class SnapshotDatabase : IDisposable
                 insert.Parameters.AddWithValue("$external_key", m.ExternalKey);
                 insert.Parameters.AddWithValue("$title", m.Title);
                 insert.Parameters.AddWithValue("$media_type", DbValues.Of(m.MediaType));
+                insert.Parameters.AddWithValue("$genres", DbValues.Of(m.Genres));
                 insert.Parameters.AddWithValue("$file_path", DbValues.Of(filePath));
                 insert.Parameters.AddWithValue("$path_key", DbValues.Of(PathKeyNormalizer.Normalize(filePath, rules)));
                 insert.Parameters.AddWithValue("$added_at", DbValues.Of(m.AddedAt));
                 insert.Parameters.AddWithValue("$user_name", DBNull.Value);
                 insert.Parameters.AddWithValue("$watched_at", DBNull.Value);
                 insert.Parameters.AddWithValue("$percent_complete", DBNull.Value);
+                insert.Parameters.AddWithValue("$time_played", DBNull.Value);
                 insert.ExecuteNonQuery();
             }
         }
@@ -242,13 +244,15 @@ public class SnapshotDatabase : IDisposable
             insert.Parameters.AddWithValue("$kind", SnapshotSchema.KindHistory);
             insert.Parameters.AddWithValue("$external_key", DbValues.Of(w.ExternalKey));
             insert.Parameters.AddWithValue("$title", DbValues.Of(w.MediaTitle));
-            insert.Parameters.AddWithValue("$media_type", DBNull.Value);
+            insert.Parameters.AddWithValue("$media_type", DbValues.Of(w.MediaType));
+            insert.Parameters.AddWithValue("$genres", DbValues.Of(w.Genres));
             insert.Parameters.AddWithValue("$file_path", DbValues.Of(filePath));
             insert.Parameters.AddWithValue("$path_key", DbValues.Of(PathKeyNormalizer.Normalize(filePath, rules)));
             insert.Parameters.AddWithValue("$added_at", DBNull.Value);
             insert.Parameters.AddWithValue("$user_name", DbValues.Of(w.UserName));
             insert.Parameters.AddWithValue("$watched_at", DbValues.Of(w.WatchedAt));
             insert.Parameters.AddWithValue("$percent_complete", DbValues.Of(w.PercentComplete));
+            insert.Parameters.AddWithValue("$time_played", DbValues.Of(w.TimePlayed));
             insert.ExecuteNonQuery();
         }
     }
@@ -263,11 +267,11 @@ public class SnapshotDatabase : IDisposable
 
         return $"""
             INSERT INTO {SnapshotSchema.TableFor(type)}
-            (instance_id, instance, kind, external_key, title, media_type, file_path, path_key,
-             added_at, user_name, watched_at, percent_complete)
+            (instance_id, instance, kind, external_key, title, media_type, genres, file_path, path_key,
+             added_at, user_name, watched_at, percent_complete, time_played)
             VALUES
-            ($instance_id, $instance, $kind, $external_key, $title, $media_type, $file_path, $path_key,
-             $added_at, $user_name, $watched_at, $percent_complete)
+            ($instance_id, $instance, $kind, $external_key, $title, $media_type, $genres, $file_path, $path_key,
+             $added_at, $user_name, $watched_at, $percent_complete, $time_played)
             """;
     }
 

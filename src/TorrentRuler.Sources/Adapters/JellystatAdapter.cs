@@ -17,16 +17,19 @@ namespace TorrentRuler.Sources.Adapters;
 /// History is paged (<c>page</c>/<c>size</c> query params, <c>pages</c> in the response), so every
 /// page is fetched rather than only the most recent one. History rows carry the Jellyfin item id
 /// but no file path, so each distinct id is looked up once via <c>POST /api/getItemDetails</c>
-/// and the result is cached for <see cref="ItemPathTtl"/>.
+/// and the result is cached for <see cref="ItemDetailsTtl"/>. The same lookup supplies the item's type
+/// (<c>media_type</c>), its genres as a comma-separated string, and <c>time_played</c>.
 /// </summary>
 public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : RestHistoryAdapterBase(httpClientFactory)
 {
     private const string ItemDetailsPath = "/api/getItemDetails";
     private const int ItemDetailsParallelism = 4;
-    private static readonly TimeSpan ItemPathTtl = TimeSpan.FromHours(24);
 
-    /// <summary>(instance id, Jellyfin item id) -> file path. Only successful lookups are cached, so a failure is retried next refresh.</summary>
-    private readonly ConcurrentDictionary<(int InstanceId, string ItemId), (string Path, DateTimeOffset FetchedAt)> _itemPaths = new();
+    // time_played keeps growing as things are watched, so an hour, not a day.
+    private static readonly TimeSpan ItemDetailsTtl = TimeSpan.FromHours(1);
+
+    /// <summary>(instance id, Jellyfin item id) -> what getItemDetails said. Only successful lookups are cached, so a failure is retried next refresh.</summary>
+    private readonly ConcurrentDictionary<(int InstanceId, string ItemId), (HistoryItemDetails Details, DateTimeOffset FetchedAt)> _itemDetails = new();
 
     public override SourceType SourceType => SourceType.Jellystat;
 
@@ -43,8 +46,11 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
         ["user"] = "UserName",
         ["watchedAt"] = "ActivityDateInserted",
         ["percent"] = "PercentComplete",
-        // Property holding the file path in the getItemDetails response.
-        ["itemPath"] = "Path"
+        // Properties of the getItemDetails response.
+        ["itemPath"] = "Path",
+        ["itemType"] = "Type",
+        ["itemGenres"] = "Genres",
+        ["itemTimePlayed"] = "time_played"
     };
 
     protected override void ApplyAuth(HttpRequestMessage request, SourceConnectionInfo connection)
@@ -66,20 +72,24 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
             ? count
             : null;
 
-    protected override async Task<IReadOnlyDictionary<string, string>> ResolveItemPathsAsync(
+    protected override async Task<IReadOnlyDictionary<string, HistoryItemDetails>> ResolveItemDetailsAsync(
         HttpClient client, SourceConnectionInfo connection, RestHistoryConfig config,
         IReadOnlyCollection<string> itemIds, CancellationToken ct)
     {
-        var pathField = config.FieldMap.GetValueOrDefault("itemPath") is { Length: > 0 } f ? f : "Path";
-        var resolved = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        string Field(string key, string fallback) => config.FieldMap.GetValueOrDefault(key) is { Length: > 0 } f ? f : fallback;
+        var pathField = Field("itemPath", "Path");
+        var typeField = Field("itemType", "Type");
+        var genresField = Field("itemGenres", "Genres");
+        var timePlayedField = Field("itemTimePlayed", "time_played");
+        var resolved = new ConcurrentDictionary<string, HistoryItemDetails>(StringComparer.Ordinal);
         var now = DateTimeOffset.UtcNow;
 
         var toFetch = new List<string>();
         foreach (var id in itemIds)
         {
-            if (_itemPaths.TryGetValue((connection.InstanceId, id), out var cached) && now - cached.FetchedAt < ItemPathTtl)
+            if (_itemDetails.TryGetValue((connection.InstanceId, id), out var cached) && now - cached.FetchedAt < ItemDetailsTtl)
             {
-                resolved[id] = cached.Path;
+                resolved[id] = cached.Details;
             }
             else
             {
@@ -110,10 +120,18 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
 
                     using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
                     using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cts.Token);
-                    if (JsonPathResolver.FindString(doc.RootElement, pathField) is { } path)
+                    var root = doc.RootElement;
+                    var details = new HistoryItemDetails(
+                        JsonPathResolver.FindString(root, pathField),
+                        JsonPathResolver.FindString(root, typeField),
+                        JsonPathResolver.ToCommaList(JsonPathResolver.FindElement(root, genresField)),
+                        JsonPathResolver.ToDouble(JsonPathResolver.FindElement(root, timePlayedField)));
+
+                    // A response that told us nothing isn't worth caching (and isn't worth a row of NULLs).
+                    if (details != new HistoryItemDetails(null, null, null, null))
                     {
-                        resolved[id] = path;
-                        _itemPaths[(connection.InstanceId, id)] = (path, DateTimeOffset.UtcNow);
+                        resolved[id] = details;
+                        _itemDetails[(connection.InstanceId, id)] = (details, DateTimeOffset.UtcNow);
                     }
                 }
                 catch (Exception ex) when (ex is HttpRequestException or JsonException

@@ -425,6 +425,43 @@ public class SnapshotDatabaseTests : IDisposable
         Assert.True(reader.IsDBNull(2));
     }
 
+    [Fact]
+    public void Rebuild_StoresGenresMediaTypeAndTimePlayed_ForBothKinds()
+    {
+        _db.Rebuild(new SnapshotInput
+        {
+            MediaItems =
+            [
+                new MediaItemRecord
+                {
+                    InstanceId = 1, InstanceName = "jf1", SourceType = SourceType.Jellyfin,
+                    ExternalKey = "m1", Title = "Foo", MediaType = "Movie", Genres = "Drama,Sci-Fi"
+                }
+            ],
+            WatchHistory =
+            [
+                new WatchHistoryRecord
+                {
+                    InstanceId = 2, InstanceName = "js1", SourceType = SourceType.Jellystat,
+                    ExternalKey = "m1", UserName = "alice", MediaType = "Movie", Genres = "Drama,Sci-Fi", TimePlayed = 5400.5
+                }
+            ]
+        });
+
+        using var cmd = _db.Connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT 'media', media_type, genres, time_played FROM jellyfin
+            UNION ALL SELECT 'history', media_type, genres, time_played FROM jellystat
+            """;
+        using var reader = cmd.ExecuteReader();
+
+        Assert.True(reader.Read());
+        Assert.Equal(("media", "Movie", "Drama,Sci-Fi"), (reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        Assert.True(reader.IsDBNull(3)); // a library item has no play time of its own
+        Assert.True(reader.Read());
+        Assert.Equal(("history", "Movie", "Drama,Sci-Fi", 5400.5), (reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetDouble(3)));
+    }
+
     private List<(string Kind, string Title, string Instance)> Rows(string table)
     {
         using var cmd = _db.Connection.CreateCommand();

@@ -100,6 +100,81 @@ internal static class JsonPathResolver
         }
     }
 
+    /// <summary>
+    /// The first non-null property named <paramref name="fieldName"/> (case-insensitive): the element's
+    /// own properties first, then nested ones, descending through arrays in order. Like
+    /// <see cref="FindString"/> but for any value type -- an array of genres, a number.
+    /// </summary>
+    public static JsonElement? FindElement(JsonElement element, string fieldName)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var prop in element.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, fieldName, StringComparison.OrdinalIgnoreCase)
+                        && prop.Value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+                    {
+                        return prop.Value;
+                    }
+                }
+                foreach (var prop in element.EnumerateObject())
+                {
+                    if (FindElement(prop.Value, fieldName) is { } nested)
+                    {
+                        return nested;
+                    }
+                }
+                return null;
+            case JsonValueKind.Array:
+                foreach (var child in element.EnumerateArray())
+                {
+                    if (FindElement(child, fieldName) is { } nested)
+                    {
+                        return nested;
+                    }
+                }
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>
+    /// A list of names as one comma-separated string: from an array of strings, an array of
+    /// <c>{ "Name": … }</c> objects, or a string that is already a list. Null when there is nothing in it.
+    /// </summary>
+    public static string? ToCommaList(JsonElement? value)
+    {
+        if (value is not { } v)
+        {
+            return null;
+        }
+
+        IEnumerable<string?> names = v.ValueKind switch
+        {
+            JsonValueKind.Array => v.EnumerateArray().Select(e => e.ValueKind switch
+            {
+                JsonValueKind.String => e.GetString(),
+                JsonValueKind.Object => GetString(e, "Name"),
+                _ => null
+            }),
+            JsonValueKind.String => [v.GetString()],
+            _ => []
+        };
+
+        var list = names.Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n!.Trim()).ToList();
+        return list.Count > 0 ? string.Join(",", list) : null;
+    }
+
+    /// <summary>A JSON number, or a string holding one (invariant culture), as a double; otherwise null.</summary>
+    public static double? ToDouble(JsonElement? value) => value switch
+    {
+        { ValueKind: JsonValueKind.Number } v => v.GetDouble(),
+        { ValueKind: JsonValueKind.String } v when double.TryParse(v.GetString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) => d,
+        _ => null
+    };
+
     public static double? GetDouble(JsonElement element, string? fieldName)
     {
         if (string.IsNullOrEmpty(fieldName) || element.ValueKind != JsonValueKind.Object

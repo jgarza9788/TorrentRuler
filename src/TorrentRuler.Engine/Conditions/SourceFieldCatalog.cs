@@ -138,12 +138,14 @@ public static class SourceFieldCatalog
         Row("file_path", "{alias}.file_path", FieldValueType.Text, "File path the source reported for this row (for a watch event with none, the path of the library item with the same external_key).", "/media/movies/Foo.mkv"),
         Row("external_key", "{alias}.external_key", FieldValueType.Text, "The media server's id for the item. A watch event and its library item share it (Jellystat <-> Jellyfin item id, Tautulli <-> Plex rating key).", "12345"),
 
-        RowOfKind("media_type", "{alias}.media_type", FieldValueType.Text, KindMedia, "movie, episode, etc. as reported by the source.", "movie"),
+        Row("media_type", "{alias}.media_type", FieldValueType.Text, "movie, episode, etc. as reported by the source (Movie / Episode from Jellyfin and Jellystat).", "Movie"),
+        Row("genres", "{alias}.genres", FieldValueType.Text, "The item's genres, comma-separated; use Contains to match one genre.", "Drama,Sci-Fi"),
         RowOfKind("added_at", "{alias}.added_at", FieldValueType.DateTime, KindMedia, "When the media library added this item.", "2026-01-01T00:00:00+00:00"),
         RowOfKind("days_since_added", "days_since({alias}.added_at)", FieldValueType.Real, KindMedia, "Days since the media library added this item.", "42.5"),
 
         RowOfKind("user_name", "{alias}.user_name", FieldValueType.Text, KindHistory, "Viewer's username.", "alice"),
         RowOfKind("percent_complete", "{alias}.percent_complete", FieldValueType.Real, KindHistory, "Percent of the item watched, 0..100.", "95.0"),
+        RowOfKind("time_played", "{alias}.time_played", FieldValueType.Real, KindHistory, "Total time the item has been played, in the source's own unit (Jellystat's time_played).", "5400"),
         RowOfKind("watched_at", "{alias}.watched_at", FieldValueType.DateTime, KindHistory, "When this watch event occurred.", "2026-01-01T00:00:00+00:00"),
         RowOfKind("days_since_watched", "days_since({alias}.watched_at)", FieldValueType.Real, KindHistory, "Days since this watch event.", "10.2"),
 

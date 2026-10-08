@@ -60,8 +60,8 @@ public class JellystatAdapterTests
             }
             return id switch
             {
-                "movie1" => Json("""[{"Id":"movie1","Name":"Foo","Path":"/media/movies/Foo/Foo.mkv","Size":123}]"""),
-                "ep1" => Json("""[{"EpisodeId":"ep1","FileName":"Bar","Path":"/media/tv/Bar/S01E01.mkv"}]"""),
+                "movie1" => Json("""[{"Id":"movie1","Name":"Foo","Type":"Movie","Genres":["Drama","Sci-Fi"],"time_played":5400,"Path":"/media/movies/Foo/Foo.mkv","Size":123}]"""),
+                "ep1" => Json("""[{"EpisodeId":"ep1","FileName":"Bar","Type":"Episode","Genres":[],"Path":"/media/tv/Bar/S01E01.mkv"}]"""),
                 _ => new HttpResponseMessage(HttpStatusCode.NotFound)
             };
         });
@@ -81,6 +81,59 @@ public class JellystatAdapterTests
 
         Assert.All(result.WatchHistory.Where(w => w.ExternalKey == "movie1"),
             w => Assert.Equal("/media/movies/Foo/Foo.mkv", w.FilePath));
+    }
+
+    [Fact]
+    public async Task FetchAsync_TakesTypeGenresAndTimePlayedFromItemDetails()
+    {
+        var handler = new FakeHttpMessageHandler(req =>
+        {
+            if (req.RequestUri!.AbsolutePath == "/api/getHistory")
+            {
+                return Json("""{"pages":1,"results":[{"NowPlayingItemId":"m1","UserName":"a"},{"NowPlayingItemId":"e1","EpisodeId":"e1","UserName":"a"},{"NowPlayingItemId":"x1","UserName":"a"}]}""");
+            }
+
+            var id = JsonDocument.Parse(req.Content!.ReadAsStringAsync().Result).RootElement.GetProperty("Id").GetString();
+            return id switch
+            {
+                "m1" => Json("""[{"Type":"Movie","Genres":["Drama","Sci-Fi"],"time_played":"5400.5","Path":"/m.mkv"}]"""),
+                // Genres as objects, and a nested "Type" that must not win over the item's own.
+                "e1" => Json("""[{"Type":"Episode","Genres":[{"Name":"Comedy"}],"Path":"/e.mkv","MediaStreams":[{"Type":"Video"}]}]"""),
+                // No genres, no time played, no type: all three stay null rather than empty.
+                _ => Json("""[{"Path":"/x.mkv"}]""")
+            };
+        });
+
+        var result = await new JellystatAdapter(new StubInstanceHttpClientFactory(handler)).FetchAsync(Connection);
+
+        var movie = result.WatchHistory.Single(w => w.ExternalKey == "m1");
+        Assert.Equal(("Movie", "Drama,Sci-Fi", 5400.5), (movie.MediaType, movie.Genres, movie.TimePlayed));
+        var episode = result.WatchHistory.Single(w => w.ExternalKey == "e1");
+        Assert.Equal(("Episode", "Comedy", (double?)null), (episode.MediaType, episode.Genres, episode.TimePlayed));
+        var bare = result.WatchHistory.Single(w => w.ExternalKey == "x1");
+        Assert.Equal(((string?)null, (string?)null, (double?)null), (bare.MediaType, bare.Genres, bare.TimePlayed));
+    }
+
+    [Fact]
+    public async Task FetchAsync_LooksUpDetailsEvenWhenHistoryAlreadyHasAPath()
+    {
+        var lookups = 0;
+        var handler = new FakeHttpMessageHandler(req =>
+        {
+            if (req.RequestUri!.AbsolutePath == "/api/getHistory")
+            {
+                return Json("""{"pages":1,"results":[{"NowPlayingItemId":"m1","FullPath":"/from/history.mkv","UserName":"a"}]}""");
+            }
+            Interlocked.Increment(ref lookups);
+            return Json("""[{"Type":"Movie","Path":"/from/details.mkv"}]""");
+        });
+
+        var result = await new JellystatAdapter(new StubInstanceHttpClientFactory(handler)).FetchAsync(Connection);
+
+        var row = Assert.Single(result.WatchHistory);
+        Assert.Equal(1, lookups);
+        Assert.Equal("Movie", row.MediaType);
+        Assert.Equal("/from/history.mkv", row.FilePath); // a path the history already carried wins
     }
 
     [Fact]

@@ -9,6 +9,10 @@ public class MediaItemRecord
     public required string ExternalKey { get; init; }
     public required string Title { get; init; }
     public string? MediaType { get; init; }
+
+    /// <summary>The item's genres as one comma-separated string ("Drama,Sci-Fi"), or null when it has none.</summary>
+    public string? Genres { get; init; }
+
     public List<string> FilePaths { get; init; } = [];
     public DateTimeOffset? AddedAt { get; init; }
 }

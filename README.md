@@ -127,8 +127,12 @@ one that matters most — it is what correlates a playback event back to a torre
 history row has no path, `externalKey` is the fallback: the row borrows the path of the
 library item (Jellyfin, Plex) with the same id. Jellystat history carries no paths at all,
 so it fetches every history page and looks each distinct item up once via
-`POST /api/getItemDetails` (cached for 24h); `itemPath` names the path property in that
-response (default `Path`).
+`POST /api/getItemDetails` (cached for 1h, since `time_played` keeps growing). That one
+lookup also supplies the item's `media_type` (its `Type`, e.g. `Movie` / `Episode`), its
+`genres` (the `Genres` list as a comma-separated string) and `time_played`. The property
+names are `itemPath`, `itemType`, `itemGenres` and `itemTimePlayed` in `fieldMap`
+(defaults `Path`, `Type`, `Genres`, `time_played`). Jellyfin library items carry `genres`
+too, and Tautulli history fills `media_type` from its own `media_type` column.
 
 ### Storage paths
 
@@ -362,11 +366,13 @@ check:
 | `title` | Text | all rows | Item title, as reported by the source. | `Foo (2020)` |
 | `file_path` | Text | all rows | File path the source reported for this row (for a watch event with none, the path of the library item with the same external_key). | `/media/movies/Foo.mkv` |
 | `external_key` | Text | all rows | The media server's id for the item. A watch event and its library item share it (Jellystat <-> Jellyfin item id, Tautulli <-> Plex rating key). | `12345` |
-| `media_type` | Text | library item | movie, episode, etc. as reported by the source. | `movie` |
+| `media_type` | Text | all rows | movie, episode, etc. as reported by the source (Movie / Episode from Jellyfin and Jellystat). | `Movie` |
+| `genres` | Text | all rows | The item's genres, comma-separated; use Contains to match one genre. | `Drama,Sci-Fi` |
 | `added_at` | DateTime | library item | When the media library added this item. | `2026-01-01T00:00:00+00:00` |
 | `days_since_added` | Real | library item | Days since the media library added this item. | `42.5` |
 | `user_name` | Text | playback event | Viewer's username. | `alice` |
 | `percent_complete` | Real | playback event | Percent of the item watched, 0..100. | `95.0` |
+| `time_played` | Real | playback event | Total time the item has been played, in the source's own unit (Jellystat's `time_played`). | `5400` |
 | `watched_at` | DateTime | playback event | When this watch event occurred. | `2026-01-01T00:00:00+00:00` |
 | `days_since_watched` | Real | playback event | Days since this watch event. | `10.2` |
 
@@ -611,7 +617,7 @@ The schema is addressed by source, which is what makes a field key resolve direc
 | Table | Rows | Notable columns |
 |---|---|---|
 | `qbittorrent` | one per torrent | `instance_id`, `instance`, `hash`, `path_key`, + every torrent field |
-| `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance` | one per library item or playback event | `instance`, `kind` (`media` / `history`), `title`, `file_path`, `path_key`, `added_at`, `user_name`, `watched_at`, `percent_complete` |
+| `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance` | one per library item or playback event | `instance`, `kind` (`media` / `history`), `title`, `media_type`, `genres`, `file_path`, `path_key`, `added_at`, `user_name`, `watched_at`, `percent_complete`, `time_played` |
 | `storage` | one per configured storage path | `instance`, `path`, `total_bytes`, `used_bytes`, `free_bytes`, `used_percent`, `folder_size_bytes` |
 | `qbittorrent_files` | one per file in a torrent | not populated yet; see `docs/IMPROVEMENTS.md` |
 

@@ -17,6 +17,16 @@ public class WatchHistoryRecord
     public string? ExternalKey { get; init; }
 
     public string? MediaTitle { get; init; }
+
+    /// <summary>The kind of item watched, as the source names it ("Movie", "Episode").</summary>
+    public string? MediaType { get; init; }
+
+    /// <summary>The item's genres as one comma-separated string ("Drama,Sci-Fi"), or null when unknown.</summary>
+    public string? Genres { get; init; }
+
+    /// <summary>How long the item has been played in total, in the source's own unit (Jellystat's <c>time_played</c>).</summary>
+    public double? TimePlayed { get; init; }
+
     public string? FilePath { get; init; }
     public string? UserName { get; init; }
     public DateTimeOffset? WatchedAt { get; init; }
