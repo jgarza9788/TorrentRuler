@@ -973,7 +973,11 @@ body {
 
 .qf-row-applied > td { background-color: rgba(var(--tblr-success-rgb), 0.08) !important; }
 .qf-row-failed > td { background-color: rgba(var(--tblr-danger-rgb), 0.1) !important; }
-.qf-row-muted > td { opacity: 0.65; }
+/* Muted by colour, not opacity: opacity makes a stacking context, which would fade a row's
+   dropdown menu and slide it under the rows below. */
+.qf-row-muted > td,
+.qf-row-muted .qf-rule-link,
+.qf-row-card.qf-row-muted .qf-row-card-title { color: var(--tblr-secondary-color); }
 
 .qf-sparkline svg {
   width: 100%;
@@ -1014,3 +1018,69 @@ body {
 /* Tables flush with their card edge (card body p-0) still need breathing room at the sides. */
 .qf-card-body.p-0 .table > :is(thead, tbody) > tr > :first-child { padding-left: 1rem; }
 .qf-card-body.p-0 .table > :is(thead, tbody) > tr > :last-child { padding-right: 1rem; }
+
+/* ---- Rules list ---- */
+[x-cloak] { display: none !important; }
+
+.qf-rules-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--tblr-border-color-translucent);
+}
+
+.qf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.qf-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--tblr-border-color-translucent);
+  color: var(--tblr-secondary-color);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.qf-chip:hover { color: var(--tblr-body-color); border-color: var(--tblr-border-color); }
+
+.qf-chip.active {
+  background: rgba(var(--tblr-primary-rgb), 0.15);
+  border-color: var(--tblr-primary);
+  color: var(--tblr-primary);
+}
+
+.qf-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.qf-col-check { width: 2.25rem; }
+
+.qf-priority-input {
+  width: 4.5rem;
+  text-align: right;
+}
+
+.qf-sort {
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.qf-sort:hover { color: var(--tblr-body-color); }
+
+tr[data-href] { cursor: pointer; }
+tr[data-href]:hover > td { background-color: rgba(var(--tblr-primary-rgb), 0.04); }
+
+.qf-rule-link { color: inherit; }
+.qf-rule-link:hover { color: var(--tblr-primary); }

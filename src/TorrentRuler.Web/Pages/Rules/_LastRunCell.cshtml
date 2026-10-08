@@ -1,0 +1,21 @@
+@model TorrentRuler.Web.Pages.Rules.RuleRow
+@* A rule's last run: outcome badge, when, and what it matched/applied. *@
+@if (Model.LastRun is { } run)
+{
+    <div class="d-flex flex-wrap align-items-center gap-1">
+        <partial name="_StatusBadge" model="run.Outcome" />
+        <span class="small text-secondary"><partial name="_RelativeTime" model="run.StartedAt" /></span>
+    </div>
+    <div class="small text-secondary">
+        @run.MatchedCount matched · <span class="@(run.ActionsExecutedCount > 0 ? "text-success" : null)">@run.ActionsExecutedCount applied</span>@if (run.ActionsFailedCount > 0)
+        {<span class="text-danger"> · @run.ActionsFailedCount failed</span>}
+    </div>
+}
+else if (Model.Rule.LastRunAt is { } at)
+{
+    <span class="small text-secondary"><partial name="_RelativeTime" model="at" /></span>
+}
+else
+{
+    <span class="small text-secondary">never</span>
+}

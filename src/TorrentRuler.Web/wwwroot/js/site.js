@@ -244,6 +244,42 @@
     });
 })();
 
+// Antiforgery for htmx: a request from an element outside any form (e.g. the Rules list's inline
+// priority box) carries no __RequestVerificationToken field, and Razor Pages rejects the POST.
+// Send the page's token as the header ASP.NET Core also accepts.
+document.addEventListener('htmx:configRequest', function (evt) {
+    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+    if (token && evt.detail && evt.detail.headers) {
+        evt.detail.headers['RequestVerificationToken'] = token.value;
+    }
+});
+
+// Clickable rows: a <tr data-href> opens that URL when clicked anywhere that isn't itself
+// interactive (links, buttons, inputs, menus keep their own behaviour). Keyboard users get the
+// row's own link, so the row itself isn't made focusable.
+(function () {
+    'use strict';
+    document.addEventListener('click', function (e) {
+        var row = e.target.closest('tr[data-href]');
+        if (!row || e.defaultPrevented || e.button !== 0) return;
+        if (e.target.closest('a, button, input, select, textarea, label, form, .dropdown, [data-no-row-click]')) return;
+        if (window.getSelection && String(window.getSelection())) return; // selecting text, not clicking
+        if (e.ctrlKey || e.metaKey) {
+            window.open(row.getAttribute('data-href'), '_blank');
+        } else {
+            window.location.href = row.getAttribute('data-href');
+        }
+    });
+})();
+
+// Bootstrap tooltips for anything marked data-bs-toggle="tooltip" (the title attribute is the text).
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window.tabler || !window.tabler.Tooltip) return;
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        window.tabler.Tooltip.getOrCreateInstance(el);
+    });
+});
+
 // Busy state. A submit button shows a spinner and is disabled while its full-page post is in
 // flight. Disabled *after* the submit event has run (setTimeout 0): a disabled submitter is left
 // out of the form data, which would drop its name/value or its formaction-chosen handler.
