@@ -78,6 +78,7 @@ public class EditStoragePathModel(AppDbContext db) : PageModel
             return Page();
         }
 
+        Toasts.Add(TempData, ToastKind.Success, $"Saved storage path \"{Input.Name}\".");
         return RedirectToPage("/Instances/Index");
     }
 

@@ -4,7 +4,7 @@
 
 @if (Model.SampleRows.Count > 0)
 {
-    <div class="table-responsive mt-2 qf-query-sample">
+    <div class="qf-table-wrap mt-2 qf-query-sample">
         <table class="table table-sm table-striped font-monospace small mb-0">
             <thead><tr>@foreach (var c in Model.Columns) { <th>@c</th> }</tr></thead>
             <tbody>

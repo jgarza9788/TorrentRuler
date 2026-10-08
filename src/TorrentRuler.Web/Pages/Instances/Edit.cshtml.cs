@@ -128,6 +128,7 @@ public class EditModel(AppDbContext db, ISecretProtector secretProtector, ISourc
             return Page();
         }
 
+        Toasts.Add(TempData, ToastKind.Success, $"Saved instance \"{Input.Name}\".");
         return RedirectToPage("/Instances/Index");
     }
 

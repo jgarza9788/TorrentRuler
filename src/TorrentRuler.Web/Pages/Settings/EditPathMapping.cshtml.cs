@@ -58,6 +58,7 @@ public class EditPathMappingModel(AppDbContext db) : PageModel
         rule.Enabled = Input.Enabled;
 
         await db.SaveChangesAsync(ct);
+        Toasts.Add(TempData, ToastKind.Success, $"Saved path mapping \"{rule.SourcePrefix}\".");
         return RedirectToPage("/Settings/Index");
     }
 

@@ -2,6 +2,7 @@
 @model TorrentRuler.Web.Pages.Instances.EditModel
 @{
     ViewData["Title"] = Model.IsNew ? "Add instance" : "Edit instance";
+    ViewData["FormPage"] = true;
 }
 
 @* Per-source-type help text. Every hint below is rendered server-side for the currently

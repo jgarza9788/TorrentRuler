@@ -31,6 +31,7 @@ public class ChangePasswordModel(IUserService userService) : PageModel
             await userService.ChangePasswordAsync(userId, Input.CurrentPassword, Input.NewPassword, ct);
             Success = true;
             Input = new InputModel();
+            Toasts.Add(TempData, ToastKind.Success, "Password changed.");
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {
