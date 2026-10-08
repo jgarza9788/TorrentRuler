@@ -2,6 +2,7 @@
 @model TorrentRuler.Web.Pages.Rules.EditModel
 @{
     ViewData["Title"] = Model.IsNew ? "Add rule" : "Edit rule";
+    ViewData["FormPage"] = true;
 }
 
 <div id="qf-rule-editor-data"
@@ -22,46 +23,47 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">@(Model.IsNew ? "Add rule" : $"Edit rule: {Model.Input.Name}")</h1>
-    <button class="btn btn-outline-secondary btn-sm qf-ico-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#fieldRefPanel"><i class="ti ti-database" aria-hidden="true"></i>Field reference</button>
 </div>
 
 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-<form method="post">
+<form method="post" id="ruleForm">
     <input type="hidden" asp-for="Input.Id" />
 
     <div class="qf-card mb-3">
         <div class="qf-card-header"><h2>Basics</h2></div>
         <div class="qf-card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-9">
                     <label asp-for="Input.Name" class="form-label"></label>
                     <input asp-for="Input.Name" class="form-control" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label asp-for="Input.Priority" class="form-label"></label>
-                    <input asp-for="Input.Priority" type="number" class="form-control" />
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <div class="form-check">
-                        <input asp-for="Input.Enabled" class="form-check-input" />
-                        <label asp-for="Input.Enabled" class="form-check-label"></label>
-                    </div>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <div class="form-check">
-                        <input asp-for="Input.DryRun" class="form-check-input" />
-                        <label asp-for="Input.DryRun" class="form-check-label"></label>
-                    </div>
+                    <input asp-for="Input.Priority" type="number" class="form-control" aria-describedby="priorityHelp" />
+                    <div class="form-text" id="priorityHelp">Lower runs first.</div>
                 </div>
                 <div class="col-12">
                     <label asp-for="Input.Description" class="form-label"></label>
                     <input asp-for="Input.Description" class="form-control" />
                 </div>
                 <div class="col-12">
-                    <div class="form-check">
-                        <input asp-for="Input.StopOnMatch" class="form-check-input" />
-                        <label asp-for="Input.StopOnMatch" class="form-check-label"></label>
+                    <div class="qf-toggle-group" role="group" aria-label="Rule behaviour">
+                        <div class="form-check form-switch">
+                            <input asp-for="Input.Enabled" class="form-check-input" role="switch" aria-describedby="enabledHelp" />
+                            <label asp-for="Input.Enabled" class="form-check-label"></label>
+                            <div class="form-text" id="enabledHelp">Runs on its schedule.</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input asp-for="Input.DryRun" class="form-check-input" role="switch" aria-describedby="dryRunHelp" />
+                            <label asp-for="Input.DryRun" class="form-check-label"></label>
+                            <div class="form-text" id="dryRunHelp">Records what it would do; changes nothing.</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input asp-for="Input.StopOnMatch" class="form-check-input" role="switch" aria-describedby="stopHelp" />
+                            <label asp-for="Input.StopOnMatch" class="form-check-label"></label>
+                            <div class="form-text" id="stopHelp">Torrents it matches are skipped by lower-priority rules.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,11 +76,14 @@
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label asp-for="Input.CronExpression" class="form-label"></label>
-                    <input asp-for="Input.CronExpression" id="cronExpressionInput" class="form-control qf-muted-mono" />
+                    <input asp-for="Input.CronExpression" id="cronExpressionInput" class="form-control qf-muted-mono"
+                           hx-post="?handler=PreviewSchedule" hx-trigger="input changed delay:400ms@(string.IsNullOrWhiteSpace(Model.Input.CronExpression) ? "" : ", load")" hx-target="#schedule-preview"
+                           aria-describedby="schedule-preview" />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Common schedules</label>
-                    <select class="form-select" onchange="if(this.value){document.getElementById('cronExpressionInput').value=this.value;}">
+                <div class="col-md-4">
+                    <label class="form-label" for="schedulePreset">Common schedules</label>
+                    <select class="form-select" id="schedulePreset"
+                            onchange="if(this.value){var i=document.getElementById('cronExpressionInput');i.value=this.value;i.dispatchEvent(new Event('input',{bubbles:true}));}">
                         <option value="">Choose one…</option>
                         @foreach (var preset in TorrentRuler.Engine.Scheduling.CommonSchedulePresets.Presets)
                         {
@@ -86,22 +91,19 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label asp-for="Input.TimeZoneId" class="form-label"></label>
-                    <input asp-for="Input.TimeZoneId" class="form-control" placeholder="UTC" />
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-outline-primary w-100 qf-ico-btn"
-                            hx-post="?handler=PreviewSchedule" hx-target="#schedule-preview" hx-swap="innerHTML"><i class="ti ti-eye" aria-hidden="true"></i>Preview</button>
+                    <input asp-for="Input.TimeZoneId" class="form-control" placeholder="UTC"
+                           hx-post="?handler=PreviewSchedule" hx-trigger="input changed delay:600ms" hx-target="#schedule-preview" />
                 </div>
             </div>
             <div class="form-text mb-2">Minimum interval is 5 minutes; faster schedules are rejected with an explanation.</div>
-            <pre id="schedule-preview" class="qf-sql-preview mb-0" style="display:@(string.IsNullOrEmpty(Model.Input.CronExpression) ? "none" : "block")"></pre>
+            <div id="schedule-preview" class="qf-preview-slot qf-schedule-preview" aria-live="polite"></div>
         </div>
     </div>
 
     <div class="qf-card mb-3">
-        <div class="qf-card-header">
+        <div class="qf-card-header flex-wrap gap-2">
             <h2>Condition</h2>
             <button class="btn btn-outline-secondary btn-sm qf-ico-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#fieldRefPanel"><i class="ti ti-database" aria-hidden="true"></i>Field reference</button>
             <div class="d-flex align-items-center gap-2">
@@ -313,35 +315,51 @@
             @* Scopes which instances' torrents the actions below touch, so it belongs with them
                rather than in Basics. Plain checkboxes outside the Alpine scope -- they post
                Input.TargetInstanceIds directly, like any other form field. *@
-            <div class="mb-3">
-                <label class="form-label">Apply actions to:</label>
+            <fieldset class="mb-3" x-data="{ mode: '@(Model.Input.TargetInstanceIds.Count == 0 ? "all" : "selected")' }">
+                <legend class="form-label fs-6">Apply actions to</legend>
                 @if (Model.QbtInstances.Count == 0)
                 {
                     <div class="text-secondary small">No qBittorrent instances configured yet. <a asp-page="/Instances/Edit">Add one</a>.</div>
                 }
                 else
                 {
-                    <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" id="targetAll" value="all" x-model="mode" />
+                        <label class="form-check-label" for="targetAll">All qBittorrent instances <span class="text-secondary">(including ones added later)</span></label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" id="targetSelected" value="selected" x-model="mode" />
+                        <label class="form-check-label" for="targetSelected">Only these instances:</label>
+                    </div>
+                    @* Disabled while "All" is chosen, so nothing posts and the empty list means all. *@
+                    @* x-show on a plain wrapper: Bootstrap's .d-flex is display:flex !important and would beat it. *@
+                    <div x-show="mode === 'selected'" x-cloak>
+                    <div class="d-flex flex-wrap gap-3 ms-4 mt-1">
                         @foreach (var instance in Model.QbtInstances)
                         {
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="Input.TargetInstanceIds" value="@instance.Id"
-                                       id="target-@instance.Id" checked="@Model.Input.TargetInstanceIds.Contains(instance.Id)" />
+                                       id="target-@instance.Id" checked="@Model.Input.TargetInstanceIds.Contains(instance.Id)"
+                                       :disabled="mode === 'all'" data-target-instance
+                                       x-effect="$el.setCustomValidity(mode === 'selected' && !document.querySelector('[data-target-instance]:checked') ? 'Pick at least one instance, or choose All.' : '')"
+                                       @@change="document.querySelectorAll('[data-target-instance]').forEach(c => c.dispatchEvent(new Event('qf-recheck')))"
+                                       @@qf-recheck="$el.setCustomValidity(mode === 'selected' && !document.querySelector('[data-target-instance]:checked') ? 'Pick at least one instance, or choose All.' : '')" />
                                 <label class="form-check-label" for="target-@instance.Id">@instance.Name</label>
                             </div>
                         }
                     </div>
-                    <div class="form-text">Leave every box unchecked to apply to all of them.</div>
+                    </div>
                 }
-            </div>
+            </fieldset>
             <hr class="my-3" />
 
             <div id="qf-action-builder-root" data-initial="@Model.Input.ActionsJson" x-data="actionBuilder($el.dataset.initial)">
                 <input type="hidden" name="Input.ActionsJson" :value="serialize()" />
 
                 <template x-for="(action, idx) in actions" :key="idx">
-                    <div class="qf-cond-row d-flex flex-wrap gap-2 align-items-center">
-                        <select class="form-select form-select-sm w-auto" x-model="action.type">
+                    <div class="qf-cond-row qf-action-row d-flex flex-wrap gap-2 align-items-center">
+                        <span class="qf-action-label" x-text="`Action ${idx + 1}`"></span>
+                        <select class="form-select form-select-sm w-auto" x-model="action.type" :aria-label="`Action ${idx + 1} type`">
                             <option value="add_tags">Add tag(s)</option>
                             <option value="remove_tags">Remove tag(s)</option>
                             <option value="set_category">Set category</option>
@@ -380,36 +398,54 @@
                             </span>
                         </template>
 
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" @@click="removeAction(idx)"><i class="ti ti-x" aria-hidden="true"></i><span class="visually-hidden">Remove</span></button>
+                        <span class="ms-auto d-inline-flex gap-1">
+                            <button type="button" class="btn btn-sm btn-ghost-secondary" @@click="moveAction(idx, -1)" :disabled="idx === 0"
+                                    :aria-label="`Move action ${idx + 1} up`"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+                            <button type="button" class="btn btn-sm btn-ghost-secondary" @@click="moveAction(idx, 1)" :disabled="idx === actions.length - 1"
+                                    :aria-label="`Move action ${idx + 1} down`"><i class="ti ti-arrow-down" aria-hidden="true"></i></button>
+                            <button type="button" class="btn btn-sm btn-ghost-danger" @@click="removeAction(idx)"
+                                    :aria-label="`Remove action ${idx + 1} (${label(action.type)})`"><i class="ti ti-trash" aria-hidden="true"></i></button>
+                        </span>
                     </div>
                 </template>
 
-                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 qf-ico-btn" @@click="addAction('add_tags')"><i class="ti ti-plus" aria-hidden="true"></i>Action</button>
+                <p class="text-secondary small mb-2" x-show="actions.length === 0">No actions yet. A rule needs at least one.</p>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 qf-ico-btn" @@click="addAction('add_tags')"><i class="ti ti-plus" aria-hidden="true"></i>Add action</button>
             </div>
         </div>
     </div>
 
-    <div class="d-flex gap-2 mb-2 align-items-center">
+    <div class="qf-sticky-footer">
         <button type="submit" formaction="?handler=Save" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save rule</button>
         <a asp-page="/Rules/Index" class="btn btn-outline-secondary">Cancel</a>
-        <span id="dry-run-spinner" class="htmx-indicator small text-secondary qf-ico-btn">
+        <span id="dry-run-spinner" class="htmx-indicator small text-secondary qf-ico-btn ms-auto">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>evaluating&hellip;
         </span>
-        <button type="button" class="btn btn-outline-primary ms-auto qf-ico-btn"
+        <button type="button" class="btn btn-outline-primary qf-ico-btn" id="dryRunButton"
+                title="Evaluate the rule as currently entered (unsaved changes included) -- nothing is applied"
                 hx-post="?handler=DryRun" hx-include="closest form"
                 hx-target="#dry-run-result" hx-swap="innerHTML"
                 hx-indicator="#dry-run-spinner" hx-disabled-elt="this"><i class="ti ti-player-play" aria-hidden="true"></i>Dry run</button>
-        
     </div>
-    <div class="form-text mb-2">Evaluates the rule as currently entered (including unsaved changes) and shows what it would match and do — nothing is applied.</div>
-    <div id="dry-run-result" class="mb-5"></div>
 </form>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="fieldRefPanel" style="width: 440px;"
+<div class="modal fade" id="dryRunModal" tabindex="-1" aria-labelledby="dryRunTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="dryRunTitle">Dry run: what this rule would do now</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close dry run"></button>
+            </div>
+            <div class="modal-body" id="dry-run-result"></div>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="fieldRefPanel" style="width: min(440px, 100vw);" aria-labelledby="fieldRefTitle"
      x-data="fieldReferencePanel(qfSourceCatalog, qfUdfHelpers)">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Field reference</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        <h5 class="offcanvas-title" id="fieldRefTitle">Field reference</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close field reference"></button>
     </div>
     <div class="offcanvas-body p-0 d-flex flex-column">
 
@@ -477,5 +513,16 @@
     <script src="~/lib/codemirror/lib/codemirror.min.js"></script>
     <script src="~/lib/codemirror/mode/sql/sql.min.js"></script>
     <script src="~/lib/codemirror/addon/edit/matchbrackets.min.js"></script>
+    <link rel="stylesheet" href="~/lib/codemirror/addon/hint/show-hint.min.css" />
+    <script src="~/lib/codemirror/addon/hint/show-hint.min.js"></script>
+    <script src="~/js/sql-editor.js" asp-append-version="true"></script>
     <script src="~/js/rule-editor.js" asp-append-version="true"></script>
+    <script>
+        // Dry run results open in a modal.
+        document.body.addEventListener('htmx:afterSwap', function (evt) {
+            if (evt.detail.target && evt.detail.target.id === 'dry-run-result' && window.tabler) {
+                window.tabler.Modal.getOrCreateInstance(document.getElementById('dryRunModal')).show();
+            }
+        });
+    </script>
 }

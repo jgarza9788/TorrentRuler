@@ -140,7 +140,7 @@ public class RuleRunner(
                     MatchedCount: matches.Count,
                     TorrentsInSnapshot: torrentCount,
                     Actions: lines,
-                    SampleMatchedHashes: matches.Select(m => m.TorrentHash).Take(15).ToList(),
+                    SampleMatches: PreviewTorrentLookup.Describe(snapshot, matches, RulePreview.SampleSize),
                     Error: null,
                     Query: draft.UseAdvancedSql && !string.IsNullOrWhiteSpace(draft.AdvancedSql)
                         ? await advancedSqlExecutor.PreviewAsync(snapshot, draft.AdvancedSql, resolution, ct)

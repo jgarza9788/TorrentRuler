@@ -275,6 +275,19 @@ function actionBuilder(initialJson) {
         removeAction(index) {
             this.actions.splice(index, 1);
         },
+        moveAction(index, delta) {
+            const to = index + delta;
+            if (to < 0 || to >= this.actions.length) return;
+            const [moved] = this.actions.splice(index, 1);
+            this.actions.splice(to, 0, moved);
+        },
+        label(type) {
+            return ({
+                add_tags: 'Add tags', remove_tags: 'Remove tags', set_category: 'Set category', move: 'Move',
+                set_upload_limit: 'Upload limit', set_download_limit: 'Download limit', export_torrent: 'Export .torrent',
+                start: 'Start', stop: 'Stop'
+            })[type] || type;
+        },
         serialize() {
             const out = this.actions.map(a => {
                 switch (a.type) {
@@ -431,18 +444,25 @@ document.addEventListener('DOMContentLoaded', initConditionModeToggle);
 // from form serialisation.)
 function initAdvancedSqlEditor() {
     const ta = document.getElementById('Input_AdvancedSql');
-    if (!ta || typeof CodeMirror === 'undefined') return;
+    if (!ta || typeof qfMountSqlEditor === 'undefined') return;
 
-    const editor = CodeMirror.fromTextArea(ta, {
-        mode: 'text/x-sqlite',
-        lineNumbers: true,
-        matchBrackets: true,
-        lineWrapping: true,
-        // Tab has to keep moving focus: this is one field on a form with many.
-        extraKeys: { Tab: false, 'Shift-Tab': false }
+    // Shared mount (sql-editor.js): auto-sizes to the query and completes field keys, helpers
+    // and keywords. No onRun: Ctrl+Enter in a rule must not submit the form.
+    const editor = qfMountSqlEditor(ta, { hints: qfCatalogHints(window.qfSourceCatalog, window.qfUdfHelpers) });
+    window.qfAdvancedSqlEditor = editor;
+
+    // A Validate error that names a token ('near "X"') is marked in the editor, with its position.
+    document.body.addEventListener('htmx:afterSwap', (evt) => {
+        if (evt.detail.target?.id !== 'advanced-sql-preview') return;
+        const error = evt.detail.target.querySelector('.alert-danger');
+        const pos = qfMarkSqlError(editor, error ? error.textContent : null);
+        if (error && pos) {
+            const where = document.createElement('div');
+            where.className = 'small mt-1';
+            where.textContent = `Line ${pos.line}, column ${pos.col}`;
+            error.appendChild(where);
+        }
     });
-    editor.getWrapperElement().classList.add('qf-sql-editor');
-    editor.on('change', () => editor.save());
 
     // Mounted inside the display:none basic-mode pane, CodeMirror measures zero and
     // renders blank, so re-measure once the toggle has revealed it.
@@ -480,15 +500,6 @@ function initAdvancedSqlEditor() {
         window.open('/Sandbox?sql=' + encodeURIComponent(editor.getValue()), '_blank', 'noopener');
     });
 
-    // Follow the app's theme picker. "Match system" removes the attribute entirely and
-    // this Bootstrap build reads the attribute only, so an untagged page is light.
-    function syncTheme() {
-        editor.setOption('theme',
-            document.documentElement.getAttribute('data-bs-theme') === 'dark'
-                ? 'material-darker' : 'default');
-    }
-    syncTheme();
-    new MutationObserver(syncTheme).observe(document.documentElement, { attributeFilter: ['data-bs-theme'] });
 }
 
 document.addEventListener('DOMContentLoaded', initAdvancedSqlEditor);
@@ -535,3 +546,28 @@ function fieldReferencePanel(catalog, udfHelpers) {
         }
     };
 }
+
+
+// Unsaved changes: warn when leaving the editor with edits that weren't saved. The baseline is the
+// form as first rendered (after Alpine and CodeMirror have written their hidden fields); Save
+// clears the warning so its own navigation isn't questioned. htmx requests (Validate, Dry run,
+// previews) don't navigate, so they never trigger it.
+function initUnsavedChangesGuard() {
+    const form = document.getElementById('ruleForm');
+    if (!form) return;
+
+    const snapshot = () => new URLSearchParams(new FormData(form)).toString();
+    let baseline = null;
+    let saving = false;
+    // Alpine renders the hidden JSON fields after DOMContentLoaded; take the baseline once it has.
+    setTimeout(() => { baseline = snapshot(); }, 300);
+
+    form.addEventListener('submit', () => { saving = true; });
+    window.addEventListener('beforeunload', (e) => {
+        if (saving || baseline === null || snapshot() === baseline) return;
+        e.preventDefault();
+        e.returnValue = '';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initUnsavedChangesGuard);

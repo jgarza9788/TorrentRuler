@@ -54,12 +54,27 @@ else
 
             <div class="form-text mt-2">Preview only — nothing was changed.</div>
 
-            @if (Model.SampleMatchedHashes.Count > 0)
+            @if (Model.SampleMatches.Count > 0)
             {
-                <details class="mt-2">
-                    <summary class="small text-secondary">Matched torrent hashes (first @Model.SampleMatchedHashes.Count)</summary>
-                    <pre class="qf-sql-preview mt-1 mb-0">@string.Join("\n", Model.SampleMatchedHashes)</pre>
-                </details>
+                <h3 class="h6 mt-3 mb-2">Matched torrents
+                    <span class="text-secondary fw-normal">@(Model.MatchedCount > Model.SampleMatches.Count ? $"(showing {Model.SampleMatches.Count} of {Model.MatchedCount})" : $"({Model.MatchedCount})")</span>
+                </h3>
+                <div class="qf-table-wrap qf-dry-run-table">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Name</th><th>Instance</th><th class="text-end">Size</th><th>Tags</th></tr></thead>
+                        <tbody>
+                        @foreach (var t in Model.SampleMatches)
+                        {
+                            <tr>
+                                <td class="qf-cell-wrap" title="@t.Hash">@t.Name</td>
+                                <td class="text-secondary">@t.InstanceName</td>
+                                <td class="text-end text-nowrap">@TorrentRuler.Web.Format.Bytes(t.SizeBytes)</td>
+                                <td>@foreach (var tag in t.Tags) { <span class="qf-badge qf-badge-secondary me-1">@tag</span> }</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>

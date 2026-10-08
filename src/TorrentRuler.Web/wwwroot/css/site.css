@@ -607,9 +607,8 @@ body {
 /* Two classes, so this beats upstream's one-class `.CodeMirror { height: 300px }`.
    Colours come from CodeMirror's own default / material-darker themes. */
 .CodeMirror.qf-sql-editor {
-  /* height: auto; */
-  height: 12rem;
-  min-height: 12rem;
+  /* Grows with the query; sql-editor.js sets the minimum and caps it (then it scrolls). */
+  height: auto;
   font-family: var(--tblr-font-monospace, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.85rem;
   border: 1px solid var(--tblr-border-color);
@@ -1084,3 +1083,83 @@ tr[data-href]:hover > td { background-color: rgba(var(--tblr-primary-rgb), 0.04)
 
 .qf-rule-link { color: inherit; }
 .qf-rule-link:hover { color: var(--tblr-primary); }
+
+/* ---- Rule editor ---- */
+.qf-toggle-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tblr-border-color-translucent);
+  border-radius: 0.5rem;
+}
+
+.qf-toggle-group .form-text { margin-top: 0.1rem; }
+
+.qf-schedule-preview {
+  margin-top: 0.25rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.4rem;
+  background: var(--tblr-tertiary-bg);
+}
+
+.qf-next-runs {
+  margin: 0.35rem 0 0;
+  padding-left: 1.4rem;
+  columns: 2 14rem;
+}
+
+/* Save / Cancel / Dry run stay in reach while scrolling a long rule. */
+.qf-sticky-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem -0.5rem 0;
+  padding: 0.75rem 0.5rem;
+  background: var(--tblr-tertiary-bg);
+  border-top: 1px solid var(--tblr-border-color-translucent);
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.qf-action-row { padding: 0.5rem 0.6rem; }
+
+.qf-action-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--tblr-secondary-color);
+  min-width: 4.5rem;
+}
+
+.qf-sql-error {
+  background: rgba(var(--tblr-danger-rgb), 0.25);
+  border-bottom: 2px solid var(--tblr-danger);
+}
+
+.qf-cell-wrap { overflow-wrap: anywhere; }
+.qf-dry-run-table { max-height: 50vh; overflow: auto; }
+
+/* Autocomplete list (CodeMirror show-hint) in the app's theme. */
+.CodeMirror-hints {
+  z-index: 1100;
+  font-family: var(--tblr-font-monospace, ui-monospace, monospace);
+  font-size: 0.85rem;
+  max-height: 18rem;
+  background: var(--tblr-bg-surface, var(--tblr-body-bg));
+  border: 1px solid var(--tblr-border-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.CodeMirror-hint { color: var(--tblr-body-color); padding: 0.15rem 0.5rem; }
+li.CodeMirror-hint-active { background: var(--tblr-primary); color: #fff; }
+.qf-hint-helper::before { content: "ƒ "; color: var(--tblr-success); }
+.qf-hint-keyword { color: var(--tblr-secondary-color); }
+.qf-hint-table::before { content: "▦ "; color: var(--tblr-secondary-color); }
+
+/* Focus/scroll-into-view must not park an element under the sticky save bar. */
+html:has(.qf-sticky-footer) {
+  scroll-padding-bottom: 6rem;
+}

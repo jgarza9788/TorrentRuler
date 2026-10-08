@@ -134,10 +134,8 @@ public class EditModel(
             ModelState.AddModelError("Input.ActionsJson", "At least one action is required.");
         }
 
-        if (Input.TargetInstanceIds.Count == 0)
-        {
-            ModelState.AddModelError("Input.TargetInstanceIds", "Select at least one target qBittorrent instance.");
-        }
+        // No target instances means every qBittorrent instance -- the engine's own reading of an
+        // empty list, and what the editor's "All qBittorrent instances" option posts.
 
         if (!ModelState.IsValid)
         {
@@ -186,6 +184,7 @@ public class EditModel(
         rule.UpdatedAt = now;
 
         await db.SaveChangesAsync(ct);
+        Toasts.Add(TempData, ToastKind.Success, $"Saved rule \"{rule.Name}\".");
         return RedirectToPage("/Rules/Index");
     }
 
@@ -238,23 +237,28 @@ public class EditModel(
         return Partial("_AdvancedSqlPreview", preview);
     }
 
+    /// <summary>One schedule preview: the cron in words and its next runs, or why it's invalid.</summary>
+    public sealed record SchedulePreview(string? Error, string? Description, IReadOnlyList<string> NextRuns);
+
+    /// <summary>
+    /// HTMX handler behind the live schedule preview (fires as the cron / timezone fields change).
+    /// Always 200 -- an invalid expression mid-typing is a normal result, and htmx won't swap a 4xx.
+    /// </summary>
     public IActionResult OnPostPreviewSchedule()
     {
         var validation = CronValidator.Validate(Input.CronExpression, Input.TimeZoneId);
         if (!validation.IsValid)
         {
-            Response.StatusCode = 400;
-            return Content(validation.ErrorMessage!, "text/plain");
+            return Partial("_SchedulePreview", new SchedulePreview(validation.ErrorMessage, null, []));
         }
 
         var description = CronDescriptionService.Describe(Input.CronExpression);
         var cron = CronExpression.Parse(Input.CronExpression, CronFormat.Standard);
         var tz = TimeZoneInfo.FindSystemTimeZoneById(Input.TimeZoneId);
-        var nextRuns = CronValidator.GetNextOccurrences(cron, tz, DateTimeOffset.UtcNow, 3);
-
-        var lines = new List<string> { description, "" };
-        lines.AddRange(nextRuns.Select(r => $"  next: {TimeZoneInfo.ConvertTime(r, tz):yyyy-MM-dd HH:mm} ({Input.TimeZoneId})"));
-        return Content(string.Join("\n", lines), "text/plain");
+        var nextRuns = CronValidator.GetNextOccurrences(cron, tz, DateTimeOffset.UtcNow, 5)
+            .Select(r => $"{TimeZoneInfo.ConvertTime(r, tz):ddd yyyy-MM-dd HH:mm}")
+            .ToList();
+        return Partial("_SchedulePreview", new SchedulePreview(null, $"{description} ({Input.TimeZoneId})", nextRuns));
     }
 
     private async Task LoadReferenceDataAsync(CancellationToken ct)

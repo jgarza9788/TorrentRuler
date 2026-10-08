@@ -1,0 +1,15 @@
+@model TorrentRuler.Web.Pages.Rules.EditModel.SchedulePreview
+@if (Model.Error is not null)
+{
+    <div class="text-danger small"><i class="ti ti-alert-circle" aria-hidden="true"></i> @Model.Error</div>
+}
+else
+{
+    <div class="small"><i class="ti ti-calendar-time text-secondary" aria-hidden="true"></i> <strong>@Model.Description</strong></div>
+    <ol class="qf-next-runs small text-secondary mb-0">
+        @foreach (var run in Model.NextRuns)
+        {
+            <li>@run</li>
+        }
+    </ol>
+}

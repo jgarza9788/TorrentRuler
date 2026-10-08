@@ -25,9 +25,12 @@ public sealed record RulePreview(
     int MatchedCount,
     int TorrentsInSnapshot,
     IReadOnlyList<PreviewActionLine> Actions,
-    IReadOnlyList<string> SampleMatchedHashes,
+    /// <summary>The first <see cref="SampleSize"/> matched torrents, described from the snapshot.</summary>
+    IReadOnlyList<PreviewTorrent> SampleMatches,
     string? Error,
     TorrentRuler.Engine.Conditions.AdvancedSql.AdvancedSqlPreview? Query = null)
 {
+    public const int SampleSize = 50;
+
     public static RulePreview Failure(string error) => new(false, 0, 0, [], [], error);
 }
