@@ -11,4 +11,7 @@ public interface IConfigPortabilityService
 
     /// <summary>Upserts rules by Name.</summary>
     Task ImportRulesAsync(string content, ConfigFormat format, CancellationToken ct = default);
+
+    /// <summary>What importing <paramref name="content"/> would add / update / leave alone ("config" or "rules"), without writing.</summary>
+    Task<ImportPreview> PreviewImportAsync(string content, ConfigFormat format, string kind, CancellationToken ct = default);
 }

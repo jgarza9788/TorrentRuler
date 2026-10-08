@@ -1,4 +1,6 @@
 @page
+@using TorrentRuler.Infrastructure.Config
+@using TorrentRuler.Web.Pages.Shared
 @model TorrentRuler.Web.Pages.Settings.IndexModel
 @{
     ViewData["Title"] = "Settings";
@@ -11,16 +13,16 @@
                 <h2>General</h2>
             </div>
             <div class="qf-card-body">
-                @if (Model.SettingsSaved)
-                {
-                    <div class="alert alert-success py-2">Settings saved.</div>
-                }
-                <form method="post" asp-page-handler="SaveSettings">
+                <form method="post" asp-page-handler="SaveSettings" id="settingsForm">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label asp-for="Input.ParallelismLevel" class="form-label"></label>
-                            <select asp-for="Input.ParallelismLevel" class="form-select" asp-items="Html.GetEnumSelectList<TorrentRuler.Core.Domain.ParallelismLevel>()"></select>
-                            <div class="form-text">Low=2, Medium=4, High=8, Very High=16 concurrent requests per host.</div>
+                            <select asp-for="Input.ParallelismLevel" class="form-select">
+                                @foreach (var (level, label) in TorrentRuler.Web.Pages.Settings.IndexModel.ParallelismOptions)
+                                {
+                                    <option value="@level" selected="@(Model.Input.ParallelismLevel == level)">@label</option>
+                                }
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="Input.TimeZoneId" class="form-label"></label>
@@ -47,27 +49,40 @@
                             </select>
                             <div class="form-text">Applied immediately to the <code>/log</code> files and the console stream on save &mdash; no restart.</div>
                         </div>
-                        <div class="col-12">
-                            <hr />
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input asp-for="Input.GlobalDryRun" class="form-check-input" role="switch" />
-                                <label asp-for="Input.GlobalDryRun" class="form-check-label"></label>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input asp-for="Input.GlobalKillSwitch" class="form-check-input role" role="switch" />
-                                <label asp-for="Input.GlobalKillSwitch" class="form-check-label text-danger"></label>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary qf-ico-btn"><i class="ti ti-device-floppy" aria-hidden="true"></i>Save settings</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        @* Same form as General (form="settingsForm"), split out so the two global overrides can't be missed. *@
+        <div class="qf-card qf-danger-zone mb-4" x-data="{ dry: @(Model.Input.GlobalDryRun ? "true" : "false"), kill: @(Model.Input.GlobalKillSwitch ? "true" : "false") }">
+            <div class="qf-card-header">
+                <h2 class="text-danger"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Danger zone</h2>
+            </div>
+            <div class="qf-card-body">
+                <div class="qf-danger-row">
+                    <div class="form-check form-switch mb-0">
+                        <input asp-for="Input.GlobalDryRun" form="settingsForm" class="form-check-input" role="switch" x-model="dry" aria-describedby="dryRunExplain" />
+                        <label asp-for="Input.GlobalDryRun" class="form-check-label fw-medium">Global dry run</label>
+                    </div>
+                    <span class="qf-badge" :class="dry ? 'qf-badge-warning' : 'qf-badge-secondary'" x-text="dry ? 'ON' : 'OFF'">@(Model.Input.GlobalDryRun ? "ON" : "OFF")</span>
+                    <div class="form-text w-100" id="dryRunExplain">Every rule previews its actions instead of applying them. Runs still happen and are recorded.</div>
+                </div>
+                <hr />
+                <div class="qf-danger-row">
+                    <div class="form-check form-switch mb-0">
+                        <input asp-for="Input.GlobalKillSwitch" form="settingsForm" class="form-check-input" role="switch" x-model="kill" aria-describedby="killExplain"
+                               @@change="if (kill && !confirm('Turn the kill switch on? No rule will run until you turn it off again.')) { kill = false; }" />
+                        <label asp-for="Input.GlobalKillSwitch" class="form-check-label fw-medium">Kill switch</label>
+                    </div>
+                    <span class="qf-badge" :class="kill ? 'qf-badge-danger' : 'qf-badge-secondary'" x-text="kill ? 'ON' : 'OFF'">@(Model.Input.GlobalKillSwitch ? "ON" : "OFF")</span>
+                    <div class="form-text w-100" id="killExplain">Stops all rules from running, on schedule or by Run now.</div>
+                </div>
+                <div class="small text-secondary mt-3">Takes effect when you press <strong>Save settings</strong> above.</div>
             </div>
         </div>
 
@@ -79,13 +94,13 @@
             <div class="qf-card-body p-0">
                 @if (Model.PathMappingRules.Count == 0)
                 {
-                    <div class="qf-empty">
-                        <p class="mb-0">No path mappings configured. Only needed if your qBittorrent and media-server containers mount the same files at different paths.</p>
-                    </div>
+                    <partial name="_EmptyState" model='new EmptyStateModel("route", "No path mappings",
+                        "Only needed when qBittorrent and your media server mount the same files at different paths (e.g. /downloads vs /media).",
+                        "Add a mapping", Url.Page("/Settings/EditPathMapping"))' />
                 }
                 else
                 {
-                    <div class="d-none d-md-block table-responsive">
+                    <div class="d-none d-md-block qf-table-wrap">
                         <table class="table table-sm align-middle mb-0">
                             <thead>
                             <tr><th>Status</th><th>Source prefix</th><th></th><th>Canonical prefix</th><th class="text-end">Actions</th></tr>
@@ -109,7 +124,7 @@
                                     <td class="text-end">
                                         <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                                         <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="d-inline"
-                                              onsubmit="return confirm('Delete path mapping &quot;@rule.SourcePrefix&quot;?');">
+                                              data-confirm="Delete path mapping &quot;@rule.SourcePrefix&quot; → &quot;@rule.CanonicalPrefix&quot;?" data-confirm-ok="Delete">
                                             <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                         </form>
                                     </td>
@@ -138,7 +153,7 @@
                             <div class="d-flex gap-2 mt-2">
                                 <a asp-page="/Settings/EditPathMapping" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn flex-grow-1"><i class="ti ti-pencil" aria-hidden="true"></i>Edit</a>
                                 <form method="post" asp-page-handler="DeletePathMapping" asp-route-id="@rule.Id" class="flex-grow-1"
-                                      onsubmit="return confirm('Delete path mapping &quot;@rule.SourcePrefix&quot;?');">
+                                      data-confirm="Delete path mapping &quot;@rule.SourcePrefix&quot; → &quot;@rule.CanonicalPrefix&quot;?" data-confirm-ok="Delete">
                                     <button type="submit" class="btn btn-sm btn-outline-danger qf-ico-btn w-100"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
                                 </form>
                             </div>
@@ -160,10 +175,6 @@
                 {
                     <div class="alert alert-danger py-2">@Model.ImportError</div>
                 }
-                @if (Model.ImportSuccess is not null)
-                {
-                    <div class="alert alert-success py-2">@Model.ImportSuccess</div>
-                }
 
                 <h3 class="h6">Export</h3>
                 <p class="text-secondary small">Instance credentials are never included in an export.</p>
@@ -177,24 +188,78 @@
                 <hr>
 
                 <h3 class="h6">Import</h3>
-                <form method="post" asp-page-handler="ImportConfig" enctype="multipart/form-data">
-                    <div class="mb-2">
-                        <select name="importKind" class="form-select form-select-sm">
-                            <option value="config">Config (instances + settings)</option>
-                            <option value="rules">Rules</option>
-                        </select>
+                @if (Model.Preview is { } preview)
+                {
+                    <div id="importPreview">
+                        @if (preview.Error is not null)
+                        {
+                            <div class="alert alert-danger py-2 qf-cell-wrap">@preview.Error</div>
+                            <a asp-page="/Settings/Index" class="btn btn-sm btn-outline-secondary">Choose another file</a>
+                        }
+                        else
+                        {
+                            var adds = preview.Changes.Count(c => c.Kind == ImportChangeKind.Add);
+                            var updates = preview.Changes.Count(c => c.Kind == ImportChangeKind.Update);
+                            <p class="small mb-2">
+                                This @(Model.PreviewKind == "rules" ? "rules" : "config") file would add <strong>@adds</strong> and update <strong>@updates</strong> item(s);
+                                @preview.Changes.Count(c => c.Kind == ImportChangeKind.Unchanged) unchanged. Nothing has been changed yet.
+                            </p>
+                            <div class="qf-table-wrap qf-import-diff mb-2">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead><tr><th>Item</th><th>Change</th></tr></thead>
+                                    <tbody>
+                                    @foreach (var c in preview.Changes.OrderBy(c => c.Kind == ImportChangeKind.Unchanged).ThenBy(c => c.Section))
+                                    {
+                                        <tr class="@(c.Kind == ImportChangeKind.Unchanged ? "qf-row-muted" : null)">
+                                            <td><span class="text-secondary small">@c.Section</span> <span class="fw-medium">@c.Name</span></td>
+                                            <td>
+                                                @switch (c.Kind)
+                                                {
+                                                    case ImportChangeKind.Add: <span class="qf-badge qf-badge-success">add</span> break;
+                                                    case ImportChangeKind.Update: <span class="qf-badge qf-badge-warning">update</span> <span class="small text-secondary">@string.Join(", ", c.ChangedFields)</span> break;
+                                                    default: <span class="small text-secondary">unchanged</span> break;
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <form method="post" asp-page-handler="ImportConfig" class="d-flex gap-2">
+                                <textarea name="importContent" hidden>@Model.PreviewContent</textarea>
+                                <input type="hidden" name="importFormat" value="@Model.PreviewFormat" />
+                                <input type="hidden" name="importKind" value="@Model.PreviewKind" />
+                                <button type="submit" class="btn btn-sm btn-primary qf-ico-btn" disabled="@(!preview.HasChanges)"><i class="ti ti-check" aria-hidden="true"></i>Apply import</button>
+                                <a asp-page="/Settings/Index" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                            </form>
+                        }
                     </div>
-                    <div class="mb-2">
-                        <select name="importFormat" class="form-select form-select-sm">
-                            <option value="Json">JSON</option>
-                            <option value="Yaml">YAML</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <input type="file" name="importFile" class="form-control form-control-sm" accept=".json,.yaml,.yml" />
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-upload" aria-hidden="true"></i>Import</button>
-                </form>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="PreviewImport" enctype="multipart/form-data">
+                        <div class="mb-2">
+                            <label class="form-label small mb-1" for="importKind">What's in the file</label>
+                            <select name="importKind" id="importKind" class="form-select form-select-sm">
+                                <option value="config">Config (instances, storage paths, settings)</option>
+                                <option value="rules">Rules</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1" for="importFormat">Format</label>
+                            <select name="importFormat" id="importFormat" class="form-select form-select-sm">
+                                <option value="Json">JSON</option>
+                                <option value="Yaml">YAML</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1" for="importFile">File</label>
+                            <input type="file" name="importFile" id="importFile" class="form-control form-control-sm" accept=".json,.yaml,.yml" />
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-eye" aria-hidden="true"></i>Preview import</button>
+                        <div class="form-text">You'll see what would be added or changed before anything is applied.</div>
+                    </form>
+                }
             </div>
         </div>
     </div>
@@ -203,6 +268,8 @@
         <div class="qf-card">
             <div class="qf-card-header">
                 <h2>Info</h2>
+                <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" id="copyDiagnostics"
+                        data-copy-text="@Model.Diagnostics"><i class="ti ti-clipboard" aria-hidden="true"></i>Copy diagnostics</button>
             </div>
             <div class="qf-card-body">
                 <dl class="row mb-0 small">
@@ -235,3 +302,13 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <script>
+        // Diagnostics include the browser, which only the browser knows.
+        (function () {
+            var b = document.getElementById('copyDiagnostics');
+            if (b) b.setAttribute('data-copy-text', b.getAttribute('data-copy-text') + '\nBrowser: ' + navigator.userAgent);
+        })();
+    </script>
+}

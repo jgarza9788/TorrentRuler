@@ -4,7 +4,7 @@ using TorrentRuler.Infrastructure.Persistence;
 
 namespace TorrentRuler.Infrastructure.Config;
 
-public class ConfigPortabilityService(AppDbContext db) : IConfigPortabilityService
+public partial class ConfigPortabilityService(AppDbContext db) : IConfigPortabilityService
 {
     public async Task<string> ExportConfigAsync(ConfigFormat format, CancellationToken ct = default)
     {

@@ -117,6 +117,10 @@
                 </div>
             </div>
         </nav>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            @await Component.InvokeAsync("GlobalModeBanner")
+        }
     </header>
     <div class="container-fluid qf-content">
         @* Form pages set ViewData["FormPage"] = true to cap their width; list pages stay fluid. *@

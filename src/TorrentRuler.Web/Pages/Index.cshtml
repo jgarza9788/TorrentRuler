@@ -6,21 +6,7 @@
     ViewData["Title"] = "Dashboard";
 }
 
-@if (Model.Settings.GlobalKillSwitch || Model.Settings.GlobalDryRun)
-{
-    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
-        <strong>Heads up:</strong>
-        @if (Model.Settings.GlobalKillSwitch)
-        {
-            <span>the global kill switch is <strong>ON</strong> &mdash; no rule will execute any action.</span>
-        }
-        @if (Model.Settings.GlobalDryRun)
-        {
-            <span>global dry-run is <strong>ON</strong> &mdash; actions are being previewed, not applied.</span>
-        }
-        <a asp-page="/Settings/Index" class="ms-auto btn btn-sm btn-outline-warning">Settings</a>
-    </div>
-}
+@* The global dry-run / kill-switch banner is in the layout now, on every page. *@
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-xl-3">

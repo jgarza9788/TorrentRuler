@@ -1,0 +1,16 @@
+@model (bool KillSwitch, bool DryRun)
+<div class="qf-global-banner @(Model.KillSwitch ? "qf-global-banner-danger" : "qf-global-banner-warning")" role="status">
+    <i class="ti @(Model.KillSwitch ? "ti-hand-stop" : "ti-flask") flex-shrink-0" aria-hidden="true"></i>
+    <span>
+        @if (Model.KillSwitch)
+        {
+            <strong>Kill switch is ON:</strong> <text>no rules run.</text>
+        }
+        @if (Model.DryRun)
+        {
+            <strong>@(Model.KillSwitch ? " Global dry run is ON too." : "Global dry run is ON:")</strong>
+            @if (!Model.KillSwitch) { <text>rules preview their actions, nothing is applied.</text> }
+        }
+    </span>
+    <a asp-page="/Settings/Index" class="ms-auto text-nowrap">Change in Settings</a>
+</div>

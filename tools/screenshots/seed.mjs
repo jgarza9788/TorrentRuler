@@ -61,7 +61,14 @@ async function seed() {
   await page.selectOption('select[name=importKind]', 'rules');
   await page.selectOption('select[name=importFormat]', 'Json');
   await page.setInputFiles('input[name=importFile]', examples);
-  await page.getByRole('button', { name: 'Import', exact: true }).click();
+  // Import is two steps: preview what would change, then apply. Re-seeding an already seeded
+  // instance changes nothing, so Apply is disabled and there's nothing to do.
+  await page.getByRole('button', { name: 'Preview import' }).click();
+  await page.waitForLoadState('networkidle');
+  const apply = page.getByRole('button', { name: 'Apply import' });
+  if (await apply.isEnabled()) {
+    await apply.click();
+  }
   await page.waitForLoadState('networkidle');
 
   // Dark is the app's main theme; "system" renders light in this Bootstrap build.

@@ -1297,3 +1297,27 @@ html:has(.qf-sticky-footer) {
 .qf-col-resize:hover { background: rgba(var(--tblr-primary-rgb), 0.3); }
 .qf-results-table thead th { position: sticky; }
 .qf-results-table thead th > .qf-col-resize { position: absolute; }
+
+/* ---- Settings: danger zone, global banner, import diff ---- */
+.qf-danger-zone { border-color: rgba(var(--tblr-danger-rgb), 0.55); }
+
+.qf-danger-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+.qf-global-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.qf-global-banner-warning { background: rgba(255, 193, 7, 0.16); color: var(--tblr-body-color); border-bottom: 1px solid rgba(255, 193, 7, 0.45); }
+.qf-global-banner-danger { background: rgba(var(--tblr-danger-rgb), 0.16); color: var(--tblr-body-color); border-bottom: 1px solid rgba(var(--tblr-danger-rgb), 0.5); }
+
+.qf-import-diff { max-height: 20rem; overflow: auto; }
