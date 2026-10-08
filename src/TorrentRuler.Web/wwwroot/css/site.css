@@ -145,8 +145,9 @@ body {
   }
 }
 
+/* No width cap here: list/table pages use the full width; form pages opt into
+   .qf-form-container (1400px, centred) via ViewData["FormPage"]. */
 .qf-content {
-  max-width: 1320px;
   padding-top: 1.5rem;
   padding-bottom: 3rem;
 }
