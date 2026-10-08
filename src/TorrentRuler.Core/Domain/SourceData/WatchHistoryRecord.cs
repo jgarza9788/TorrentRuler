@@ -9,6 +9,13 @@ public class WatchHistoryRecord
     /// <summary>Which kind of source produced this event -- decides which snapshot table it lands in.</summary>
     public required SourceType SourceType { get; init; }
 
+    /// <summary>
+    /// The media server's id for the watched item (Jellystat: the Jellyfin item id; Tautulli: the
+    /// Plex rating key). Matches <see cref="MediaItemRecord.ExternalKey"/> of the same item, which is
+    /// how a history row with no path of its own is linked to a library file.
+    /// </summary>
+    public string? ExternalKey { get; init; }
+
     public string? MediaTitle { get; init; }
     public string? FilePath { get; init; }
     public string? UserName { get; init; }

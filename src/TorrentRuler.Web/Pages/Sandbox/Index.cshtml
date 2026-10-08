@@ -6,7 +6,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">SQL sandbox</h1>
-    <span class="text-muted small">Read-only, against the current snapshot. Helpers: days_since, size_gb, path_matches, regexp, fuzzy_match(a, b, t), fuzzy_score(a, b)</span>
+    <span class="text-muted small">Read-only, against the current snapshot.</span>
 </div>
 
 <div class="row g-3">
@@ -25,6 +25,20 @@
                             }
                         </div>
                     </details>
+                }
+            </div>
+        </div>
+        <div class="qf-card mt-3">
+            <div class="qf-card-body">
+                <h2 class="h6">Helper functions</h2>
+                <div class="text-muted small mb-2">Click one to insert it into the query.</div>
+                @foreach (var h in Model.Helpers)
+                {
+                    <button type="button" class="btn btn-link p-0 text-start d-block text-decoration-none mb-2"
+                            data-insert="@h.Signature" title="Insert into the query">
+                        <code>@h.Signature</code>
+                        <span class="d-block small text-secondary">@h.Description</span>
+                    </button>
                 }
             </div>
         </div>
@@ -59,3 +73,19 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Insert a helper's signature at the cursor (replacing any selection) in the query box.
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('[data-insert]');
+            if (!btn) return;
+            const box = document.getElementById('Sql');
+            const text = btn.getAttribute('data-insert');
+            const start = box.selectionStart ?? box.value.length;
+            const end = box.selectionEnd ?? start;
+            box.setRangeText(text, start, end, 'end');
+            box.focus();
+        });
+    </script>
+}

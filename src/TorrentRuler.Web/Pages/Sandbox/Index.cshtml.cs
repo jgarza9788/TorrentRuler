@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TorrentRuler.Engine;
+using TorrentRuler.Engine.Conditions;
 
 namespace TorrentRuler.Web.Pages.Sandbox;
 
@@ -17,6 +18,9 @@ public class IndexModel(IRuleRunner ruleRunner) : PageModel
     public string Sql { get; set; } = "SELECT * FROM qbittorrent LIMIT 20";
 
     public List<TableInfo> Tables { get; private set; } = [];
+
+    /// <summary>The snapshot's user-defined SQL functions -- the same list the rule editor's Helpers tab shows.</summary>
+    public IReadOnlyList<(string Signature, string Description)> Helpers => SourceFieldCatalog.Helpers;
     public List<string> Columns { get; private set; } = [];
     public List<object?[]> Rows { get; private set; } = [];
     public bool Truncated { get; private set; }

@@ -140,6 +140,7 @@ internal static class SnapshotSchema
         );
         CREATE INDEX ix_{table}_path_key ON {table}(path_key, kind, instance);
         CREATE INDEX ix_{table}_instance ON {table}(instance);
+        CREATE INDEX ix_{table}_external_key ON {table}(external_key);
         """;
 
     /// <summary>The table name for a source type -- identical to its field-key type segment.</summary>

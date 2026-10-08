@@ -114,6 +114,7 @@ starting point. If yours is shaped differently, override it per-instance in
   "fieldMap": {                                        // logical name -> the JSON property in your deployment
     "title":     "itemName",
     "filePath":  "filePath",
+    "externalKey": "EpisodeId|NowPlayingItemId",       // '|' = fallbacks, first non-empty wins
     "user":      "userName",
     "watchedAt": "startTime",
     "percent":   "percentComplete"
@@ -122,7 +123,12 @@ starting point. If yours is shaped differently, override it per-instance in
 ```
 
 Only the keys you list are overridden; the rest keep their defaults. `filePath` is the
-one that matters most — it is what correlates a playback event back to a torrent.
+one that matters most — it is what correlates a playback event back to a torrent. When a
+history row has no path, `externalKey` is the fallback: the row borrows the path of the
+library item (Jellyfin, Plex) with the same id. Jellystat history carries no paths at all,
+so it fetches every history page and looks each distinct item up once via
+`POST /api/getItemDetails` (cached for 24h); `itemPath` names the path property in that
+response (default `Path`).
 
 ### Storage paths
 
@@ -354,9 +360,9 @@ check:
 |---|---|---|---|---|
 | `kind` | Text | all rows | Which kind of row this is: 'media' (a library item) or 'history' (a playback event). | `history` |
 | `title` | Text | all rows | Item title, as reported by the source. | `Foo (2020)` |
-| `file_path` | Text | all rows | File path the source reported for this row. | `/media/movies/Foo.mkv` |
+| `file_path` | Text | all rows | File path the source reported for this row (for a watch event with none, the path of the library item with the same external_key). | `/media/movies/Foo.mkv` |
+| `external_key` | Text | all rows | The media server's id for the item. A watch event and its library item share it (Jellystat <-> Jellyfin item id, Tautulli <-> Plex rating key). | `12345` |
 | `media_type` | Text | library item | movie, episode, etc. as reported by the source. | `movie` |
-| `external_key` | Text | library item | The source's own id for the library item. | `12345` |
 | `added_at` | DateTime | library item | When the media library added this item. | `2026-01-01T00:00:00+00:00` |
 | `days_since_added` | Real | library item | Days since the media library added this item. | `42.5` |
 | `user_name` | Text | playback event | Viewer's username. | `alice` |

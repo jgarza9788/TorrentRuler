@@ -15,6 +15,8 @@ public class TautulliAdapter(IInstanceHttpClientFactory httpClientFactory) : Res
     {
         ["title"] = "full_title",
         ["filePath"] = "file",
+        // Plex's ratingKey -- the same id PlexAdapter stores as the library item's external_key.
+        ["externalKey"] = "rating_key",
         ["user"] = "friendly_name",
         ["watchedAt"] = "date",
         ["percent"] = "percent_complete"

@@ -135,10 +135,10 @@ public static class SourceFieldCatalog
     private static IReadOnlyDictionary<string, FieldDefinition> MediaHistoryFields() => Index(
         Row("kind", "{alias}.kind", FieldValueType.Text, "Which kind of row this is: 'media' (a library item) or 'history' (a playback event).", "history"),
         Row("title", "{alias}.title", FieldValueType.Text, "Item title, as reported by the source.", "Foo (2020)"),
-        Row("file_path", "{alias}.file_path", FieldValueType.Text, "File path the source reported for this row.", "/media/movies/Foo.mkv"),
+        Row("file_path", "{alias}.file_path", FieldValueType.Text, "File path the source reported for this row (for a watch event with none, the path of the library item with the same external_key).", "/media/movies/Foo.mkv"),
+        Row("external_key", "{alias}.external_key", FieldValueType.Text, "The media server's id for the item. A watch event and its library item share it (Jellystat <-> Jellyfin item id, Tautulli <-> Plex rating key).", "12345"),
 
         RowOfKind("media_type", "{alias}.media_type", FieldValueType.Text, KindMedia, "movie, episode, etc. as reported by the source.", "movie"),
-        RowOfKind("external_key", "{alias}.external_key", FieldValueType.Text, KindMedia, "The source's own id for the library item.", "12345"),
         RowOfKind("added_at", "{alias}.added_at", FieldValueType.DateTime, KindMedia, "When the media library added this item.", "2026-01-01T00:00:00+00:00"),
         RowOfKind("days_since_added", "days_since({alias}.added_at)", FieldValueType.Real, KindMedia, "Days since the media library added this item.", "42.5"),
 

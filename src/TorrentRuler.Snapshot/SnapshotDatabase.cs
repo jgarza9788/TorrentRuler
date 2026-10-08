@@ -189,7 +189,21 @@ public class SnapshotDatabase : IDisposable
         using var insert = _connection.CreateCommand();
         insert.Transaction = tx;
 
-        foreach (var m in mediaItems)
+        var mediaList = mediaItems as IReadOnlyCollection<MediaItemRecord> ?? mediaItems.ToList();
+
+        // external_key -> a library file path, for watch events that name the item but carry no
+        // path of their own (Jellystat when its item lookup failed). Borrowing the library item's
+        // path is what lets such a row correlate to a torrent by path_key at all.
+        var pathByExternalKey = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var m in mediaList)
+        {
+            if (m.FilePaths.Count > 0)
+            {
+                pathByExternalKey.TryAdd(m.ExternalKey, m.FilePaths[0]);
+            }
+        }
+
+        foreach (var m in mediaList)
         {
             // One row per file path -- almost always exactly one, but a multi-version Plex
             // item can have more than one, and an item with none still gets a single row
@@ -217,16 +231,20 @@ public class SnapshotDatabase : IDisposable
 
         foreach (var w in watchHistory)
         {
+            var filePath = string.IsNullOrEmpty(w.FilePath) && w.ExternalKey is not null
+                ? pathByExternalKey.GetValueOrDefault(w.ExternalKey)
+                : w.FilePath;
+
             insert.CommandText = InsertInto(w.SourceType);
             insert.Parameters.Clear();
             insert.Parameters.AddWithValue("$instance_id", w.InstanceId);
             insert.Parameters.AddWithValue("$instance", w.InstanceName);
             insert.Parameters.AddWithValue("$kind", SnapshotSchema.KindHistory);
-            insert.Parameters.AddWithValue("$external_key", DBNull.Value);
+            insert.Parameters.AddWithValue("$external_key", DbValues.Of(w.ExternalKey));
             insert.Parameters.AddWithValue("$title", DbValues.Of(w.MediaTitle));
             insert.Parameters.AddWithValue("$media_type", DBNull.Value);
-            insert.Parameters.AddWithValue("$file_path", DbValues.Of(w.FilePath));
-            insert.Parameters.AddWithValue("$path_key", DbValues.Of(PathKeyNormalizer.Normalize(w.FilePath, rules)));
+            insert.Parameters.AddWithValue("$file_path", DbValues.Of(filePath));
+            insert.Parameters.AddWithValue("$path_key", DbValues.Of(PathKeyNormalizer.Normalize(filePath, rules)));
             insert.Parameters.AddWithValue("$added_at", DBNull.Value);
             insert.Parameters.AddWithValue("$user_name", DbValues.Of(w.UserName));
             insert.Parameters.AddWithValue("$watched_at", DbValues.Of(w.WatchedAt));

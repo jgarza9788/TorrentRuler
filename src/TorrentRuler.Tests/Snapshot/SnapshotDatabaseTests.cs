@@ -382,6 +382,49 @@ public class SnapshotDatabaseTests : IDisposable
         Assert.Empty(Rows("jellyglance"));
     }
 
+    [Fact]
+    public void Rebuild_HistoryWithoutPath_BorrowsTheLibraryItemsPathByExternalKey()
+    {
+        _db.Rebuild(new SnapshotInput
+        {
+            MediaItems =
+            [
+                new MediaItemRecord
+                {
+                    InstanceId = 1, InstanceName = "jf1", SourceType = SourceType.Jellyfin,
+                    ExternalKey = "abc", Title = "Foo", FilePaths = ["/Media/Movies/Foo.mkv"]
+                }
+            ],
+            WatchHistory =
+            [
+                new WatchHistoryRecord
+                {
+                    InstanceId = 2, InstanceName = "js1", SourceType = SourceType.Jellystat,
+                    ExternalKey = "abc", MediaTitle = "Foo", UserName = "alice"
+                },
+                new WatchHistoryRecord
+                {
+                    InstanceId = 2, InstanceName = "js1", SourceType = SourceType.Jellystat,
+                    ExternalKey = "unknown", MediaTitle = "Bar", UserName = "alice"
+                }
+            ]
+        });
+
+        using var cmd = _db.Connection.CreateCommand();
+        cmd.CommandText = "SELECT external_key, file_path, path_key FROM jellystat ORDER BY external_key";
+        using var reader = cmd.ExecuteReader();
+
+        Assert.True(reader.Read());
+        Assert.Equal("abc", reader.GetString(0));
+        Assert.Equal("/Media/Movies/Foo.mkv", reader.GetString(1));
+        Assert.Equal("/media/movies/foo.mkv", reader.GetString(2));
+
+        Assert.True(reader.Read());
+        Assert.Equal("unknown", reader.GetString(0));
+        Assert.True(reader.IsDBNull(1));
+        Assert.True(reader.IsDBNull(2));
+    }
+
     private List<(string Kind, string Title, string Instance)> Rows(string table)
     {
         using var cmd = _db.Connection.CreateCommand();
