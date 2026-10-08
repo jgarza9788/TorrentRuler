@@ -201,7 +201,7 @@ public class RuleRunner(
     {
         if (useAdvancedSql && !string.IsNullOrWhiteSpace(advancedSqlWhere))
         {
-            var validation = advancedSqlExecutor.Validate(snapshot, advancedSqlWhere, AdvancedSqlMode.WhereClause, resolution);
+            var validation = advancedSqlExecutor.Validate(snapshot, AdvancedSqlTemplate.FromLegacyWhere(advancedSqlWhere)!, resolution);
             if (!validation.IsValid)
             {
                 throw new InvalidOperationException($"Advanced SQL is invalid: {validation.ErrorMessage}");

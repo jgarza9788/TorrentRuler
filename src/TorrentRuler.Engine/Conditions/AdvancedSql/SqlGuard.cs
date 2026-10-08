@@ -59,6 +59,22 @@ public static class SqlGuard
     }
 
     /// <summary>
+    /// <paramref name="sql"/> trimmed, without its statement-ending ';' -- including one followed only
+    /// by a comment (<c>SELECT 1; -- done</c>), which would otherwise land inside the engine's wrapper.
+    /// </summary>
+    internal static string StripTrailingSemicolon(string sql)
+    {
+        var masked = MaskLiteralsAndComments(sql);
+        var last = masked.Length - 1;
+        while (last >= 0 && char.IsWhiteSpace(masked[last]))
+        {
+            last--;
+        }
+
+        return (last >= 0 && masked[last] == ';' ? sql.Remove(last, 1) : sql).Trim();
+    }
+
+    /// <summary>
     /// <paramref name="sql"/> with every string literal, quoted/bracketed identifier and comment
     /// replaced by spaces of the same length, so positions still line up with the original.
     /// </summary>

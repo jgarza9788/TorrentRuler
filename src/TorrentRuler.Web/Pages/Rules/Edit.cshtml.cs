@@ -95,7 +95,7 @@ public class EditModel(
             else
             {
                 using var snapshot = new SnapshotDatabase();
-                var validation = advancedSqlExecutor.Validate(snapshot, Input.AdvancedSqlWhere, AdvancedSqlMode.WhereClause);
+                var validation = advancedSqlExecutor.Validate(snapshot, AdvancedSqlTemplate.FromLegacyWhere(Input.AdvancedSqlWhere)!);
                 if (!validation.IsValid)
                 {
                     ModelState.AddModelError("Input.AdvancedSqlWhere", validation.ErrorMessage!);
@@ -224,7 +224,7 @@ public class EditModel(
     {
         using var snapshot = new SnapshotDatabase();
         var validation = advancedSqlExecutor.Validate(
-            snapshot, Input.AdvancedSqlWhere ?? "", AdvancedSqlMode.WhereClause, await fieldContextProvider.GetAsync(ct));
+            snapshot, AdvancedSqlTemplate.FromLegacyWhere(Input.AdvancedSqlWhere) ?? "", await fieldContextProvider.GetAsync(ct));
         if (!validation.IsValid)
         {
             Response.StatusCode = 400;

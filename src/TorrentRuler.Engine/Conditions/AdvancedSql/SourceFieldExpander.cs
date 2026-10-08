@@ -22,11 +22,13 @@ namespace TorrentRuler.Engine.Conditions.AdvancedSql;
 /// </summary>
 internal static class SourceFieldExpander
 {
-    /// <summary>The alias AdvancedSqlExecutor gives the outer torrent row in WhereClause mode.</summary>
+    /// <summary>The alias a query must give the torrent table for field keys to expand (FROM qbittorrent t).</summary>
     private const string AnchorAlias = "t";
 
-    public static string Expand(string rawSql, AdvancedSqlMode mode, FieldResolutionContext resolution)
+    /// <param name="expandedAnyKey">Whether at least one field key was rewritten -- lets the caller explain a "no such column: t.…" error.</param>
+    public static string Expand(string rawSql, FieldResolutionContext resolution, out bool expandedAnyKey)
     {
+        expandedAnyKey = false;
         var sb = new StringBuilder(rawSql.Length + 64);
         var i = 0;
         var n = rawSql.Length;
@@ -120,7 +122,8 @@ internal static class SourceFieldExpander
                 var raw = rawSql[start..i];
                 if (segments.Count == 3 && SourceFieldCatalog.Types.ContainsKey(segments[0]))
                 {
-                    sb.Append(ExpandKey(new FieldKey(segments[0], segments[1], segments[2]), raw, mode, resolution, ref subqueryCounter));
+                    sb.Append(ExpandKey(new FieldKey(segments[0], segments[1], segments[2]), raw, resolution, ref subqueryCounter));
+                    expandedAnyKey = true;
                 }
                 else
                 {
@@ -136,7 +139,7 @@ internal static class SourceFieldExpander
         return sb.ToString();
     }
 
-    private static string ExpandKey(FieldKey key, string raw, AdvancedSqlMode mode, FieldResolutionContext resolution, ref int counter)
+    private static string ExpandKey(FieldKey key, string raw, FieldResolutionContext resolution, ref int counter)
     {
         var type = SourceFieldCatalog.Types[key.Type];
         if (!type.Fields.TryGetValue(key.Field, out var field))
@@ -146,13 +149,6 @@ internal static class SourceFieldExpander
         }
 
         ValidateInstance(key, raw, resolution);
-
-        // A full query has no guaranteed outer torrent alias, so only the keys that need no
-        // correlation can be expanded there -- the same boundary the storage rewriter had.
-        if (mode != AdvancedSqlMode.WhereClause && type.Correlation != SourceCorrelation.Standalone)
-        {
-            return raw;
-        }
 
         var alias = $"x{counter++}";
 
