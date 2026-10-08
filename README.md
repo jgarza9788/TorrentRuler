@@ -413,18 +413,40 @@ Callable from advanced SQL, and what the computed fields above use internally:
 ### Advanced SQL
 
 Switch a rule to advanced mode when the visual builder can't say what you mean — deeper
-nesting, a multi-condition EXISTS body, arithmetic across fields. You write a boolean
-WHERE-clause expression; torrentruler wraps it in
-`SELECT … FROM qbittorrent t WHERE <yours>` and the torrent row is aliased `t`.
-
-Field keys work verbatim, and are rewritten into the same SQL the visual builder
-compiles to:
+nesting, a multi-condition EXISTS body, arithmetic across fields, CTEs. You write a
+complete `SELECT` (or `WITH … SELECT`) that **must return `instance_id` and
+`torrent_hash`**: one row per torrent the rule acts on. Extra columns are allowed — the
+engine ignores them, and they show up in Validate and dry-run output. torrentruler wraps
+your query as `SELECT DISTINCT instance_id, torrent_hash FROM (<yours>)`, so duplicates
+don't matter. A new rule starts from:
 
 ```sql
-qbittorrent.*.active_days >= 14
+SELECT DISTINCT t.instance_id AS instance_id, t.hash AS torrent_hash
+FROM qbittorrent t
+WHERE 1 = 1
+```
+
+Switching a basic-builder rule to SQL fills the box with the query the builder compiles
+to. **Validate** runs the query against the current snapshot and shows how many torrents
+match, warns about returned pairs that name no torrent, and lists the first 20 rows.
+**Test in SQL sandbox** opens the query in the sandbox, and the sandbox's **Use as rule**
+starts a new rule from whatever is in its box.
+
+Field keys work verbatim, and are rewritten into the same SQL the visual builder
+compiles to. They refer to the torrent as alias **`t`**, so a query using them needs
+`FROM qbittorrent t`:
+
+```sql
+SELECT t.instance_id, t.hash AS torrent_hash
+FROM qbittorrent t
+WHERE qbittorrent.*.active_days >= 14
   AND storage.downloads.used_percent < 90
   AND tautulli.*.play_count = 0
 ```
+
+Rules written before advanced SQL became a full query (a bare WHERE expression) were
+converted on upgrade, and rule files exported by older versions (`AdvancedSqlWhere`) are
+converted the same way on import.
 
 Specifics worth knowing:
 
@@ -463,10 +485,11 @@ Specifics worth knowing:
   value is matched under a 1-second timeout, so a catastrophic-backtracking pattern
   fails the run rather than hanging it.
 
-It runs on a `PRAGMA query_only` connection, single-statement only, with a keyword
-denylist, a row cap and a timeout — and it is validated with `EXPLAIN QUERY PLAN`
-before you can save it, so a broken query is caught at save time rather than at the
-next scheduled run.
+It runs on a `PRAGMA query_only` connection, single-statement `SELECT`/`WITH` only, with a
+keyword denylist (keywords inside string literals and comments don't count, so
+`t.name LIKE '%update%'` is fine), a row cap and a timeout — and it is validated with a
+column check and `EXPLAIN QUERY PLAN` before you can save it, so a broken query is
+caught at save time rather than at the next scheduled run.
 
 ### Actions
 
