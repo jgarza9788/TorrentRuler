@@ -1,0 +1,9 @@
+{
+  "name": "torrentruler-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only: seeds a throwaway TorrentRuler instance and captures page screenshots. Not part of the app.",
+  "devDependencies": {
+    "playwright": "1.48.2"
+  }
+}

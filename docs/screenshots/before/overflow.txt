@@ -1,0 +1,3 @@
+rule-edit@375: scrollWidth 439 > 375
+sandbox@375: scrollWidth 826 > 375
+sandbox@768: scrollWidth 826 > 768
