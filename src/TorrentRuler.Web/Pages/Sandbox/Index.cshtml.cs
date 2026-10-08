@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TorrentRuler.Engine;
 using TorrentRuler.Engine.Conditions;
+using TorrentRuler.Engine.Conditions.AdvancedSql;
 
 namespace TorrentRuler.Web.Pages.Sandbox;
 
@@ -11,8 +11,6 @@ public class IndexModel(IRuleRunner ruleRunner) : PageModel
 {
     public const int MaxRows = 1000;
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
-
-    private static readonly Regex AllowedStart = new(@"^\s*(SELECT|WITH|EXPLAIN)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     [BindProperty]
     public string Sql { get; set; } = "SELECT * FROM qbittorrent LIMIT 20";
@@ -77,9 +75,9 @@ public class IndexModel(IRuleRunner ruleRunner) : PageModel
 
             Ran = true;
             var sql = (Sql ?? "").Trim().TrimEnd(';');
-            if (sql.Length == 0 || sql.Contains(';') || !AllowedStart.IsMatch(sql))
+            if (SqlGuard.Check(sql, allowExplain: true) is { } shapeError)
             {
-                Error = "Enter a single SELECT / WITH / EXPLAIN statement.";
+                Error = shapeError;
                 return;
             }
 

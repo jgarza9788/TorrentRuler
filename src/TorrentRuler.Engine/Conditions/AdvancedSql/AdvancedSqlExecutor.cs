@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using TorrentRuler.Snapshot;
 
@@ -16,8 +15,8 @@ namespace TorrentRuler.Engine.Conditions.AdvancedSql;
 ///     shared-cache in-memory database can only be addressed via mode=memory, which
 ///     can't be combined with the URI mode=ro flag, so query_only is the mechanism SQLite
 ///     actually offers for this)
-///   - single-statement-only + a keyword denylist, rejecting attempts to stack additional
-///     statements or invoke schema/pragma/write statements
+///   - <see cref="SqlGuard"/>: single-statement, SELECT/WITH only, and a keyword denylist that
+///     ignores string literals and comments
 ///   - a row cap enforced by the read loop itself (not just a LIMIT clause the author
 ///     could omit or a FullQuery could paper over)
 ///   - a cooperative-cancellation timeout on execution
@@ -32,16 +31,15 @@ public class AdvancedSqlExecutor
     public const string WhereClausePrefix = "SELECT DISTINCT t.instance_id AS instance_id, t.hash AS torrent_hash FROM qbittorrent t WHERE";
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
 
-    private static readonly Regex ForbiddenKeywordPattern = new(
-        @"\b(ATTACH|DETACH|PRAGMA|VACUUM|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|REPLACE|REINDEX)\b",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
     public AdvancedSqlValidationResult Validate(SnapshotDatabase snapshot, string rawSql, AdvancedSqlMode mode) =>
         Validate(snapshot, rawSql, mode, FieldResolutionContext.Lenient);
 
     public AdvancedSqlValidationResult Validate(SnapshotDatabase snapshot, string rawSql, AdvancedSqlMode mode, FieldResolutionContext resolution)
     {
-        var shapeError = ValidateShape(rawSql);
+        // A WHERE clause is checked as the query it becomes, so the guard sees a SELECT.
+        var shapeError = string.IsNullOrWhiteSpace(rawSql)
+            ? "SQL cannot be empty."
+            : SqlGuard.Check(mode == AdvancedSqlMode.WhereClause ? $"{WhereClausePrefix} {rawSql}" : rawSql);
         if (shapeError is not null)
         {
             return AdvancedSqlValidationResult.Failure(shapeError);
@@ -121,23 +119,6 @@ public class AdvancedSqlExecutor
         }
 
         return results;
-    }
-
-    private static string? ValidateShape(string rawSql)
-    {
-        if (string.IsNullOrWhiteSpace(rawSql))
-        {
-            return "SQL cannot be empty.";
-        }
-
-        var trimmed = rawSql.Trim().TrimEnd(';');
-        if (trimmed.Contains(';'))
-        {
-            return "Only a single statement is allowed.";
-        }
-
-        var match = ForbiddenKeywordPattern.Match(trimmed);
-        return match.Success ? $"'{match.Value.ToUpperInvariant()}' is not allowed in advanced conditions." : null;
     }
 
     /// <summary>Internal (not private) so tests can verify the SQLite-level read-only guarantee directly, independent of the regex-based shape check.</summary>
