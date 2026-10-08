@@ -1,8 +1,13 @@
 @page
+@using TorrentRuler.Web.Pages.History
+@using TorrentRuler.Web.Pages.Shared
 @model TorrentRuler.Web.Pages.History.IndexModel
 @{
     ViewData["Title"] = "Run history";
-    var hasFilters = Model.RuleId is not null || Model.Outcome is not null || Model.From is not null || Model.To is not null;
+    string RuleName(int id) => Model.RuleNamesById.GetValueOrDefault(id, "(deleted rule)");
+    string Duration(TorrentRuler.Core.Domain.RunRecord r) => r.FinishedAt is null ? "—"
+        : IndexModel.DurationMs(r) < 1000 ? $"{IndexModel.DurationMs(r):0} ms" : $"{IndexModel.DurationMs(r) / 1000:0.0} s";
+    double BarPercent(TorrentRuler.Core.Domain.RunRecord r) => Model.MaxDurationMs <= 0 ? 0 : Math.Max(2, 100 * IndexModel.DurationMs(r) / Model.MaxDurationMs);
 }
 
 <button class="btn btn-sm btn-outline-secondary d-md-none w-100 mb-2 qf-ico-btn"
@@ -35,74 +40,79 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small mb-1" for="historyFrom">From</label>
-                    <input id="historyFrom" type="date" name="From" class="form-control form-control-sm" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+                <div class="col-md-4">
+                    <span class="form-label small mb-1 d-block" id="historyWhen">When</span>
+                    <div class="d-flex flex-wrap gap-1 align-items-center" role="group" aria-labelledby="historyWhen">
+                        @foreach (var (key, label, _) in HistoryQuery.Ranges)
+                        {
+                            var on = Model.Range == key;
+                            <a class="btn btn-sm @(on ? "btn-primary" : "btn-outline-secondary")" aria-pressed="@(on ? "true" : "false")"
+                               asp-page="/History/Index" asp-all-route-data='Model.Route("Range", on ? null : key).Where(kv => kv.Key is not "From" and not "To").ToDictionary(kv => kv.Key, kv => kv.Value)'>@label</a>
+                        }
+                        <input id="historyFrom" type="date" name="From" class="form-control form-control-sm w-auto" aria-label="From date"
+                               value="@(Model.Range is null ? Model.From?.ToString("yyyy-MM-dd") : null)" />
+                        <span class="text-secondary small">to</span>
+                        <input id="historyTo" type="date" name="To" class="form-control form-control-sm w-auto" aria-label="To date"
+                               value="@(Model.Range is null ? Model.To?.ToString("yyyy-MM-dd") : null)" />
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small mb-1" for="historyTo">To</label>
-                    <input id="historyTo" type="date" name="To" class="form-control form-control-sm" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+                <div class="col-md-3 d-flex flex-wrap gap-3 align-items-center">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="historyApplied" name="AppliedOnly" value="true" checked="@Model.AppliedOnly" />
+                        <label class="form-check-label small" for="historyApplied">Only runs with applied &gt; 0</label>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="historyFailures" name="FailuresOnly" value="true" checked="@Model.FailuresOnly" />
+                        <label class="form-check-label small" for="historyFailures">Only failures</label>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-filter" aria-hidden="true"></i>Filter</button>
-                    <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-x" aria-hidden="true"></i>Clear</a>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-filter" aria-hidden="true"></i>Apply filters</button>
+                    @if (Model.HasFilters)
+                    {
+                        <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary qf-ico-btn"><i class="ti ti-x" aria-hidden="true"></i>Clear</a>
+                    }
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-@if (hasFilters)
-{
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-        @if (Model.RuleId is not null)
-        {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
-               asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
-                Rule: @Model.RuleNamesById.GetValueOrDefault(Model.RuleId.Value, "?")<i class="ti ti-x" aria-hidden="true"></i>
-            </a>
-        }
-        @if (Model.Outcome is not null)
-        {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
-               asp-route-RuleId="@Model.RuleId" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
-                Outcome: @Model.Outcome<i class="ti ti-x" aria-hidden="true"></i>
-            </a>
-        }
-        @if (Model.From is not null)
-        {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
-               asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">
-                From: @Model.From.Value.ToString("MMM d")<i class="ti ti-x" aria-hidden="true"></i>
-            </a>
-        }
-        @if (Model.To is not null)
-        {
-            <a class="badge text-bg-secondary qf-ico-btn text-decoration-none" asp-page="/History/Index"
-               asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")">
-                To: @Model.To.Value.ToString("MMM d")<i class="ti ti-x" aria-hidden="true"></i>
-            </a>
-        }
-        <a class="btn btn-sm btn-link text-decoration-none p-0 ms-1" asp-page="/History/Index">Clear all</a>
-    </div>
-}
-
 <div class="qf-card">
+    <div class="qf-card-header">
+        <h2>Runs</h2>
+        <span class="small text-secondary">
+            @if (Model.TotalCount > 0)
+            {
+                <text>Showing @Model.FirstIndex–@Model.LastIndex of @Model.TotalCount</text>
+            }
+        </span>
+    </div>
     <div class="qf-card-body p-0">
-        @if (Model.Runs.Count == 0)
+        @if (Model.TotalCount == 0)
         {
-            <div class="qf-empty">
-                <div class="qf-empty-icon ti ti-history" aria-hidden="true"></div>
-                <p class="mb-0">No runs match these filters.</p>
-            </div>
+            @if (Model.HasFilters)
+            {
+                <div class="qf-empty">
+                    <i class="ti ti-filter-off qf-empty-icon" aria-hidden="true"></i>
+                    <div class="qf-empty-title">No runs match these filters</div>
+                    <a asp-page="/History/Index" class="btn btn-sm btn-outline-secondary">Clear filters</a>
+                </div>
+            }
+            else
+            {
+                <partial name="_EmptyState" model='new EmptyStateModel("history", "No runs yet",
+                    "Rules run on their schedule, or right away with Run now on the Rules page.",
+                    "Go to rules", Url.Page("/Rules/Index"))' />
+            }
         }
         else
         {
-            <div class="d-none d-md-block table-responsive">
-                <table class="table table-sm align-middle mb-0">
+            <div class="d-none d-md-block qf-table-wrap qf-sticky-head qf-history-scroll">
+                <table class="table table-sm align-middle mb-0 qf-history-table">
                     <thead>
                     <tr>
-                        <th></th>
+                        <th class="qf-col-chevron"><span class="visually-hidden">Details</span></th>
                         <th>Rule</th>
                         <th>Started</th>
                         <th>Duration</th>
@@ -114,130 +124,143 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach (var run in Model.Runs)
+                    @foreach (var group in Model.Groups)
                     {
-                        var detailId = $"details-{run.Id}";
-                        var details = TorrentRuler.Web.Pages.History.IndexModel.ParseDetails(run.DetailsJson);
-                        var duration = run.FinishedAt is not null ? (run.FinishedAt.Value - run.StartedAt) : (TimeSpan?)null;
-                        <tr>
-                            <td>
-                                @if (details.Count > 0 || run.ErrorMessage is not null)
-                                {
-                                    <button class="btn btn-sm btn-link p-0 qf-detail-toggle" data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-label="Toggle details"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
-                                }
-                            </td>
-                            <td>@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</td>
-                            <td class="text-secondary"><partial name="_RelativeTime" model="run.StartedAt" /></td>
-                            <td class="text-secondary">@(duration is not null ? $"{duration.Value.TotalSeconds:0.0}s" : "—")</td>
-                            <td>
-                                <partial name="_StatusBadge" model="run.Outcome" />
-                                @if (run.WasDryRun)
-                                {
-                                    <span class="qf-badge qf-badge-secondary ms-1">dry-run</span>
-                                }
-                            </td>
-                            <td class="text-end">@run.MatchedCount</td>
-                            <td class="text-end">@run.ActionsExecutedCount</td>
-                            <td class="text-end d-none d-lg-table-cell">@run.ActionsSkippedCount</td>
-                            <td class="text-end @(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</td>
-                        </tr>
-                        <tr class="collapse" id="@detailId">
-                            <td colspan="9" class="qf-detail-panel">
-                                @if (run.ErrorMessage is not null)
-                                {
-                                    <div class="alert alert-danger py-2 mb-2">@run.ErrorMessage</div>
-                                }
-                                @if (details.Count > 0)
-                                {
-                                    <table class="table table-sm mb-0">
-                                        <thead><tr><th>Torrent hash</th><th>Action</th><th>Outcome</th><th>Error</th></tr></thead>
-                                        <tbody>
-                                        @foreach (var d in details)
-                                        {
-                                            <tr>
-                                                <td class="qf-muted-mono">@d.TorrentHash</td>
-                                                <td>@d.ActionType</td>
-                                                <td>@d.Outcome</td>
-                                                <td class="text-danger">@d.Error</td>
-                                            </tr>
-                                        }
-                                        </tbody>
-                                    </table>
-                                }
-                            </td>
-                        </tr>
+                        for (var i = 0; i < group.Runs.Count; i++)
+                        {
+                            var run = group.Runs[i];
+                            var detailId = $"details-{run.Id}";
+                            var hidden = i > 0; // later runs of a collapsed group start hidden
+                            <tr class="qf-run-row @(hidden ? "d-none" : null) @(group.IsCollapsed ? $"qf-group-{group.First.Id}" : null)"
+                                data-run-toggle="@detailId" role="button" tabindex="0" aria-expanded="false" aria-controls="@detailId"
+                                aria-label="Details of the @RuleName(run.RuleId) run started @run.StartedAt.ToLocalTime().ToString("MMM d HH:mm:ss")">
+                                <td class="qf-col-chevron"><i class="ti ti-chevron-right qf-chevron" aria-hidden="true"></i></td>
+                                <td>
+                                    @RuleName(run.RuleId)
+                                    @if (group.IsCollapsed && i == 0)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-ghost-secondary py-0 ms-1 qf-group-toggle" data-group="qf-group-@group.First.Id"
+                                                aria-expanded="false" aria-label="Show @(group.Runs.Count - 1) more similar runs">×@group.Runs.Count similar</button>
+                                    }
+                                </td>
+                                <td class="text-secondary"><partial name="_RelativeTime" model="run.StartedAt" /></td>
+                                <td>
+                                    <div class="qf-duration">
+                                        <span class="qf-duration-bar" style="width: @BarPercent(run).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span>
+                                        <span class="qf-duration-text">@Duration(run)</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <partial name="_StatusBadge" model="run.Outcome" />
+                                    @if (run.WasDryRun)
+                                    {
+                                        <span class="qf-badge qf-badge-secondary ms-1">dry run</span>
+                                    }
+                                </td>
+                                <td class="text-end">@run.MatchedCount</td>
+                                <td class="text-end @(run.ActionsExecutedCount > 0 ? "text-success fw-semibold" : "")">@run.ActionsExecutedCount</td>
+                                <td class="text-end d-none d-lg-table-cell">@run.ActionsSkippedCount</td>
+                                <td class="text-end @(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</td>
+                            </tr>
+                            <tr class="qf-detail-row d-none" id="@detailId">
+                                <td colspan="9" class="qf-detail-panel"><partial name="_RunDetails" model="run" /></td>
+                            </tr>
+                        }
                     }
                     </tbody>
                 </table>
             </div>
+
             <div class="d-md-none qf-row-card-list">
-            @foreach (var run in Model.Runs)
+            @foreach (var run in Model.Groups.SelectMany(g => g.Runs))
             {
                 var detailId = $"details-mobile-{run.Id}";
-                var details = TorrentRuler.Web.Pages.History.IndexModel.ParseDetails(run.DetailsJson);
-                var duration = run.FinishedAt is not null ? (run.FinishedAt.Value - run.StartedAt) : (TimeSpan?)null;
-                var hasDetails = details.Count > 0 || run.ErrorMessage is not null;
                 <div class="qf-row-card">
                     <div class="qf-row-card-top">
-                        <span class="qf-row-card-title flex-grow-1">@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</span>
+                        <span class="qf-row-card-title flex-grow-1">@RuleName(run.RuleId)</span>
                         <partial name="_StatusBadge" model="run.Outcome" />
                     </div>
-                    @if (run.WasDryRun)
-                    {
-                        <span class="qf-badge qf-badge-secondary mb-1">dry-run</span>
-                    }
                     <dl class="qf-row-card-meta">
                         <dt>Started</dt><dd><partial name="_RelativeTime" model="run.StartedAt" /></dd>
-                        <dt>Duration</dt><dd>@(duration is not null ? $"{duration.Value.TotalSeconds:0.0}s" : "—")</dd>
+                        <dt>Duration</dt><dd>@Duration(run)</dd>
                         <dt>Matched</dt><dd>@run.MatchedCount</dd>
                         <dt>Applied</dt><dd>@run.ActionsExecutedCount</dd>
                         <dt>Failed</dt><dd class="@(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</dd>
                     </dl>
-                    @if (hasDetails)
-                    {
-                        <button class="btn btn-sm btn-outline-secondary w-100 mt-2 qf-ico-btn qf-detail-toggle justify-content-center" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-controls="@detailId">
-                            <i class="ti ti-chevron-down" aria-hidden="true"></i>Details
-                        </button>
-                        <div class="collapse mt-2" id="@detailId">
-                            <div class="qf-detail-panel">
-                                @if (run.ErrorMessage is not null)
-                                {
-                                    <div class="alert alert-danger py-2 mb-2">@run.ErrorMessage</div>
-                                }
-                                @foreach (var d in details)
-                                {
-                                    <div class="small mb-2">
-                                        <div class="qf-muted-mono">@d.TorrentHash</div>
-                                        <div>@d.ActionType &mdash; @d.Outcome</div>
-                                        @if (!string.IsNullOrEmpty(d.Error))
-                                        {
-                                            <div class="text-danger">@d.Error</div>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
+                    <button class="btn btn-sm btn-outline-secondary w-100 mt-2 qf-ico-btn justify-content-center" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#@detailId" aria-expanded="false" aria-controls="@detailId">
+                        <i class="ti ti-chevron-down" aria-hidden="true"></i>Details
+                    </button>
+                    <div class="collapse mt-2" id="@detailId">
+                        <div class="qf-detail-panel"><partial name="_RunDetails" model="run" /></div>
+                    </div>
                 </div>
             }
             </div>
 
             @if (Model.TotalPages > 1)
             {
-                <nav class="p-3">
+                var first = Math.Max(1, Model.PageNumber - 3);
+                var last = Math.Min(Model.TotalPages, Model.PageNumber + 3);
+                <nav class="p-3 d-flex flex-wrap align-items-center gap-2" aria-label="History pages">
                     <ul class="pagination pagination-sm mb-0">
-                        @for (var p = 1; p <= Model.TotalPages; p++)
+                        <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-page="/History/Index" asp-all-route-data='Model.Route("PageNumber", Model.PageNumber - 1)' aria-label="Previous page">‹</a>
+                        </li>
+                        @for (var p = first; p <= last; p++)
                         {
                             <li class="page-item @(p == Model.PageNumber ? "active" : "")">
-                                <a class="page-link" asp-page="/History/Index"
-                                   asp-route-PageNumber="@p" asp-route-RuleId="@Model.RuleId" asp-route-Outcome="@Model.Outcome"
-                                   asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")">@p</a>
+                                <a class="page-link" asp-page="/History/Index" asp-all-route-data='Model.Route("PageNumber", p)'
+                                   aria-current="@(p == Model.PageNumber ? "page" : null)">@p</a>
                             </li>
                         }
+                        <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-page="/History/Index" asp-all-route-data='Model.Route("PageNumber", Model.PageNumber + 1)' aria-label="Next page">›</a>
+                        </li>
                     </ul>
+                    <span class="small text-secondary">Page @Model.PageNumber of @Model.TotalPages</span>
                 </nav>
             }
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Whole-row disclosure: click, Enter or Space on a run row toggles its details row.
+        (function () {
+            function toggle(row) {
+                var detail = document.getElementById(row.getAttribute('data-run-toggle'));
+                if (!detail) return;
+                var open = detail.classList.toggle('d-none') === false;
+                row.setAttribute('aria-expanded', open ? 'true' : 'false');
+                row.classList.toggle('qf-open', open);
+            }
+            document.addEventListener('click', function (e) {
+                var groupBtn = e.target.closest('.qf-group-toggle');
+                if (groupBtn) {
+                    var show = groupBtn.getAttribute('aria-expanded') !== 'true';
+                    document.querySelectorAll('tr.' + groupBtn.getAttribute('data-group')).forEach(function (r, i) {
+                        if (i === 0) return; // the group's first run is always shown
+                        r.classList.toggle('d-none', !show);
+                        if (!show) { // hiding a run also hides its open details
+                            var d = document.getElementById(r.getAttribute('data-run-toggle'));
+                            if (d) d.classList.add('d-none');
+                        }
+                    });
+                    groupBtn.setAttribute('aria-expanded', show ? 'true' : 'false');
+                    return;
+                }
+                var row = e.target.closest('tr[data-run-toggle]');
+                if (row && !e.target.closest('a, button, input')) toggle(row);
+            });
+            document.addEventListener('keydown', function (e) {
+                var row = e.target.closest && e.target.closest('tr[data-run-toggle]');
+                if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    toggle(row);
+                }
+            });
+        })();
+    </script>
+}

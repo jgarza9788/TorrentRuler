@@ -272,6 +272,38 @@ document.addEventListener('htmx:configRequest', function (evt) {
     });
 })();
 
+// Copy buttons: any element with data-copy-text copies that text and confirms with a toast.
+// navigator.clipboard needs a secure context (HTTPS or localhost); over plain HTTP on a LAN
+// address it doesn't exist, so fall back to a hidden textarea + execCommand.
+(function () {
+    'use strict';
+    function copy(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; });
+        }
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        ta.remove();
+        return Promise.resolve(ok);
+    }
+    window.qfCopy = copy;
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-copy-text]');
+        if (!btn) return;
+        e.preventDefault();
+        copy(btn.getAttribute('data-copy-text')).then(function (ok) {
+            if (window.qfToast) window.qfToast(ok ? 'success' : 'error', ok ? 'Copied to clipboard.' : 'Copy failed: select and copy by hand.');
+        });
+    });
+})();
+
 // Bootstrap tooltips for anything marked data-bs-toggle="tooltip" (the title attribute is the text).
 document.addEventListener('DOMContentLoaded', function () {
     if (!window.tabler || !window.tabler.Tooltip) return;

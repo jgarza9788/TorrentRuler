@@ -1,73 +1,84 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TorrentRuler.Core.Domain;
-using TorrentRuler.Engine.Actions;
+using ActionResult = TorrentRuler.Engine.Actions.ActionResult;
 using TorrentRuler.Infrastructure.Persistence;
 
 namespace TorrentRuler.Web.Pages.History;
 
 public class IndexModel(AppDbContext db) : PageModel
 {
-    [Microsoft.AspNetCore.Mvc.BindProperty(SupportsGet = true)]
-    public int? RuleId { get; set; }
+    public const int PageSize = 50;
 
-    [Microsoft.AspNetCore.Mvc.BindProperty(SupportsGet = true)]
-    public RunOutcome? Outcome { get; set; }
+    /// <summary>How far back the page looks. Older runs are still in the database, just not listed.</summary>
+    public const int Window = 5000;
 
-    [Microsoft.AspNetCore.Mvc.BindProperty(SupportsGet = true)]
-    public DateTime? From { get; set; }
+    [BindProperty(SupportsGet = true)] public int? RuleId { get; set; }
+    [BindProperty(SupportsGet = true)] public RunOutcome? Outcome { get; set; }
+    [BindProperty(SupportsGet = true)] public DateTime? From { get; set; }
+    [BindProperty(SupportsGet = true)] public DateTime? To { get; set; }
+    [BindProperty(SupportsGet = true)] public string? Range { get; set; }
+    [BindProperty(SupportsGet = true)] public bool AppliedOnly { get; set; }
+    [BindProperty(SupportsGet = true)] public bool FailuresOnly { get; set; }
+    [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
 
-    [Microsoft.AspNetCore.Mvc.BindProperty(SupportsGet = true)]
-    public DateTime? To { get; set; }
-
-    [Microsoft.AspNetCore.Mvc.BindProperty(SupportsGet = true)]
-    public int PageNumber { get; set; } = 1;
-
-    public const int PageSize = 25;
-
-    public List<RunRecord> Runs { get; private set; } = [];
+    public List<HistoryGroup> Groups { get; private set; } = [];
     public Dictionary<int, string> RuleNamesById { get; private set; } = [];
     public List<Rule> AllRules { get; private set; } = [];
     public int TotalCount { get; private set; }
+    public int FirstIndex { get; private set; }
+    public int LastIndex { get; private set; }
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
+    public double MaxDurationMs { get; private set; }
+
+    public bool HasFilters => RuleId is not null || Outcome is not null || From is not null || To is not null
+        || Range is not null || AppliedOnly || FailuresOnly;
 
     public async Task OnGetAsync(CancellationToken ct)
     {
         AllRules = await db.Rules.AsNoTracking().OrderBy(r => r.Name).ToListAsync(ct);
         RuleNamesById = AllRules.ToDictionary(r => r.Id, r => r.Name);
 
-        var query = db.RunRecords.AsNoTracking().AsQueryable();
+        // SQLite's EF Core provider can't translate DateTimeOffset comparisons (WHERE or ORDER BY):
+        // order by Id (insertion order, equivalent to StartedAt here), take a bounded window, and
+        // let HistoryQuery do the rest in memory.
+        var candidates = await db.RunRecords.AsNoTracking().OrderByDescending(r => r.Id).Take(Window).ToListAsync(ct);
 
-        if (RuleId is not null)
-        {
-            query = query.Where(r => r.RuleId == RuleId);
-        }
-        if (Outcome is not null)
-        {
-            query = query.Where(r => r.Outcome == Outcome);
-        }
-        // SQLite's EF Core provider can't translate DateTimeOffset comparisons (WHERE or
-        // ORDER BY) -- push down what does translate (RuleId/Outcome), order by Id (an
-        // auto-increment PK assigned in real-time insertion order, equivalent to ordering
-        // by StartedAt here), then apply the From/To window and pagination client-side.
-        var candidates = await query.OrderByDescending(r => r.Id).Take(2000).ToListAsync(ct);
+        var filtered = HistoryQuery.Apply(candidates,
+            new HistoryFilter(RuleId, Outcome, From, To, Range, AppliedOnly, FailuresOnly), DateTimeOffset.UtcNow);
+        var (page, total) = HistoryQuery.Page(filtered, PageNumber, PageSize);
 
-        if (From is not null)
-        {
-            var fromOffset = new DateTimeOffset(DateTime.SpecifyKind(From.Value, DateTimeKind.Utc));
-            candidates = candidates.Where(r => r.StartedAt >= fromOffset).ToList();
-        }
-        if (To is not null)
-        {
-            var toOffset = new DateTimeOffset(DateTime.SpecifyKind(To.Value.AddDays(1), DateTimeKind.Utc));
-            candidates = candidates.Where(r => r.StartedAt < toOffset).ToList();
-        }
+        TotalCount = total;
+        PageNumber = Math.Clamp(PageNumber, 1, TotalPages);
+        FirstIndex = total == 0 ? 0 : (PageNumber - 1) * PageSize + 1;
+        LastIndex = FirstIndex + page.Count - (total == 0 ? 0 : 1);
+        Groups = HistoryQuery.Group(page);
+        MaxDurationMs = page.Select(DurationMs).DefaultIfEmpty(0).Max();
+    }
 
-        TotalCount = candidates.Count;
+    public static double DurationMs(RunRecord run) =>
+        run.FinishedAt is { } end ? Math.Max(0, (end - run.StartedAt).TotalMilliseconds) : 0;
 
-        var page = Math.Max(1, PageNumber);
-        Runs = candidates.Skip((page - 1) * PageSize).Take(PageSize).ToList();
+    /// <summary>The route values for this page with one setting changed -- for filter chips, ranges and the pager.</summary>
+    public Dictionary<string, string?> Route(string? key = null, object? value = null)
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["RuleId"] = RuleId?.ToString(),
+            ["Outcome"] = Outcome?.ToString(),
+            ["From"] = From?.ToString("yyyy-MM-dd"),
+            ["To"] = To?.ToString("yyyy-MM-dd"),
+            ["Range"] = Range,
+            ["AppliedOnly"] = AppliedOnly ? "true" : null,
+            ["FailuresOnly"] = FailuresOnly ? "true" : null
+        };
+        if (key is not null)
+        {
+            values[key] = value switch { null => null, bool b => b ? "true" : null, _ => value.ToString() };
+        }
+        return values.Where(kv => kv.Value is not null).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
     public static List<ActionResult> ParseDetails(string? detailsJson)
@@ -84,6 +95,24 @@ public class IndexModel(AppDbContext db) : PageModel
         catch (JsonException)
         {
             return [];
+        }
+    }
+
+    /// <summary>The run's details as indented JSON for the raw view (as stored, if it isn't valid JSON).</summary>
+    public static string PrettyDetails(string? detailsJson)
+    {
+        if (string.IsNullOrWhiteSpace(detailsJson))
+        {
+            return "(no details recorded)";
+        }
+        try
+        {
+            using var doc = JsonDocument.Parse(detailsJson);
+            return JsonSerializer.Serialize(doc.RootElement, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch (JsonException)
+        {
+            return detailsJson;
         }
     }
 }
