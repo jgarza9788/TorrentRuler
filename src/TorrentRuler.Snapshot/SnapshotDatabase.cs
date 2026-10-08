@@ -226,7 +226,7 @@ public class SnapshotDatabase : IDisposable
                 insert.Parameters.AddWithValue("$user_name", DBNull.Value);
                 insert.Parameters.AddWithValue("$watched_at", DBNull.Value);
                 insert.Parameters.AddWithValue("$percent_complete", DBNull.Value);
-                insert.Parameters.AddWithValue("$time_played", DBNull.Value);
+                insert.Parameters.AddWithValue("$times_played", DBNull.Value);
                 insert.ExecuteNonQuery();
             }
         }
@@ -252,7 +252,7 @@ public class SnapshotDatabase : IDisposable
             insert.Parameters.AddWithValue("$user_name", DbValues.Of(w.UserName));
             insert.Parameters.AddWithValue("$watched_at", DbValues.Of(w.WatchedAt));
             insert.Parameters.AddWithValue("$percent_complete", DbValues.Of(w.PercentComplete));
-            insert.Parameters.AddWithValue("$time_played", DbValues.Of(w.TimePlayed));
+            insert.Parameters.AddWithValue("$times_played", DbValues.Of(w.TimesPlayed));
             insert.ExecuteNonQuery();
         }
     }
@@ -268,10 +268,10 @@ public class SnapshotDatabase : IDisposable
         return $"""
             INSERT INTO {SnapshotSchema.TableFor(type)}
             (instance_id, instance, kind, external_key, title, media_type, genres, file_path, path_key,
-             added_at, user_name, watched_at, percent_complete, time_played)
+             added_at, user_name, watched_at, percent_complete, times_played)
             VALUES
             ($instance_id, $instance, $kind, $external_key, $title, $media_type, $genres, $file_path, $path_key,
-             $added_at, $user_name, $watched_at, $percent_complete, $time_played)
+             $added_at, $user_name, $watched_at, $percent_complete, $times_played)
             """;
     }
 

@@ -15,7 +15,7 @@ namespace TorrentRuler.Sources.Adapters;
 /// further overridable per-instance via ExtraConfigJson, see RestHistoryConfig).
 /// </summary>
 /// <summary>What a per-item details lookup found out about one watched item. Anything it couldn't find is null.</summary>
-public sealed record HistoryItemDetails(string? Path, string? MediaType, string? Genres, double? TimePlayed);
+public sealed record HistoryItemDetails(string? Path, string? MediaType, string? Genres, long? TimesPlayed);
 
 public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClientFactory) : ISourceAdapter
 {
@@ -148,7 +148,7 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
                 MediaTitle = JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("title")),
                 MediaType = itemDetails?.MediaType ?? JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("mediaType")),
                 Genres = itemDetails?.Genres,
-                TimePlayed = itemDetails?.TimePlayed,
+                TimesPlayed = itemDetails?.TimesPlayed,
                 FilePath = filePath,
                 UserName = JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("user")),
                 WatchedAt = JsonPathResolver.GetUnixSeconds(item, config.FieldMap.GetValueOrDefault("watchedAt")),

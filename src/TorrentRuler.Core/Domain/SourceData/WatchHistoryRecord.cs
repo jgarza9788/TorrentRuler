@@ -24,8 +24,8 @@ public class WatchHistoryRecord
     /// <summary>The item's genres as one comma-separated string ("Drama,Sci-Fi"), or null when unknown.</summary>
     public string? Genres { get; init; }
 
-    /// <summary>How long the item has been played in total, in the source's own unit (Jellystat's <c>time_played</c>).</summary>
-    public double? TimePlayed { get; init; }
+    /// <summary>How many times the item has been played in total (Jellystat's <c>times_played</c>).</summary>
+    public long? TimesPlayed { get; init; }
 
     public string? FilePath { get; init; }
     public string? UserName { get; init; }

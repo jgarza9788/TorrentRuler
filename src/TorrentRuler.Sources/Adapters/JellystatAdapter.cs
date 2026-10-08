@@ -18,14 +18,14 @@ namespace TorrentRuler.Sources.Adapters;
 /// page is fetched rather than only the most recent one. History rows carry the Jellyfin item id
 /// but no file path, so each distinct id is looked up once via <c>POST /api/getItemDetails</c>
 /// and the result is cached for <see cref="ItemDetailsTtl"/>. The same lookup supplies the item's type
-/// (<c>media_type</c>), its genres as a comma-separated string, and <c>time_played</c>.
+/// (<c>media_type</c>), its genres as a comma-separated string, and <c>times_played</c>.
 /// </summary>
 public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : RestHistoryAdapterBase(httpClientFactory)
 {
     private const string ItemDetailsPath = "/api/getItemDetails";
     private const int ItemDetailsParallelism = 4;
 
-    // time_played keeps growing as things are watched, so an hour, not a day.
+    // times_played keeps growing as things are watched, so an hour, not a day.
     private static readonly TimeSpan ItemDetailsTtl = TimeSpan.FromHours(1);
 
     /// <summary>(instance id, Jellyfin item id) -> what getItemDetails said. Only successful lookups are cached, so a failure is retried next refresh.</summary>
@@ -50,7 +50,7 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
         ["itemPath"] = "Path",
         ["itemType"] = "Type",
         ["itemGenres"] = "Genres",
-        ["itemTimePlayed"] = "time_played"
+        ["itemTimesPlayed"] = "times_played"
     };
 
     protected override void ApplyAuth(HttpRequestMessage request, SourceConnectionInfo connection)
@@ -80,7 +80,7 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
         var pathField = Field("itemPath", "Path");
         var typeField = Field("itemType", "Type");
         var genresField = Field("itemGenres", "Genres");
-        var timePlayedField = Field("itemTimePlayed", "time_played");
+        var timesPlayedField = Field("itemTimesPlayed", "times_played");
         var resolved = new ConcurrentDictionary<string, HistoryItemDetails>(StringComparer.Ordinal);
         var now = DateTimeOffset.UtcNow;
 
@@ -125,7 +125,7 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
                         JsonPathResolver.FindString(root, pathField),
                         JsonPathResolver.FindString(root, typeField),
                         JsonPathResolver.ToCommaList(JsonPathResolver.FindElement(root, genresField)),
-                        JsonPathResolver.ToDouble(JsonPathResolver.FindElement(root, timePlayedField)));
+                        JsonPathResolver.ToDouble(JsonPathResolver.FindElement(root, timesPlayedField)) is { } n ? (long)Math.Round(n) : null);
 
                     // A response that told us nothing isn't worth caching (and isn't worth a row of NULLs).
                     if (details != new HistoryItemDetails(null, null, null, null))

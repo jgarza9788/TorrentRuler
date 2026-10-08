@@ -145,7 +145,7 @@ public static class SourceFieldCatalog
 
         RowOfKind("user_name", "{alias}.user_name", FieldValueType.Text, KindHistory, "Viewer's username.", "alice"),
         RowOfKind("percent_complete", "{alias}.percent_complete", FieldValueType.Real, KindHistory, "Percent of the item watched, 0..100.", "95.0"),
-        RowOfKind("time_played", "{alias}.time_played", FieldValueType.Real, KindHistory, "Total time the item has been played, in the source's own unit (Jellystat's time_played).", "5400"),
+        RowOfKind("times_played", "{alias}.times_played", FieldValueType.Integer, KindHistory, "How many times the item has been played in total (Jellystat's times_played).", "12"),
         RowOfKind("watched_at", "{alias}.watched_at", FieldValueType.DateTime, KindHistory, "When this watch event occurred.", "2026-01-01T00:00:00+00:00"),
         RowOfKind("days_since_watched", "days_since({alias}.watched_at)", FieldValueType.Real, KindHistory, "Days since this watch event.", "10.2"),
 

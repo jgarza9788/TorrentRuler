@@ -138,7 +138,7 @@ internal static class SnapshotSchema
             user_name TEXT,
             watched_at TEXT,
             percent_complete REAL,
-            time_played REAL
+            times_played INTEGER
         );
         CREATE INDEX ix_{table}_path_key ON {table}(path_key, kind, instance);
         CREATE INDEX ix_{table}_instance ON {table}(instance);

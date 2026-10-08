@@ -60,7 +60,7 @@ public class JellystatAdapterTests
             }
             return id switch
             {
-                "movie1" => Json("""[{"Id":"movie1","Name":"Foo","Type":"Movie","Genres":["Drama","Sci-Fi"],"time_played":5400,"Path":"/media/movies/Foo/Foo.mkv","Size":123}]"""),
+                "movie1" => Json("""[{"Id":"movie1","Name":"Foo","Type":"Movie","Genres":["Drama","Sci-Fi"],"times_played":12,"Path":"/media/movies/Foo/Foo.mkv","Size":123}]"""),
                 "ep1" => Json("""[{"EpisodeId":"ep1","FileName":"Bar","Type":"Episode","Genres":[],"Path":"/media/tv/Bar/S01E01.mkv"}]"""),
                 _ => new HttpResponseMessage(HttpStatusCode.NotFound)
             };
@@ -84,7 +84,7 @@ public class JellystatAdapterTests
     }
 
     [Fact]
-    public async Task FetchAsync_TakesTypeGenresAndTimePlayedFromItemDetails()
+    public async Task FetchAsync_TakesTypeGenresAndTimesPlayedFromItemDetails()
     {
         var handler = new FakeHttpMessageHandler(req =>
         {
@@ -96,7 +96,7 @@ public class JellystatAdapterTests
             var id = JsonDocument.Parse(req.Content!.ReadAsStringAsync().Result).RootElement.GetProperty("Id").GetString();
             return id switch
             {
-                "m1" => Json("""[{"Type":"Movie","Genres":["Drama","Sci-Fi"],"time_played":"5400.5","Path":"/m.mkv"}]"""),
+                "m1" => Json("""[{"Type":"Movie","Genres":["Drama","Sci-Fi"],"times_played":"12","Path":"/m.mkv"}]"""),
                 // Genres as objects, and a nested "Type" that must not win over the item's own.
                 "e1" => Json("""[{"Type":"Episode","Genres":[{"Name":"Comedy"}],"Path":"/e.mkv","MediaStreams":[{"Type":"Video"}]}]"""),
                 // No genres, no time played, no type: all three stay null rather than empty.
@@ -107,11 +107,11 @@ public class JellystatAdapterTests
         var result = await new JellystatAdapter(new StubInstanceHttpClientFactory(handler)).FetchAsync(Connection);
 
         var movie = result.WatchHistory.Single(w => w.ExternalKey == "m1");
-        Assert.Equal(("Movie", "Drama,Sci-Fi", 5400.5), (movie.MediaType, movie.Genres, movie.TimePlayed));
+        Assert.Equal(("Movie", "Drama,Sci-Fi", 12L), (movie.MediaType, movie.Genres, movie.TimesPlayed));
         var episode = result.WatchHistory.Single(w => w.ExternalKey == "e1");
-        Assert.Equal(("Episode", "Comedy", (double?)null), (episode.MediaType, episode.Genres, episode.TimePlayed));
+        Assert.Equal(("Episode", "Comedy", (long?)null), (episode.MediaType, episode.Genres, episode.TimesPlayed));
         var bare = result.WatchHistory.Single(w => w.ExternalKey == "x1");
-        Assert.Equal(((string?)null, (string?)null, (double?)null), (bare.MediaType, bare.Genres, bare.TimePlayed));
+        Assert.Equal(((string?)null, (string?)null, (long?)null), (bare.MediaType, bare.Genres, bare.TimesPlayed));
     }
 
     [Fact]
