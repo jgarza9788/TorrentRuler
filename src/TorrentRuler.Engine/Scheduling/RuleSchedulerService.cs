@@ -83,12 +83,23 @@ public class RuleSchedulerService(IServiceScopeFactory scopeFactory, RuleRunGate
     }
 
     /// <summary>Internal (not private) so scheduling decisions are directly testable without running the timer loop.</summary>
-    internal static bool IsDue(Rule rule, DateTimeOffset now)
+    internal static bool IsDue(Rule rule, DateTimeOffset now) =>
+        NextOccurrence(rule, now) is { } next && next <= now;
+
+    /// <summary>
+    /// When the scheduler will next run <paramref name="rule"/>, by the same reckoning as <see cref="IsDue"/>:
+    /// the next cron occurrence after its last run. An overdue rule is picked up on the next tick, so
+    /// that is <paramref name="now"/>. Null when the schedule is invalid. Ignores Enabled and the kill switch.
+    /// </summary>
+    public static DateTimeOffset? NextRunAt(Rule rule, DateTimeOffset now) =>
+        NextOccurrence(rule, now) is { } next ? (next < now ? now : next) : null;
+
+    private static DateTimeOffset? NextOccurrence(Rule rule, DateTimeOffset now)
     {
         var validation = CronValidator.Validate(rule.CronExpression, rule.TimeZoneId);
         if (!validation.IsValid)
         {
-            return false;
+            return null;
         }
 
         CronExpression cron;
@@ -100,11 +111,10 @@ public class RuleSchedulerService(IServiceScopeFactory scopeFactory, RuleRunGate
         }
         catch
         {
-            return false;
+            return null;
         }
 
         var lastRun = rule.LastRunAt?.UtcDateTime ?? now.UtcDateTime.AddMinutes(-1);
-        var next = cron.GetNextOccurrence(lastRun, tz);
-        return next is not null && next.Value <= now.UtcDateTime;
+        return cron.GetNextOccurrence(lastRun, tz) is { } next ? new DateTimeOffset(next, TimeSpan.Zero) : null;
     }
 }

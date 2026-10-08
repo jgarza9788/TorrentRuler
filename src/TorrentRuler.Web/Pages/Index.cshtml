@@ -1,4 +1,6 @@
 @page
+@using TorrentRuler.Web
+@using TorrentRuler.Web.Pages.Shared
 @model TorrentRuler.Web.Pages.IndexModel
 @{
     ViewData["Title"] = "Dashboard";
@@ -21,40 +23,42 @@
 }
 
 <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-xl-3">
         <a asp-page="/Instances/Index" class="qf-card qf-stat qf-stat-link">
             <div class="qf-stat-icon"><i class="ti ti-plug-connected" aria-hidden="true"></i></div>
-            <div class="qf-stat-value">@Model.EnabledInstanceCount<span class="text-secondary fs-6">/@Model.TotalInstanceCount</span></div>
-            <div class="qf-stat-label">Instances enabled</div>
+            <div class="qf-stat-value">@Model.EnabledInstanceCount <span class="qf-stat-of">of @Model.TotalInstanceCount</span></div>
+            <div class="qf-stat-label">instances enabled</div>
         </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-xl-3">
         <a asp-page="/Rules/Index" class="qf-card qf-stat qf-stat-link">
             <div class="qf-stat-icon"><i class="ti ti-checklist" aria-hidden="true"></i></div>
-            <div class="qf-stat-value">@Model.EnabledRuleCount<span class="text-secondary fs-6">/@Model.TotalRuleCount</span></div>
-            <div class="qf-stat-label">Rules enabled</div>
+            <div class="qf-stat-value">@Model.EnabledRuleCount <span class="qf-stat-of">of @Model.TotalRuleCount</span></div>
+            <div class="qf-stat-label">rules enabled</div>
         </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-xl-3">
+        <a asp-page="/History/Index" class="qf-card qf-stat qf-stat-link"
+           title="Matches add up across runs: a torrent matched by a rule that runs every 5 minutes counts once per run.">
+            <div class="qf-stat-icon"><i class="ti ti-target" aria-hidden="true"></i></div>
+            <div class="qf-stat-value">@Model.Stats.UniqueTorrentsMatched <span class="qf-stat-of">torrents</span></div>
+            <div class="qf-stat-label">matched in the last 24h</div>
+            <div class="qf-stat-sub">@Model.Stats.MatchesTotal matches across @Model.RunsLast24h run(s)</div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
         <a asp-page="/History/Index" class="qf-card qf-stat qf-stat-link">
-            <div class="qf-stat-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
-            <div class="qf-stat-value">@Model.MatchedLast24h</div>
-            <div class="qf-stat-label">Matched, last 24h</div>
-        </a>
-    </div>
-    <div class="col-6 col-lg-3">
-        <a asp-page="/History/Index" asp-route-Outcome="Failed"
-           class="qf-card qf-stat qf-stat-link @(Model.FailedLast24h > 0 ? "qf-stat--danger" : "")">
-            <div class="qf-stat-icon"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
-            <div class="qf-stat-value">@Model.FailedLast24h</div>
-            <div class="qf-stat-label">Failed runs, last 24h</div>
+            <div class="qf-stat-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+            <div class="qf-stat-value">@Model.Stats.AppliedTotal <span class="qf-stat-of">actions</span></div>
+            <div class="qf-stat-label">applied in the last 24h</div>
+            <div class="qf-stat-sub @(Model.FailedLast24h > 0 ? "text-danger" : "")">@Model.FailedLast24h failed run(s)</div>
         </a>
     </div>
 </div>
 
-<div class="row g-3">
+<div class="row g-3 mb-3">
     <div class="col-lg-5">
-        <div class="qf-card mb-3">
+        <div class="qf-card h-100">
             <div class="qf-card-header">
                 <h2>Instances</h2>
                 <a asp-page="/Instances/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-settings" aria-hidden="true"></i>Manage</a>
@@ -62,57 +66,53 @@
             <div class="qf-card-body p-0">
                 @if (Model.Instances.Count == 0)
                 {
-                    <div class="qf-empty">
-                        <div class="qf-empty-icon ti ti-plug-connected" aria-hidden="true"></div>
-                        <p class="mb-2">No data sources configured yet.</p>
-                        <a asp-page="/Instances/Index" class="btn btn-sm btn-primary qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>Add an instance</a>
-                    </div>
+                    <partial name="_EmptyState" model='new EmptyStateModel("plug-connected", "No data sources yet",
+                        "Add a qBittorrent instance (and optionally media servers and history sources) to start writing rules.",
+                        "Add an instance", Url.Page("/Instances/Edit"))' />
                 }
                 else
                 {
-                    <table class="table table-sm mb-0">
-                        <tbody>
-                        @foreach (var instance in Model.Instances)
-                        {
-                            <tr>
-                                <td>
-                                    @if (instance.Enabled)
-                                    {
-                                        <span class="qf-badge qf-badge-success"><span class="qf-badge-dot"></span>on</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="qf-badge qf-badge-secondary"><span class="qf-badge-dot"></span>off</span>
-                                    }
-                                </td>
-                                <td class="fw-medium">@instance.Name</td>
-                                <td class="text-secondary">@instance.SourceType</td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
+                    <div class="qf-table-wrap">
+                        <table class="table table-sm mb-0 align-middle">
+                            <tbody>
+                            @foreach (var instance in Model.Instances)
+                            {
+                                <tr class="@(instance.Enabled ? null : "qf-row-muted")">
+                                    <td class="fw-medium">
+                                        @instance.Name
+                                        @if (!instance.Enabled)
+                                        {
+                                            <span class="qf-badge qf-badge-secondary ms-1">off</span>
+                                        }
+                                    </td>
+                                    <td class="text-secondary">@instance.SourceType</td>
+                                    <td><partial name="_InstanceStatus" model="instance" /></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
                 }
             </div>
         </div>
     </div>
 
     <div class="col-lg-7">
-        <div class="qf-card">
+        <div class="qf-card h-100">
             <div class="qf-card-header">
                 <h2>Recent runs</h2>
-<a asp-page="/History/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-history" aria-hidden="true"></i>Full history</a>
+                <a asp-page="/History/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-history" aria-hidden="true"></i>Full history</a>
             </div>
             <div class="qf-card-body p-0">
                 @if (Model.RecentRuns.Count == 0)
                 {
-                    <div class="qf-empty">
-                        <div class="qf-empty-icon ti ti-history" aria-hidden="true"></div>
-                        <p class="mb-0">No rules have run yet. Once a rule's schedule fires, its runs will show up here.</p>
-                    </div>
+                    <partial name="_EmptyState" model='new EmptyStateModel("history", "No runs yet",
+                        "Rules run on their schedule; each run shows up here with what it matched and did.",
+                        "Create a rule", Url.Page("/Rules/Edit"))' />
                 }
                 else
                 {
-                    <div class="table-responsive">
+                    <div class="qf-table-wrap">
                         <table class="table table-sm mb-0 align-middle">
                             <thead>
                             <tr>
@@ -127,18 +127,80 @@
                             <tbody>
                             @foreach (var run in Model.RecentRuns)
                             {
-                                <tr>
-                                    <td>@(Model.RuleNamesById.GetValueOrDefault(run.RuleId, "(deleted rule)"))</td>
+                                var highlight = run.ActionsFailedCount > 0 || run.Outcome is TorrentRuler.Core.Domain.RunOutcome.Failed
+                                    ? "qf-row-failed"
+                                    : run.ActionsExecutedCount > 0 ? "qf-row-applied" : null;
+                                <tr class="@highlight">
+                                    <td>
+                                        @if (Model.RuleNamesById.TryGetValue(run.RuleId, out var ruleName))
+                                        {
+                                            <a asp-page="/Rules/Edit" asp-route-id="@run.RuleId">@ruleName</a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">(deleted rule)</span>
+                                        }
+                                    </td>
                                     <td class="text-secondary"><partial name="_RelativeTime" model="run.StartedAt" /></td>
                                     <td><partial name="_StatusBadge" model="run.Outcome" /></td>
                                     <td class="text-end">@run.MatchedCount</td>
-                                    <td class="text-end">@run.ActionsExecutedCount</td>
+                                    <td class="text-end @(run.ActionsExecutedCount > 0 ? "text-success fw-semibold" : "")">@run.ActionsExecutedCount</td>
                                     <td class="text-end @(run.ActionsFailedCount > 0 ? "text-danger fw-semibold" : "")">@run.ActionsFailedCount</td>
                                 </tr>
                             }
                             </tbody>
                         </table>
                     </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="qf-card h-100">
+            <div class="qf-card-header"><h2>Activity, last 24 hours</h2></div>
+            <div class="qf-card-body">
+                @if (Model.RunsLast24h == 0)
+                {
+                    <p class="text-secondary mb-0">No runs in the last 24 hours.</p>
+                }
+                else
+                {
+                    <partial name="_Sparkline" model="Model.Stats.Hourly" />
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="qf-card h-100">
+            <div class="qf-card-header">
+                <h2>Next scheduled runs</h2>
+                <a asp-page="/Rules/Index" class="btn btn-sm btn-outline-primary qf-ico-btn"><i class="ti ti-checklist" aria-hidden="true"></i>Rules</a>
+            </div>
+            <div class="qf-card-body p-0">
+                @if (Model.Upcoming.Count == 0)
+                {
+                    <partial name="_EmptyState" model='new EmptyStateModel("calendar-time", "Nothing scheduled",
+                        "Enabled rules with a valid schedule show their next run here.",
+                        "Create a rule", Url.Page("/Rules/Edit"))' />
+                }
+                else
+                {
+                    <ul class="list-unstyled mb-0 qf-upcoming">
+                        @foreach (var run in Model.Upcoming)
+                        {
+                            <li>
+                                <a asp-page="/Rules/Edit" asp-route-id="@run.RuleId" class="text-truncate">@run.RuleName</a>
+                                @if (run.DryRun)
+                                {
+                                    <span class="qf-badge qf-badge-secondary">dry run</span>
+                                }
+                                <span class="ms-auto text-secondary text-nowrap" title="@run.At.ToLocalTime().ToString("ddd MMM d, HH:mm")">@Format.Until(run.At, Model.Now)</span>
+                            </li>
+                        }
+                    </ul>
                 }
             </div>
         </div>

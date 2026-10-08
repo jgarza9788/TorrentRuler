@@ -31,4 +31,24 @@ public static class Format
             : value.ToString(value >= 10 ? "0.#" : "0.##", CultureInfo.InvariantCulture);
         return $"{text} {Units[unit]}";
     }
+
+    /// <summary>How far <paramref name="when"/> is from <paramref name="now"/>: "now", "in 3 min", "in 2 hr", "in 3 days".</summary>
+    public static string Until(DateTimeOffset when, DateTimeOffset now)
+    {
+        var span = when - now;
+        if (span < TimeSpan.FromSeconds(45))
+        {
+            return "now";
+        }
+        if (span < TimeSpan.FromHours(1))
+        {
+            return $"in {(int)Math.Ceiling(span.TotalMinutes - 0.5)} min";
+        }
+        if (span < TimeSpan.FromDays(1))
+        {
+            return $"in {(int)span.TotalHours} hr";
+        }
+        var days = (int)span.TotalDays;
+        return $"in {days} day{(days == 1 ? "" : "s")}";
+    }
 }

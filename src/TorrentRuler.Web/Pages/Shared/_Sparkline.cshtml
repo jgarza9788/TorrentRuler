@@ -1,0 +1,36 @@
+@model IReadOnlyList<TorrentRuler.Web.Pages.HourBucket>
+@* Matched and applied per hour over the last 24h: two lines on one inline SVG, no chart library.
+   Each point carries a <title> so hovering (or a screen reader) gives the exact figures. *@
+@{
+    const double width = 600, height = 120, pad = 6;
+    var max = Math.Max(1, Model.Max(b => Math.Max(b.Matched, b.Applied)));
+    var step = (width - 2 * pad) / Math.Max(1, Model.Count - 1);
+    double X(int i) => pad + i * step;
+    double Y(int v) => height - pad - (height - 2 * pad) * v / max;
+    string Points(Func<TorrentRuler.Web.Pages.HourBucket, int> pick) =>
+        string.Join(" ", Model.Select((b, i) => FormattableString.Invariant($"{X(i):0.#},{Y(pick(b)):0.#}")));
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+<figure class="qf-sparkline mb-0">
+    <svg viewBox="0 0 @width.ToString(inv) @height.ToString(inv)" preserveAspectRatio="none" role="img"
+         aria-label="Matches and actions applied per hour over the last 24 hours. Peak @max per hour.">
+        <line x1="@pad.ToString(inv)" x2="@((width - pad).ToString(inv))" y1="@((height - pad).ToString(inv))" y2="@((height - pad).ToString(inv))" class="qf-spark-axis" />
+        <polyline points="@Points(b => b.Matched)" class="qf-spark-matched" />
+        <polyline points="@Points(b => b.Applied)" class="qf-spark-applied" />
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            var b = Model[i];
+            <rect x="@((X(i) - step / 2).ToString("0.#", inv))" y="0" width="@step.ToString("0.#", inv)" height="@height.ToString(inv)" class="qf-spark-hit">
+                <title>@b.Hour.ToLocalTime().ToString("HH:00"): @b.Matched matched, @b.Applied applied</title>
+            </rect>
+        }
+    </svg>
+    <figcaption class="d-flex justify-content-between small text-secondary mt-1">
+        <span>@Model[0].Hour.ToLocalTime().ToString("HH:00")</span>
+        <span class="d-flex gap-3">
+            <span><span class="qf-legend qf-legend-matched" aria-hidden="true"></span>Matched</span>
+            <span><span class="qf-legend qf-legend-applied" aria-hidden="true"></span>Applied</span>
+        </span>
+        <span>now</span>
+    </figcaption>
+</figure>
