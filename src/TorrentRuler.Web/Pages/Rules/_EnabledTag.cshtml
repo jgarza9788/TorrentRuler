@@ -1,0 +1,16 @@
+@model TorrentRuler.Web.Pages.Rules.RuleRow
+@* The rule's Enabled / Disabled tag. It is also the quick toggle: clicking it flips the rule and
+   comes back to the list with the same sort and filter. *@
+@{
+    var rule = Model.Rule;
+    var query = ViewContext.HttpContext.Request.Query;
+}
+<form method="post" asp-page-handler="ToggleEnabled" asp-route-id="@rule.Id"
+      asp-route-Sort="@query["Sort"]" asp-route-Desc="@query["Desc"]" asp-route-Filter="@query["Filter"]" class="d-inline">
+    <button type="submit" class="qf-badge qf-badge-button @(rule.Enabled ? "qf-badge-success" : "qf-badge-secondary")"
+            aria-pressed="@(rule.Enabled ? "true" : "false")"
+            aria-label="@rule.Name is @(rule.Enabled ? "enabled" : "disabled"). Click to @(rule.Enabled ? "disable" : "enable") it."
+            title="Click to @(rule.Enabled ? "disable" : "enable")">
+        <span class="qf-badge-dot" aria-hidden="true"></span>@(rule.Enabled ? "Enabled" : "Disabled")
+    </button>
+</form>

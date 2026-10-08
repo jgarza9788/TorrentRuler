@@ -84,6 +84,7 @@
                                    :checked="selected.length === @Model.Rows.Count"
                                    @@change="selected = $event.target.checked ? [@string.Join(",", Model.Rows.Select(r => r.Rule.Id))] : []" />
                         </th>
+                        <th>Status</th>
                         <th aria-sort="@AriaSort("priority")"><a href="@SortUrl("priority")" class="qf-sort">Priority <i class="ti @SortIcon("priority")" aria-hidden="true"></i></a></th>
                         <th aria-sort="@AriaSort("name")"><a href="@SortUrl("name")" class="qf-sort">Name <i class="ti @SortIcon("name")" aria-hidden="true"></i></a></th>
                         <th>Schedule</th>
@@ -101,6 +102,7 @@
                                 <input type="checkbox" class="form-check-input" name="ids" value="@rule.Id" form="bulkForm"
                                        aria-label="Select @rule.Name" x-model.number="selected" />
                             </td>
+                            <td><partial name="_EnabledTag" model="row" /></td>
                             <td>
                                 <input type="number" name="priority" value="@rule.Priority" class="form-control form-control-sm qf-priority-input"
                                        aria-label="Priority of @rule.Name (lower runs first)"
@@ -108,10 +110,6 @@
                             </td>
                             <td>
                                 <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="fw-medium qf-rule-link">@rule.Name</a>
-                                @if (!rule.Enabled)
-                                {
-                                    <span class="qf-badge qf-badge-secondary ms-1">disabled</span>
-                                }
                                 @if (rule.DryRun)
                                 {
                                     <span class="qf-badge qf-badge-warning ms-1" title="This rule previews its actions instead of applying them">dry run</span>
@@ -204,7 +202,7 @@
                         </div>
                     </div>
                     <div class="d-flex flex-wrap gap-1">
-                        @if (!rule.Enabled) { <span class="qf-badge qf-badge-secondary">disabled</span> }
+                        <partial name="_EnabledTag" model="row" />
                         @if (rule.DryRun) { <span class="qf-badge qf-badge-warning">dry run</span> }
                     </div>
                     <dl class="qf-row-card-meta">

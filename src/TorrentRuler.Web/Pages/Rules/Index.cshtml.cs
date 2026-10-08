@@ -109,8 +109,9 @@ public class IndexModel(AppDbContext db, IRuleRunner ruleRunner) : PageModel
             rule.Enabled = !rule.Enabled;
             rule.UpdatedAt = DateTimeOffset.UtcNow;
             await db.SaveChangesAsync(ct);
+            Toasts.Add(TempData, ToastKind.Success, $"{(rule.Enabled ? "Enabled" : "Disabled")} \"{rule.Name}\".");
         }
-        return RedirectToPage();
+        return RedirectToPage(new { Sort, Desc, Filter });
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(int id, CancellationToken ct)

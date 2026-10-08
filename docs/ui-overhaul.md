@@ -40,6 +40,7 @@ The before set overflowed sideways in two places: the rule editor at 375px, and 
 - `Pages/Rules/Index.cshtml`, `Index.cshtml.cs` — Run now plus a "⋯" menu per row; clicking a row opens it. Sortable columns, filter chips and a bulk bar (enable, disable, run, delete). Inline priority editing, a next-run column, the last run's outcome, a dry-run badge, and undo after deleting a rule.
 - `Pages/Rules/RuleListQuery.cs` — Sorting and filtering.
 - `Pages/Rules/_LastRunCell.cshtml` — The last-run outcome badge and counts.
+- `Pages/Rules/_EnabledTag.cshtml` — The Enabled/Disabled tag in the Status column (and on mobile cards). It is also the quick toggle; toggling keeps the current sort and filter.
 
 ### Rule editor
 - `Pages/Rules/Edit.cshtml`, `Edit.cshtml.cs` — A save bar that stays on screen, and a warning when leaving with unsaved changes. The three behaviour switches sit together. Live schedule preview of the next 5 runs. One "Field reference" button, and the drawer fits phone screens. Dry run opens in a dialog. "All qBittorrent instances" is the default target; saving no longer requires picking one. Actions are numbered, can be reordered, and have a quieter delete button.

@@ -1322,3 +1322,13 @@ html:has(.qf-sticky-footer) {
 .qf-global-banner-danger { background: rgba(var(--tblr-danger-rgb), 0.16); color: var(--tblr-body-color); border-bottom: 1px solid rgba(var(--tblr-danger-rgb), 0.5); }
 
 .qf-import-diff { max-height: 20rem; overflow: auto; }
+
+/* A badge that is also a button (the Rules list's Enabled/Disabled toggle). */
+.qf-badge-button {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.qf-badge-button:hover { filter: brightness(1.15); }
