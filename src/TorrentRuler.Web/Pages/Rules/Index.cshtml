@@ -87,10 +87,10 @@
                         <th>Status</th>
                         <th aria-sort="@AriaSort("priority")"><a href="@SortUrl("priority")" class="qf-sort">Priority <i class="ti @SortIcon("priority")" aria-hidden="true"></i></a></th>
                         <th aria-sort="@AriaSort("name")"><a href="@SortUrl("name")" class="qf-sort">Name <i class="ti @SortIcon("name")" aria-hidden="true"></i></a></th>
-                        <th>Schedule</th>
+                        <th class="qf-col-schedule">Schedule</th>
                         <th aria-sort="@AriaSort("nextRun")"><a href="@SortUrl("nextRun")" class="qf-sort">Next run <i class="ti @SortIcon("nextRun")" aria-hidden="true"></i></a></th>
-                        <th aria-sort="@AriaSort("lastRun")"><a href="@SortUrl("lastRun")" class="qf-sort">Last run <i class="ti @SortIcon("lastRun")" aria-hidden="true"></i></a></th>
-                        <th class="text-end">Actions</th>
+                        <th class="qf-col-lastrun" aria-sort="@AriaSort("lastRun")"><a href="@SortUrl("lastRun")" class="qf-sort">Last run <i class="ti @SortIcon("lastRun")" aria-hidden="true"></i></a></th>
+                        <th class="text-end qf-col-actions">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -119,7 +119,7 @@
                                     <div class="small text-secondary">@rule.Description</div>
                                 }
                             </td>
-                            <td>
+                            <td class="qf-col-schedule">
                                 <span data-bs-toggle="tooltip" title="@rule.CronExpression (@rule.TimeZoneId)">@row.ScheduleText</span>
                             </td>
                             <td class="text-nowrap">
@@ -136,33 +136,11 @@
                                     <span class="text-danger">invalid schedule</span>
                                 }
                             </td>
-                            <td>
+                            <td class="qf-col-lastrun">
                                 <partial name="_LastRunCell" model="row" />
                             </td>
-                            <td class="text-end text-nowrap">
-                                <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" asp-route-Sort="@Model.Sort" asp-route-Desc="@Model.Desc" asp-route-Filter="@Model.Filter" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn" aria-label="Run @rule.Name now"><i class="ti ti-player-play" aria-hidden="true"></i>Run now</button>
-                                </form>
-                                <div class="dropdown d-inline-block">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                            data-bs-popper-config='{"strategy":"fixed"}'
-                                            aria-label="More actions for @rule.Name"><i class="ti ti-dots" aria-hidden="true"></i></button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" asp-page="/Rules/Edit" asp-route-id="@rule.Id"><i class="ti ti-pencil me-2" aria-hidden="true"></i>Edit</a></li>
-                                        <li>
-                                            <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id">
-                                                <button type="submit" class="dropdown-item"><i class="ti ti-copy me-2" aria-hidden="true"></i>Duplicate</button>
-                                            </form>
-                                        </li>
-                                        <li><hr class="dropdown-divider" /></li>
-                                        <li>
-                                            <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id"
-                                                  data-confirm="Delete rule &quot;@rule.Name&quot;? You can undo this right after." data-confirm-ok="Delete">
-                                                <button type="submit" class="dropdown-item text-danger"><i class="ti ti-trash me-2" aria-hidden="true"></i>Delete</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
+                            <td class="text-end qf-col-actions">
+                                <partial name="_RuleActions" model="row" />
                             </td>
                         </tr>
                     }
@@ -179,27 +157,6 @@
                         <input type="checkbox" class="form-check-input" name="ids" value="@rule.Id" form="bulkForm"
                                aria-label="Select @rule.Name" x-model.number="selected" />
                         <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="qf-row-card-title flex-grow-1">@rule.Name</a>
-                        <div class="dropdown qf-row-card-actions">
-                            <button class="btn btn-sm btn-outline-secondary border-0" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions for @rule.Name">
-                                <i class="ti ti-dots-vertical" aria-hidden="true"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" asp-page="/Rules/Edit" asp-route-id="@rule.Id"><i class="ti ti-pencil me-2" aria-hidden="true"></i>Edit</a></li>
-                                <li>
-                                    <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id">
-                                        <button type="submit" class="dropdown-item"><i class="ti ti-copy me-2" aria-hidden="true"></i>Duplicate</button>
-                                    </form>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id"
-                                          data-confirm="Delete rule &quot;@rule.Name&quot;? You can undo this right after." data-confirm-ok="Delete">
-                                        <button type="submit" class="dropdown-item text-danger"><i class="ti ti-trash me-2" aria-hidden="true"></i>Delete</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="d-flex flex-wrap gap-1">
                         <partial name="_EnabledTag" model="row" />
@@ -212,9 +169,7 @@
                         <dd>@(rule.Enabled ? row.NextRun is { } next ? Format.Until(next, now) : "invalid schedule" : "—")</dd>
                         <dt>Last run</dt><dd><partial name="_LastRunCell" model="row" /></dd>
                     </dl>
-                    <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id" class="mt-2">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn w-100"><i class="ti ti-player-play" aria-hidden="true"></i>Run now</button>
-                    </form>
+                    <div class="mt-2"><partial name="_RuleActions" model="row" /></div>
                 </div>
             }
             </div>

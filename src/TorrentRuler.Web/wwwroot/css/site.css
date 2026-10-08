@@ -1332,3 +1332,28 @@ html:has(.qf-sticky-footer) {
 }
 
 .qf-badge-button:hover { filter: brightness(1.15); }
+
+/* ---- Rules list: every action inline, narrower schedule / last-run columns ---- */
+.qf-row-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.qf-row-actions form { margin: 0; }
+
+/* Labels need room; below 1200px the table goes icon-only (each button keeps its
+   aria-label and title). The mobile cards have the width to themselves, so they keep labels. */
+@media (max-width: 1199.98px) {
+  .qf-rules-table .qf-act-label { display: none; }
+  .qf-rules-table .qf-row-actions .btn { padding-inline: 0.45rem; }
+}
+
+.qf-row-card .qf-row-actions { display: flex; flex-wrap: wrap; }
+.qf-row-card .qf-row-actions > * { flex: 1 1 auto; }
+.qf-row-card .qf-row-actions .btn { width: 100%; justify-content: center; }
+
+.qf-rules-table .qf-col-schedule { width: 9rem; min-width: 7rem; white-space: normal; }
+.qf-rules-table .qf-col-lastrun { width: 9.5rem; min-width: 8rem; white-space: normal; }
+.qf-rules-table .qf-col-actions { width: 1%; white-space: nowrap; }

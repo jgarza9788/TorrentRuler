@@ -1,0 +1,30 @@
+@model TorrentRuler.Web.Pages.Rules.RuleRow
+@* Every action for one rule, all visible -- no overflow menu. Labels show when there's room
+   (see .qf-act-label in site.css); otherwise the buttons go icon-only, keeping their accessible
+   names and tooltips. Run now and Delete come back to the list with the same sort and filter. *@
+@{
+    var rule = Model.Rule;
+    var query = ViewContext.HttpContext.Request.Query;
+}
+<div class="qf-row-actions">
+    <form method="post" asp-page-handler="RunNow" asp-route-id="@rule.Id"
+          asp-route-Sort="@query["Sort"]" asp-route-Desc="@query["Desc"]" asp-route-Filter="@query["Filter"]">
+        <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn" aria-label="Run @rule.Name now" title="Run now">
+            <i class="ti ti-player-play" aria-hidden="true"></i><span class="qf-act-label">Run now</span>
+        </button>
+    </form>
+    <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="btn btn-sm btn-outline-secondary qf-ico-btn" aria-label="Edit @rule.Name" title="Edit">
+        <i class="ti ti-pencil" aria-hidden="true"></i><span class="qf-act-label">Edit</span>
+    </a>
+    <form method="post" asp-page-handler="Duplicate" asp-route-id="@rule.Id">
+        <button type="submit" class="btn btn-sm btn-outline-secondary qf-ico-btn" aria-label="Duplicate @rule.Name" title="Duplicate">
+            <i class="ti ti-copy" aria-hidden="true"></i><span class="qf-act-label">Duplicate</span>
+        </button>
+    </form>
+    <form method="post" asp-page-handler="Delete" asp-route-id="@rule.Id"
+          data-confirm="Delete rule &quot;@rule.Name&quot;? You can undo this right after." data-confirm-ok="Delete">
+        <button type="submit" class="btn btn-sm btn-ghost-danger qf-ico-btn" aria-label="Delete @rule.Name" title="Delete">
+            <i class="ti ti-trash" aria-hidden="true"></i><span class="qf-act-label">Delete</span>
+        </button>
+    </form>
+</div>
