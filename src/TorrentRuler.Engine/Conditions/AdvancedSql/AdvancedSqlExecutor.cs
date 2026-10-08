@@ -27,6 +27,9 @@ namespace TorrentRuler.Engine.Conditions.AdvancedSql;
 public class AdvancedSqlExecutor
 {
     public const int MaxRows = 50_000;
+
+    /// <summary>The fixed start of the query a rule's advanced WHERE expression is appended to (shown read-only in the rule editor).</summary>
+    public const string WhereClausePrefix = "SELECT DISTINCT t.instance_id AS instance_id, t.hash AS torrent_hash FROM qbittorrent t WHERE";
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
 
     private static readonly Regex ForbiddenKeywordPattern = new(
@@ -60,7 +63,7 @@ public class AdvancedSqlExecutor
 
         var trimmed = expandedSql.Trim().TrimEnd(';');
         var compiledSql = mode == AdvancedSqlMode.WhereClause
-            ? $"SELECT DISTINCT t.instance_id AS instance_id, t.hash AS torrent_hash FROM qbittorrent t WHERE {trimmed}"
+            ? $"{WhereClausePrefix} {trimmed}"
             : trimmed;
 
         using var readOnly = OpenReadOnly(snapshot);
