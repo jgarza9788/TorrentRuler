@@ -1,3 +1,7 @@
+using System.Text.Json.Serialization;
+using TorrentRuler.Core.Domain;
+using YamlDotNet.Serialization;
+
 namespace TorrentRuler.Infrastructure.Config;
 
 // DTOs used for config/rule import-export. Deliberately exclude credential fields
@@ -34,7 +38,22 @@ public class RuleDto
     public required string CronExpression { get; set; }
     public string TimeZoneId { get; set; } = "UTC";
     public required string ConditionTreeJson { get; set; }
+    /// <summary>The rule's full advanced-SQL query.</summary>
+    public string? AdvancedSql { get; set; }
+
+    /// <summary>
+    /// Legacy: files exported before advanced SQL became a full query carry only the WHERE expression
+    /// here. Read on import (see <see cref="EffectiveAdvancedSql"/>), never written on export.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
     public string? AdvancedSqlWhere { get; set; }
+
+    /// <summary>The query to store: the new field when present, else the legacy expression converted to a full query.</summary>
+    [JsonIgnore]
+    [YamlIgnore]
+    public string? EffectiveAdvancedSql => AdvancedSql ?? AdvancedSqlTemplate.FromLegacyWhere(AdvancedSqlWhere);
+
     public bool UseAdvancedSql { get; set; }
     public required string ActionsJson { get; set; }
     public required string TargetInstanceIdsJson { get; set; }
