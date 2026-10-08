@@ -37,10 +37,10 @@ The before set overflowed sideways in two places: the rule editor at 375px, and 
 - `Pages/Shared/_InstanceStatus.cshtml` — An instance's last connection test (dot, latency, when), shared with the Instances page.
 
 ### Rules list
-- `Pages/Rules/Index.cshtml`, `Index.cshtml.cs` — Every action visible on the row (Run now, Edit, Duplicate, Delete), with no overflow menu; clicking a row opens it. The Schedule and Last run columns are narrower and wrap. Sortable columns, filter chips and a bulk bar (enable, disable, run, delete). Inline priority editing, a next-run column, the last run's outcome, a dry-run badge, and undo after deleting a rule.
+- `Pages/Rules/Index.cshtml`, `Index.cshtml.cs` — Every action visible on the row (Run now, Edit, Duplicate, Delete), with no overflow menu; clicking a row opens it. Fixed column widths: checkbox 40px, Status 110, Priority 90, Name takes the rest, Schedule 210, Next run 110, Last run 230, Actions 350. Name and Schedule stay on one line and end in "…", with the full text in the tooltip. Columns hide by class as the screen narrows: Next run below 1400px, then Last run below 1250px, then Schedule below 1050px. Sortable columns, filter chips and a bulk bar (enable, disable, run, delete). Inline priority editing, a next-run column, the last run's outcome, a dry-run badge, and undo after deleting a rule.
 - `Pages/Rules/RuleListQuery.cs` — Sorting and filtering.
 - `Pages/Rules/_LastRunCell.cshtml` — The last-run outcome badge and counts.
-- `Pages/Rules/_RuleActions.cshtml` — The row's four actions, shared by the table and the mobile cards. Labels show from 1200px wide; below that the table buttons are icon-only, keeping their tooltips and screen-reader names. At 1280px the Name column keeps about 380px.
+- `Pages/Rules/_RuleActions.cshtml` — The row's four actions, always labelled, shared by the table and the mobile cards. Run now is green (`btn-success`), Edit and Duplicate are `btn-outline-secondary`, and Delete is red (`btn-danger`).
 - `Pages/Rules/_EnabledTag.cshtml` — The Enabled/Disabled tag in the Status column (and on mobile cards). It is also the quick toggle; toggling keeps the current sort and filter.
 
 ### Rule editor

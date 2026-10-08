@@ -84,11 +84,11 @@
                                    :checked="selected.length === @Model.Rows.Count"
                                    @@change="selected = $event.target.checked ? [@string.Join(",", Model.Rows.Select(r => r.Rule.Id))] : []" />
                         </th>
-                        <th>Status</th>
-                        <th aria-sort="@AriaSort("priority")"><a href="@SortUrl("priority")" class="qf-sort">Priority <i class="ti @SortIcon("priority")" aria-hidden="true"></i></a></th>
-                        <th aria-sort="@AriaSort("name")"><a href="@SortUrl("name")" class="qf-sort">Name <i class="ti @SortIcon("name")" aria-hidden="true"></i></a></th>
+                        <th class="qf-col-status">Status</th>
+                        <th class="qf-col-priority" aria-sort="@AriaSort("priority")"><a href="@SortUrl("priority")" class="qf-sort">Priority <i class="ti @SortIcon("priority")" aria-hidden="true"></i></a></th>
+                        <th class="qf-col-name" aria-sort="@AriaSort("name")"><a href="@SortUrl("name")" class="qf-sort">Name <i class="ti @SortIcon("name")" aria-hidden="true"></i></a></th>
                         <th class="qf-col-schedule">Schedule</th>
-                        <th aria-sort="@AriaSort("nextRun")"><a href="@SortUrl("nextRun")" class="qf-sort">Next run <i class="ti @SortIcon("nextRun")" aria-hidden="true"></i></a></th>
+                        <th class="qf-col-nextrun" aria-sort="@AriaSort("nextRun")"><a href="@SortUrl("nextRun")" class="qf-sort">Next run <i class="ti @SortIcon("nextRun")" aria-hidden="true"></i></a></th>
                         <th class="qf-col-lastrun" aria-sort="@AriaSort("lastRun")"><a href="@SortUrl("lastRun")" class="qf-sort">Last run <i class="ti @SortIcon("lastRun")" aria-hidden="true"></i></a></th>
                         <th class="text-end qf-col-actions">Actions</th>
                     </tr>
@@ -102,27 +102,29 @@
                                 <input type="checkbox" class="form-check-input" name="ids" value="@rule.Id" form="bulkForm"
                                        aria-label="Select @rule.Name" x-model.number="selected" />
                             </td>
-                            <td><partial name="_EnabledTag" model="row" /></td>
-                            <td>
+                            <td class="qf-col-status"><partial name="_EnabledTag" model="row" /></td>
+                            <td class="qf-col-priority">
                                 <input type="number" name="priority" value="@rule.Priority" class="form-control form-control-sm qf-priority-input"
                                        aria-label="Priority of @rule.Name (lower runs first)"
                                        hx-post="?handler=SetPriority&id=@rule.Id" hx-trigger="change" hx-swap="none" />
                             </td>
-                            <td>
-                                <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="fw-medium qf-rule-link">@rule.Name</a>
-                                @if (rule.DryRun)
-                                {
-                                    <span class="qf-badge qf-badge-warning ms-1" title="This rule previews its actions instead of applying them">dry run</span>
-                                }
+                            <td class="qf-col-name" title="@(string.IsNullOrEmpty(rule.Description) ? rule.Name : $"{rule.Name}\n{rule.Description}")">
+                                <div class="qf-ellipsis">
+                                    @if (rule.DryRun)
+                                    {
+                                        <span class="qf-badge qf-badge-warning me-1" title="This rule previews its actions instead of applying them">dry run</span>
+                                    }
+                                    <a asp-page="/Rules/Edit" asp-route-id="@rule.Id" class="fw-medium qf-rule-link">@rule.Name</a>
+                                </div>
                                 @if (!string.IsNullOrEmpty(rule.Description))
                                 {
-                                    <div class="small text-secondary">@rule.Description</div>
+                                    <div class="small text-secondary qf-ellipsis">@rule.Description</div>
                                 }
                             </td>
-                            <td class="qf-col-schedule">
-                                <span data-bs-toggle="tooltip" title="@rule.CronExpression (@rule.TimeZoneId)">@row.ScheduleText</span>
+                            <td class="qf-col-schedule" title="@row.ScheduleText — @rule.CronExpression (@rule.TimeZoneId)">
+                                <span class="qf-ellipsis d-block">@row.ScheduleText</span>
                             </td>
-                            <td class="text-nowrap">
+                            <td class="qf-col-nextrun">
                                 @if (!rule.Enabled)
                                 {
                                     <span class="text-secondary">—</span>

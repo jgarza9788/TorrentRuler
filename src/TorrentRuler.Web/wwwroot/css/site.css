@@ -1333,7 +1333,7 @@ html:has(.qf-sticky-footer) {
 
 .qf-badge-button:hover { filter: brightness(1.15); }
 
-/* ---- Rules list: every action inline, narrower schedule / last-run columns ---- */
+/* ---- Rules list: fixed column widths, columns that drop out as the screen narrows ---- */
 .qf-row-actions {
   display: inline-flex;
   flex-wrap: nowrap;
@@ -1343,17 +1343,46 @@ html:has(.qf-sticky-footer) {
 
 .qf-row-actions form { margin: 0; }
 
-/* Labels need room; below 1200px the table goes icon-only (each button keeps its
-   aria-label and title). The mobile cards have the width to themselves, so they keep labels. */
-@media (max-width: 1199.98px) {
-  .qf-rules-table .qf-act-label { display: none; }
-  .qf-rules-table .qf-row-actions .btn { padding-inline: 0.45rem; }
-}
-
 .qf-row-card .qf-row-actions { display: flex; flex-wrap: wrap; }
 .qf-row-card .qf-row-actions > * { flex: 1 1 auto; }
 .qf-row-card .qf-row-actions .btn { width: 100%; justify-content: center; }
 
-.qf-rules-table .qf-col-schedule { width: 9rem; min-width: 7rem; white-space: normal; }
-.qf-rules-table .qf-col-lastrun { width: 9.5rem; min-width: 8rem; white-space: normal; }
-.qf-rules-table .qf-col-actions { width: 1%; white-space: nowrap; }
+/* Fixed layout: widths come from the header cells; Name takes whatever is left. */
+.qf-rules-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.qf-rules-table > :is(thead, tbody) > tr > :is(th, td) { vertical-align: middle; }
+
+.qf-rules-table .qf-col-check { width: 40px; }
+.qf-rules-table .qf-col-status { width: 110px; }
+.qf-rules-table .qf-col-priority { width: 90px; }
+.qf-rules-table .qf-col-name { width: auto; }
+.qf-rules-table .qf-col-schedule { width: 210px; }
+.qf-rules-table .qf-col-nextrun { width: 110px; white-space: nowrap; }
+.qf-rules-table .qf-col-lastrun { width: 230px; white-space: nowrap; }
+.qf-rules-table .qf-col-actions { width: 350px; white-space: nowrap; }
+
+.qf-rules-table .qf-priority-input { max-width: 60px; }
+
+/* Name and Schedule stay on one line and end in "…"; the cell's title has the full text. */
+.qf-rules-table :is(.qf-col-name, .qf-col-schedule) { white-space: nowrap; overflow: hidden; }
+.qf-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Last run: the badge and "N min ago" on one line, the counts on the second. */
+.qf-rules-table .qf-col-lastrun .d-flex { flex-wrap: nowrap; }
+
+/* Narrower screens drop columns, least useful first (hidden by class, so column order doesn't matter).
+   Below 768px the table gives way to the card list. */
+@media (max-width: 1399.98px) {
+  .qf-rules-table .qf-col-nextrun { display: none; }
+}
+
+@media (max-width: 1249.98px) {
+  .qf-rules-table .qf-col-lastrun { display: none; }
+}
+
+@media (max-width: 1049.98px) {
+  .qf-rules-table .qf-col-schedule { display: none; }
+}
