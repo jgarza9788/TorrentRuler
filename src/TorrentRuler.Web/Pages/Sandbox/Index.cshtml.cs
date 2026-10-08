@@ -26,7 +26,8 @@ public class IndexModel(IRuleRunner ruleRunner) : PageModel
     public long ElapsedMs { get; private set; }
     public bool Ran { get; private set; }
 
-    public record TableInfo(string Name, int RowCount, List<string> Columns);
+    public record ColumnInfo(string Name, string Type);
+    public record TableInfo(string Name, int RowCount, List<ColumnInfo> Columns);
 
     /// <param name="sql">From the rule editor's "Test in SQL sandbox": load this query (without running it).</param>
     public async Task OnGetAsync(string? sql, CancellationToken ct)
@@ -60,14 +61,14 @@ public class IndexModel(IRuleRunner ruleRunner) : PageModel
 
             foreach (var name in names)
             {
-                var colNames = new List<string>();
+                var colNames = new List<ColumnInfo>();
                 using (var cols = conn.CreateCommand())
                 {
-                    cols.CommandText = $"SELECT name FROM pragma_table_info('{name.Replace("'", "''")}')";
+                    cols.CommandText = $"SELECT name, type FROM pragma_table_info('{name.Replace("'", "''")}')";
                     using var r = cols.ExecuteReader();
                     while (r.Read())
                     {
-                        colNames.Add(r.GetString(0));
+                        colNames.Add(new ColumnInfo(r.GetString(0), r.GetString(1)));
                     }
                 }
 

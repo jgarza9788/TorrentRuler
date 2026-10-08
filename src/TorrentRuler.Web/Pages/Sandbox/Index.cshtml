@@ -1,29 +1,43 @@
 @page
+@using System.Text.Json
 @model TorrentRuler.Web.Pages.Sandbox.IndexModel
 @{
     ViewData["Title"] = "SQL sandbox";
+    var hints = Model.Tables.Select(t => new { text = t.Name, kind = "table", detail = $"{t.RowCount} rows" })
+        .Concat(Model.Tables.SelectMany(t => t.Columns).Select(c => c.Name).Distinct().Select(c => new { text = c, kind = "field", detail = "" }))
+        .Concat(Model.Helpers.Select(h => new { text = h.Signature.Split('(')[0] + "(", kind = "helper", detail = h.Signature }));
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h4 mb-0">SQL sandbox</h1>
-    <span class="text-muted small">Read-only, against the current snapshot.</span>
+    <span class="text-secondary small">Read-only, against the current snapshot.</span>
 </div>
 
 <div class="row g-3">
-    <div class="col-lg-3">
+    <div class="col-lg-3 qf-sandbox-side">
         <div class="qf-card">
             <div class="qf-card-body">
                 <h2 class="h6">Tables</h2>
+                <p class="small text-secondary mb-2">Click a table to query it, a column to insert it.</p>
                 @foreach (var t in Model.Tables)
                 {
-                    <details class="mb-1">
-                        <summary><code>@t.Name</code> <span class="text-muted small">(@t.RowCount)</span></summary>
-                        <div class="small ps-3">
+                    <details class="qf-table-tree mb-1">
+                        <summary>
+                            <span class="qf-tree-name">@t.Name</span> <span class="text-secondary small">(@t.RowCount)</span>
+                            <button type="button" class="btn btn-sm btn-ghost-primary py-0 px-1 ms-1" data-insert-query="SELECT * FROM @t.Name LIMIT 50"
+                                    aria-label="Query @t.Name" title="SELECT * FROM @t.Name LIMIT 50"><i class="ti ti-player-play" aria-hidden="true"></i></button>
+                        </summary>
+                        <ul class="list-unstyled small ps-3 mb-1">
                             @foreach (var c in t.Columns)
                             {
-                                <div><code>@c</code></div>
+                                <li>
+                                    <button type="button" class="btn btn-link p-0 text-start text-decoration-none qf-col-btn" data-insert="@c.Name"
+                                            aria-label="Insert column @c.Name">
+                                        <code>@c.Name</code> <span class="text-secondary">@c.Type.ToLowerInvariant()</span>
+                                    </button>
+                                </li>
                             }
-                        </div>
+                        </ul>
                     </details>
                 }
             </div>
@@ -31,10 +45,10 @@
         <div class="qf-card mt-3">
             <div class="qf-card-body">
                 <h2 class="h6">Helper functions</h2>
-                <div class="text-muted small mb-2">Click one to insert it into the query.</div>
+                <div class="text-secondary small mb-2">Click one to insert it into the query.</div>
                 @foreach (var h in Model.Helpers)
                 {
-                    <button type="button" class="btn btn-link p-0 text-start d-block text-decoration-none mb-2"
+                    <button type="button" class="btn btn-link p-0 text-start d-block text-decoration-none mb-2 qf-helper-btn"
                             data-insert="@h.Signature" title="Insert into the query">
                         <code>@h.Signature</code>
                         <span class="d-block small text-secondary">@h.Description</span>
@@ -43,59 +57,71 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-9">
-        <form method="post">
+
+    <div class="col-lg-9 qf-sandbox-main">
+        <form method="post" id="sandboxForm">
+            <label for="Sql" class="visually-hidden">SQL query</label>
             <textarea asp-for="Sql" class="form-control font-monospace mb-2" rows="8" spellcheck="false"
                       onkeydown="if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { this.form.requestSubmit(); }"></textarea>
-            <div class="d-flex flex-wrap gap-2">
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
                 <button type="submit" class="btn btn-primary btn-sm qf-ico-btn"><i class="ti ti-player-play" aria-hidden="true"></i>Run (Ctrl+Enter)</button>
                 <button type="button" class="btn btn-outline-secondary btn-sm qf-ico-btn" id="useAsRule"
                         title="Start a new rule with this query as its condition"><i class="ti ti-filter-plus" aria-hidden="true"></i>Use as rule</button>
+
+                <div class="dropdown">
+                    <button type="button" class="btn btn-outline-secondary btn-sm qf-ico-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ti ti-history" aria-hidden="true"></i>History
+                    </button>
+                    <ul class="dropdown-menu qf-sql-menu" id="sqlHistoryMenu"></ul>
+                </div>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-outline-secondary btn-sm qf-ico-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ti ti-bookmark" aria-hidden="true"></i>Snippets
+                    </button>
+                    <ul class="dropdown-menu qf-sql-menu" id="sqlSnippetMenu"></ul>
+                </div>
             </div>
-            <div class="form-text">A rule's query must return <code>instance_id</code> and <code>torrent_hash</code>.</div>
+            <div class="form-text">A rule's query must return <code>instance_id</code> and <code>torrent_hash</code>. Ctrl+Space completes table, column and helper names.</div>
         </form>
 
         @if (Model.Error is not null)
         {
-            <div class="alert alert-danger mt-3">@Model.Error</div>
+            <div class="alert alert-danger mt-3 qf-cell-wrap" id="sandboxError" role="alert">@Model.Error</div>
         }
         else if (Model.Ran)
         {
-            <div class="text-muted small mt-3 mb-1">
-                @Model.Rows.Count row(s) in @Model.ElapsedMs ms@(Model.Truncated ? $" — truncated to {TorrentRuler.Web.Pages.Sandbox.IndexModel.MaxRows}" : "")
+            <div class="qf-card mt-3">
+                <div class="qf-card-header flex-wrap gap-2 qf-results-header">
+                    <span class="small text-secondary">
+                        @Model.Rows.Count row(s) in @Model.ElapsedMs ms@(Model.Truncated ? $" — truncated to {TorrentRuler.Web.Pages.Sandbox.IndexModel.MaxRows}" : "")
+                    </span>
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside" aria-expanded="false"><i class="ti ti-columns" aria-hidden="true"></i>Columns</button>
+                            <div class="dropdown-menu dropdown-menu-end p-2" id="resultColumnsMenu"></div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" id="exportCsv"><i class="ti ti-file-type-csv" aria-hidden="true"></i>CSV</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" id="exportJson"><i class="ti ti-braces" aria-hidden="true"></i>JSON</button>
+                    </div>
+                </div>
+                <div class="qf-results-scroll" id="sandboxResults"></div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-sm table-striped font-monospace small">
-                    <thead><tr>@foreach (var c in Model.Columns) { <th>@c</th> }</tr></thead>
-                    <tbody>
-                    @foreach (var row in Model.Rows)
-                    {
-                        <tr>@foreach (var v in row) { <td>@(v is null ? "NULL" : v.ToString())</td> }</tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
+            <script type="application/json" id="sandboxData">@Html.Raw(JsonSerializer.Serialize(new { columns = Model.Columns, rows = Model.Rows }))</script>
         }
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // "Use as rule": a new rule in advanced mode, prefilled with the current query.
-        document.getElementById('useAsRule')?.addEventListener('click', () => {
-            location.href = '/Rules/Edit?sql=' + encodeURIComponent(document.getElementById('Sql').value);
-        });
+<script type="application/json" id="sandboxHints">@Html.Raw(JsonSerializer.Serialize(hints))</script>
 
-        // Insert a helper's signature at the cursor (replacing any selection) in the query box.
-        document.addEventListener('click', e => {
-            const btn = e.target.closest('[data-insert]');
-            if (!btn) return;
-            const box = document.getElementById('Sql');
-            const text = btn.getAttribute('data-insert');
-            const start = box.selectionStart ?? box.value.length;
-            const end = box.selectionEnd ?? start;
-            box.setRangeText(text, start, end, 'end');
-            box.focus();
-        });
-    </script>
+@section Scripts {
+    <link rel="stylesheet" href="~/lib/codemirror/lib/codemirror.min.css" />
+    <link rel="stylesheet" href="~/lib/codemirror/theme/material-darker.min.css" />
+    <link rel="stylesheet" href="~/lib/codemirror/addon/hint/show-hint.min.css" />
+    <script src="~/lib/codemirror/lib/codemirror.min.js"></script>
+    <script src="~/lib/codemirror/mode/sql/sql.min.js"></script>
+    <script src="~/lib/codemirror/addon/edit/matchbrackets.min.js"></script>
+    <script src="~/lib/codemirror/addon/hint/show-hint.min.js"></script>
+    <script src="~/js/sql-editor.js" asp-append-version="true"></script>
+    <script src="~/js/sandbox.js" asp-append-version="true"></script>
 }

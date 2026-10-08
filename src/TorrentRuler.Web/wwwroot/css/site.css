@@ -1220,3 +1220,80 @@ html:has(.qf-sticky-footer) {
   overflow: auto;
   white-space: pre;
 }
+
+/* ---- SQL sandbox ---- */
+/* The side column must be allowed to shrink (min-width: 0), and long signatures/descriptions
+   must wrap, or they spill out of the card and over the results. */
+.qf-sandbox-side,
+.qf-sandbox-main { min-width: 0; }
+
+.qf-sandbox-side .qf-card-body { overflow-wrap: anywhere; }
+
+.qf-helper-btn,
+.qf-col-btn {
+  white-space: normal;
+  max-width: 100%;
+}
+
+.qf-helper-btn code,
+.qf-col-btn code {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.qf-table-tree summary {
+  cursor: pointer;
+  display: list-item;
+}
+
+.qf-tree-name { font-family: var(--tblr-font-monospace, monospace); }
+
+.qf-sql-menu {
+  max-width: min(36rem, 90vw);
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.qf-mono-item {
+  font-family: var(--tblr-font-monospace, monospace);
+  font-size: 0.8rem;
+}
+
+.qf-results-scroll {
+  max-height: 65vh;
+  overflow: auto;
+}
+
+.qf-results-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--tblr-bg-surface, var(--tblr-body-bg));
+  white-space: nowrap;
+}
+
+.qf-results-table td { white-space: nowrap; }
+
+.qf-rownum {
+  color: var(--tblr-secondary-color);
+  text-align: right;
+  user-select: none;
+  width: 1%;
+}
+
+.qf-null { color: var(--tblr-secondary-color); font-style: italic; }
+
+.qf-truncated { cursor: zoom-in; }
+
+.qf-col-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.qf-col-resize:hover { background: rgba(var(--tblr-primary-rgb), 0.3); }
+.qf-results-table thead th { position: sticky; }
+.qf-results-table thead th > .qf-col-resize { position: absolute; }
