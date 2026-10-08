@@ -68,6 +68,7 @@ public class IndexModel(AppDbContext db, IConfigPortabilityService configService
         NLogSetup.ApplyMinLevel(NLogSetup.MapLevel(settings.LogLevel));
 
         SettingsSaved = true;
+        Toasts.Add(TempData, ToastKind.Success, "Settings saved.");
         await LoadAsync(ct);
         return Page();
     }

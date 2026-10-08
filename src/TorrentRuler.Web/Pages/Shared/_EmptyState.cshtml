@@ -1,0 +1,11 @@
+@model TorrentRuler.Web.Pages.Shared.EmptyStateModel
+
+<div class="qf-empty">
+    <i class="ti ti-@Model.Icon qf-empty-icon" aria-hidden="true"></i>
+    <div class="qf-empty-title">@Model.Title</div>
+    <p class="qf-empty-text">@Model.Text</p>
+    @if (Model.ActionText is not null && Model.ActionUrl is not null)
+    {
+        <a href="@Model.ActionUrl" class="btn btn-primary btn-sm qf-ico-btn"><i class="ti ti-plus" aria-hidden="true"></i>@Model.ActionText</a>
+    }
+</div>

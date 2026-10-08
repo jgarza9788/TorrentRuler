@@ -95,3 +95,190 @@
         Array.prototype.forEach.call(inputs, initTableFilter);
     });
 })();
+
+// Toasts. qfToast(kind, message, { undoUrl }) shows one; kind is "success" | "error" | "info".
+// Server side, Toasts.Add (full-page posts, via TempData -> #qfQueuedToasts) and Toasts.Trigger
+// (htmx, via the HX-Trigger header) both end up here.
+(function () {
+    'use strict';
+
+    var icons = { success: 'circle-check', error: 'alert-circle', info: 'info-circle' };
+
+    function postUndo(url) {
+        var form = document.getElementById('qfUndoForm');
+        if (!form) return;
+        form.action = url;
+        form.submit();
+    }
+
+    window.qfToast = function (kind, message, opts) {
+        var host = document.getElementById('qfToastStack');
+        if (!host || !message) return;
+        kind = icons[kind] ? kind : 'info';
+        var undoUrl = opts && opts.undoUrl;
+
+        var el = document.createElement('div');
+        el.className = 'qf-toast qf-toast-' + kind;
+        el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+
+        var icon = document.createElement('i');
+        icon.className = 'ti ti-' + icons[kind] + ' qf-toast-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        el.appendChild(icon);
+
+        var text = document.createElement('div');
+        text.className = 'qf-toast-message';
+        text.textContent = message;
+        el.appendChild(text);
+
+        if (undoUrl) {
+            var undo = document.createElement('button');
+            undo.type = 'button';
+            undo.className = 'btn btn-sm btn-outline-primary';
+            undo.textContent = 'Undo';
+            undo.addEventListener('click', function () { postUndo(undoUrl); });
+            el.appendChild(undo);
+        }
+
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'btn-close';
+        close.setAttribute('aria-label', 'Dismiss notification');
+        close.addEventListener('click', function () { el.remove(); });
+        el.appendChild(close);
+
+        host.appendChild(el);
+        // Errors stay until dismissed; an undo offer lasts 15s; plain confirmations 5s.
+        if (kind !== 'error') {
+            setTimeout(function () { el.remove(); }, undoUrl ? 15000 : 5000);
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var queued = document.getElementById('qfQueuedToasts');
+        if (!queued) return;
+        try {
+            JSON.parse(queued.textContent).forEach(function (t) {
+                window.qfToast(t.kind, t.message, { undoUrl: t.undoUrl });
+            });
+        } catch (e) { /* malformed payload: nothing to show */ }
+    });
+
+    // htmx: toasts from the HX-Trigger header, and an error toast for any failed request.
+    document.addEventListener('htmx:afterRequest', function (evt) {
+        var xhr = evt.detail && evt.detail.xhr;
+        var header = xhr && xhr.getResponseHeader('HX-Trigger');
+        if (!header || header.charAt(0) !== '{') return;
+        try {
+            (JSON.parse(header)['qf-toast'] || []).forEach(function (t) { window.qfToast(t.kind, t.message); });
+        } catch (e) { /* not ours */ }
+    });
+
+    document.addEventListener('htmx:responseError', function (evt) {
+        var xhr = evt.detail && evt.detail.xhr;
+        var text = xhr && xhr.responseText ? xhr.responseText.trim() : '';
+        if (text.charAt(0) === '<') text = ''; // an HTML error page says nothing useful in a toast
+        window.qfToast('error', (text || 'The request failed (HTTP ' + (xhr ? xhr.status : '?') + ').').slice(0, 300));
+    });
+
+    document.addEventListener('htmx:sendError', function () {
+        window.qfToast('error', 'Could not reach the server.');
+    });
+})();
+
+// Confirm modal. A form or submit button with data-confirm="<text naming the item>" asks first;
+// the form submits only after "Confirm". data-confirm-ok sets the confirm button's label.
+(function () {
+    'use strict';
+
+    var pending = null; // { form, submitter }
+
+    function modal() {
+        var el = document.getElementById('qfConfirm');
+        return el && window.tabler && window.tabler.Modal ? window.tabler.Modal.getOrCreateInstance(el) : null;
+    }
+
+    // Capture phase, so it runs before the busy-button handler and anything else listening.
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (form.dataset.qfConfirmed === '1') {
+            delete form.dataset.qfConfirmed;
+            return;
+        }
+        var submitter = e.submitter || null;
+        var source = submitter && submitter.hasAttribute('data-confirm') ? submitter
+            : form.hasAttribute('data-confirm') ? form : null;
+        if (!source) return;
+
+        var m = modal();
+        if (!m) {
+            // Modal script missing: fall back to the browser's dialog rather than not asking.
+            if (!window.confirm(source.getAttribute('data-confirm'))) e.preventDefault();
+            return;
+        }
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pending = { form: form, submitter: submitter };
+        document.getElementById('qfConfirmBody').textContent = source.getAttribute('data-confirm');
+        document.getElementById('qfConfirmOkLabel').textContent = source.getAttribute('data-confirm-ok') || 'Confirm';
+        m.show();
+    }, true);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var ok = document.getElementById('qfConfirmOk');
+        if (!ok) return;
+        ok.addEventListener('click', function () {
+            var m = modal();
+            if (m) m.hide();
+            if (!pending) return;
+            var p = pending;
+            pending = null;
+            p.form.dataset.qfConfirmed = '1';
+            if (p.form.requestSubmit) {
+                p.form.requestSubmit(p.submitter || undefined);
+            } else {
+                p.form.submit();
+            }
+        });
+    });
+})();
+
+// Busy state. A submit button shows a spinner and is disabled while its full-page post is in
+// flight. Disabled *after* the submit event has run (setTimeout 0): a disabled submitter is left
+// out of the form data, which would drop its name/value or its formaction-chosen handler.
+// htmx triggers already spin via .htmx-request (site.css); they also get aria-busy here.
+(function () {
+    'use strict';
+
+    document.addEventListener('submit', function (e) {
+        if (e.defaultPrevented) return;
+        var form = e.target;
+        var btn = e.submitter;
+        if (!btn || form.hasAttribute('data-no-busy') || btn.hasAttribute('data-no-busy')) return;
+        setTimeout(function () {
+            btn.disabled = true;
+            btn.classList.add('qf-busy');
+            btn.setAttribute('aria-busy', 'true');
+        }, 0);
+    });
+
+    // The back/forward cache restores the page with the button still disabled.
+    window.addEventListener('pageshow', function () {
+        document.querySelectorAll('.qf-busy').forEach(function (b) {
+            b.disabled = false;
+            b.classList.remove('qf-busy');
+            b.removeAttribute('aria-busy');
+        });
+    });
+
+    document.addEventListener('htmx:beforeRequest', function (evt) {
+        var elt = evt.detail && evt.detail.elt;
+        if (elt && elt.tagName === 'BUTTON') elt.setAttribute('aria-busy', 'true');
+    });
+
+    document.addEventListener('htmx:afterRequest', function (evt) {
+        var elt = evt.detail && evt.detail.elt;
+        if (elt && elt.tagName === 'BUTTON') elt.removeAttribute('aria-busy');
+    });
+})();

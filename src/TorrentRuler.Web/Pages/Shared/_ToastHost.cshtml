@@ -1,0 +1,13 @@
+@using TorrentRuler.Web
+@* Toasts queued by a full-page post (Toasts.Add) arrive here after the redirect; site.js shows
+   them on load. htmx responses deliver theirs through the HX-Trigger header instead. *@
+@{
+    var queued = Toasts.Take(TempData);
+}
+<div class="qf-toast-stack" id="qfToastStack" role="status" aria-live="polite"></div>
+@if (queued.Count > 0)
+{
+    <script type="application/json" id="qfQueuedToasts">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(queued, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)))</script>
+}
+@* Antiforgery token for the Undo button's POST (site.js reads it). *@
+<form id="qfUndoForm" method="post" hidden></form>

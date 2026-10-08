@@ -88,18 +88,16 @@
                                 </li>
                             </ul>
                             <ul class="navbar-nav">
-                                <li class="nav-item d-flex align-items-center">
-                                    <div class="qf-theme-toggle" role="group" aria-label="Theme">
-                                        <button type="button" class="btn" data-theme-choice="light" title="Light" aria-label="Light" aria-pressed="false">
-                                            <i class="ti ti-sun" aria-hidden="true"></i>
-                                        </button>
-                                        <button type="button" class="btn" data-theme-choice="dark" title="Dark" aria-label="Dark" aria-pressed="false">
-                                            <i class="ti ti-moon-stars" aria-hidden="true"></i>
-                                        </button>
-                                        <button type="button" class="btn" data-theme-choice="auto" title="Match system" aria-label="Match system" aria-pressed="false">
-                                            <i class="ti ti-circle-half" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
+                                <li class="nav-item dropdown qf-theme-menu">
+                                    <button type="button" class="btn btn-link nav-link dropdown-toggle qf-ico-btn" id="qfThemeButton"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="ti ti-moon-stars" aria-hidden="true" id="qfThemeIcon"></i><span>Theme: <span id="qfThemeLabel">Dark</span></span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="qfThemeButton">
+                                        <li><button type="button" class="dropdown-item qf-ico-btn" data-theme-choice="light" data-theme-icon="sun"><i class="ti ti-sun" aria-hidden="true"></i>Light<i class="ti ti-check qf-theme-check" aria-hidden="true"></i></button></li>
+                                        <li><button type="button" class="dropdown-item qf-ico-btn" data-theme-choice="dark" data-theme-icon="moon-stars"><i class="ti ti-moon-stars" aria-hidden="true"></i>Dark<i class="ti ti-check qf-theme-check" aria-hidden="true"></i></button></li>
+                                        <li><button type="button" class="dropdown-item qf-ico-btn" data-theme-choice="auto" data-theme-icon="circle-half"><i class="ti ti-circle-half" aria-hidden="true"></i>Match system<i class="ti ti-check qf-theme-check" aria-hidden="true"></i></button></li>
+                                    </ul>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link qf-ico-btn" asp-page="/Account/ChangePassword">
@@ -121,16 +119,22 @@
         </nav>
     </header>
     <div class="container-fluid qf-content">
-        <main role="main">
+        @* Form pages set ViewData["FormPage"] = true to cap their width; list pages stay fluid. *@
+        <main role="main" class="@(ViewData["FormPage"] is true ? "qf-form-container" : null)">
             @RenderBody()
         </main>
     </div>
+
+    <partial name="_ToastHost" />
+    <partial name="_ConfirmModal" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/tabler/dist/js/tabler.min.js"></script>
     <script>
         (function () {
             var buttons = document.querySelectorAll('[data-theme-choice]');
+            var label = document.getElementById('qfThemeLabel');
+            var icon = document.getElementById('qfThemeIcon');
             function apply(theme) {
                 if (theme === 'auto') {
                     document.documentElement.removeAttribute('data-bs-theme');
@@ -141,7 +145,9 @@
                 buttons.forEach(function (b) {
                     var on = b.getAttribute('data-theme-choice') === theme;
                     b.classList.toggle('active', on);
-                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    b.setAttribute('aria-current', on ? 'true' : 'false');
+                    if (on && label) label.textContent = b.textContent.trim();
+                    if (on && icon) icon.className = 'ti ti-' + b.getAttribute('data-theme-icon');
                 });
             }
             buttons.forEach(function (b) {
