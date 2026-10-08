@@ -68,7 +68,7 @@ public class EditModel(
                 TimeZoneId = rule.TimeZoneId,
                 TargetInstanceIds = JsonSerializer.Deserialize<List<int>>(rule.TargetInstanceIdsJson) ?? [],
                 UseAdvancedSql = rule.UseAdvancedSql,
-                AdvancedSqlWhere = rule.AdvancedSqlWhere,
+                AdvancedSql = rule.AdvancedSql,
                 ConditionTreeJson = rule.ConditionTreeJson,
                 ActionsJson = rule.ActionsJson
             };
@@ -88,17 +88,17 @@ public class EditModel(
 
         if (Input.UseAdvancedSql)
         {
-            if (string.IsNullOrWhiteSpace(Input.AdvancedSqlWhere))
+            if (string.IsNullOrWhiteSpace(Input.AdvancedSql))
             {
-                ModelState.AddModelError("Input.AdvancedSqlWhere", "Advanced SQL cannot be empty.");
+                ModelState.AddModelError("Input.AdvancedSql", "Advanced SQL cannot be empty.");
             }
             else
             {
                 using var snapshot = new SnapshotDatabase();
-                var validation = advancedSqlExecutor.Validate(snapshot, AdvancedSqlTemplate.FromLegacyWhere(Input.AdvancedSqlWhere)!);
+                var validation = advancedSqlExecutor.Validate(snapshot, Input.AdvancedSql);
                 if (!validation.IsValid)
                 {
-                    ModelState.AddModelError("Input.AdvancedSqlWhere", validation.ErrorMessage!);
+                    ModelState.AddModelError("Input.AdvancedSql", validation.ErrorMessage!);
                 }
             }
         }
@@ -175,7 +175,7 @@ public class EditModel(
         rule.CronExpression = Input.CronExpression;
         rule.TimeZoneId = Input.TimeZoneId;
         rule.UseAdvancedSql = Input.UseAdvancedSql;
-        rule.AdvancedSqlWhere = Input.AdvancedSqlWhere;
+        rule.AdvancedSql = Input.AdvancedSql;
         rule.ConditionTreeJson = Input.ConditionTreeJson;
         rule.ActionsJson = Input.ActionsJson;
         rule.TargetInstanceIdsJson = JsonSerializer.Serialize(Input.TargetInstanceIds);
@@ -212,7 +212,7 @@ public class EditModel(
         var draft = new RuleDraft(
             ConditionTreeJson: Input.ConditionTreeJson,
             UseAdvancedSql: Input.UseAdvancedSql,
-            AdvancedSqlWhere: Input.AdvancedSqlWhere,
+            AdvancedSql: Input.AdvancedSql,
             ActionsJson: Input.ActionsJson,
             TargetInstanceIds: Input.TargetInstanceIds);
 
@@ -224,7 +224,7 @@ public class EditModel(
     {
         using var snapshot = new SnapshotDatabase();
         var validation = advancedSqlExecutor.Validate(
-            snapshot, AdvancedSqlTemplate.FromLegacyWhere(Input.AdvancedSqlWhere) ?? "", await fieldContextProvider.GetAsync(ct));
+            snapshot, Input.AdvancedSql ?? "", await fieldContextProvider.GetAsync(ct));
         if (!validation.IsValid)
         {
             Response.StatusCode = 400;
@@ -322,7 +322,8 @@ public class EditModel(
         public List<int> TargetInstanceIds { get; set; } = [];
 
         public bool UseAdvancedSql { get; set; }
-        public string? AdvancedSqlWhere { get; set; }
+        [Display(Name = "Query")]
+        public string? AdvancedSql { get; set; }
         public string ConditionTreeJson { get; set; } = """{"kind":"group","Operator":"And","Children":[]}""";
         public string ActionsJson { get; set; } = "[]";
     }

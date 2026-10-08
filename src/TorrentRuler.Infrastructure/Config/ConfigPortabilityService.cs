@@ -133,7 +133,7 @@ public class ConfigPortabilityService(AppDbContext db) : IConfigPortabilityServi
                 CronExpression = r.CronExpression,
                 TimeZoneId = r.TimeZoneId,
                 ConditionTreeJson = r.ConditionTreeJson,
-                AdvancedSqlWhere = r.AdvancedSqlWhere,
+                AdvancedSqlWhere = r.AdvancedSql,
                 UseAdvancedSql = r.UseAdvancedSql,
                 ActionsJson = r.ActionsJson,
                 TargetInstanceIdsJson = r.TargetInstanceIdsJson
@@ -164,7 +164,7 @@ public class ConfigPortabilityService(AppDbContext db) : IConfigPortabilityServi
                     CronExpression = r.CronExpression,
                     TimeZoneId = r.TimeZoneId,
                     ConditionTreeJson = r.ConditionTreeJson,
-                    AdvancedSqlWhere = r.AdvancedSqlWhere,
+                    AdvancedSql = AdvancedSqlTemplate.FromLegacyWhere(r.AdvancedSqlWhere),
                     UseAdvancedSql = r.UseAdvancedSql,
                     ActionsJson = r.ActionsJson,
                     TargetInstanceIdsJson = r.TargetInstanceIdsJson,
@@ -182,7 +182,7 @@ public class ConfigPortabilityService(AppDbContext db) : IConfigPortabilityServi
                 existing.CronExpression = r.CronExpression;
                 existing.TimeZoneId = r.TimeZoneId;
                 existing.ConditionTreeJson = r.ConditionTreeJson;
-                existing.AdvancedSqlWhere = r.AdvancedSqlWhere;
+                existing.AdvancedSql = AdvancedSqlTemplate.FromLegacyWhere(r.AdvancedSqlWhere);
                 existing.UseAdvancedSql = r.UseAdvancedSql;
                 existing.ActionsJson = r.ActionsJson;
                 existing.TargetInstanceIdsJson = r.TargetInstanceIdsJson;

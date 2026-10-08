@@ -8,7 +8,7 @@ namespace TorrentRuler.Engine;
 public sealed record RuleDraft(
     string ConditionTreeJson,
     bool UseAdvancedSql,
-    string? AdvancedSqlWhere,
+    string? AdvancedSql,
     string ActionsJson,
     IReadOnlyList<int> TargetInstanceIds);
 

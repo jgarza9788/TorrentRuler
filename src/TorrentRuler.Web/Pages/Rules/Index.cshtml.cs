@@ -62,7 +62,7 @@ public class IndexModel(AppDbContext db, IRuleRunner ruleRunner) : PageModel
             CronExpression = rule.CronExpression,
             TimeZoneId = rule.TimeZoneId,
             ConditionTreeJson = rule.ConditionTreeJson,
-            AdvancedSqlWhere = rule.AdvancedSqlWhere,
+            AdvancedSql = rule.AdvancedSql,
             UseAdvancedSql = rule.UseAdvancedSql,
             ActionsJson = rule.ActionsJson,
             TargetInstanceIdsJson = rule.TargetInstanceIdsJson,

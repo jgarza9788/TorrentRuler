@@ -30,8 +30,12 @@ public class Rule
     /// <summary>Structured condition tree, JSON-encoded.</summary>
     public required string ConditionTreeJson { get; set; }
 
-    /// <summary>If UseAdvancedSql is true, this raw SQL WHERE/query is used instead of ConditionTreeJson.</summary>
-    public string? AdvancedSqlWhere { get; set; }
+    /// <summary>
+    /// If UseAdvancedSql is true, this complete query (returning instance_id and torrent_hash) is used
+    /// instead of ConditionTreeJson. Before the full-query change this held only a WHERE expression;
+    /// the RenameAdvancedSqlWhereToAdvancedSql migration converted those.
+    /// </summary>
+    public string? AdvancedSql { get; set; }
 
     public bool UseAdvancedSql { get; set; }
 

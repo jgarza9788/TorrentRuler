@@ -85,7 +85,7 @@ public class RuleRunner(
         {
             var targetInstanceIds = JsonSerializer.Deserialize<List<int>>(rule.TargetInstanceIdsJson) ?? [];
             var matches = await EvaluateAsync(
-                snapshot, resolution, rule.ConditionTreeJson, rule.UseAdvancedSql, rule.AdvancedSqlWhere, targetInstanceIds, ct);
+                snapshot, resolution, rule.ConditionTreeJson, rule.UseAdvancedSql, rule.AdvancedSql, targetInstanceIds, ct);
 
             run.MatchedCount = matches.Count;
 
@@ -111,7 +111,7 @@ public class RuleRunner(
             using (snapshot)
             {
                 var matches = await EvaluateAsync(
-                    snapshot, resolution, draft.ConditionTreeJson, draft.UseAdvancedSql, draft.AdvancedSqlWhere, draft.TargetInstanceIds, ct);
+                    snapshot, resolution, draft.ConditionTreeJson, draft.UseAdvancedSql, draft.AdvancedSql, draft.TargetInstanceIds, ct);
 
                 var actionDefinitions = JsonSerializer.Deserialize<List<ActionDefinition>>(draft.ActionsJson) ?? [];
                 var instancesById = instances.ToDictionary(i => i.Id, ToConnectionInfo);
@@ -195,13 +195,13 @@ public class RuleRunner(
         FieldResolutionContext resolution,
         string conditionTreeJson,
         bool useAdvancedSql,
-        string? advancedSqlWhere,
+        string? advancedSql,
         IReadOnlyList<int> targetInstanceIds,
         CancellationToken ct)
     {
-        if (useAdvancedSql && !string.IsNullOrWhiteSpace(advancedSqlWhere))
+        if (useAdvancedSql && !string.IsNullOrWhiteSpace(advancedSql))
         {
-            var validation = advancedSqlExecutor.Validate(snapshot, AdvancedSqlTemplate.FromLegacyWhere(advancedSqlWhere)!, resolution);
+            var validation = advancedSqlExecutor.Validate(snapshot, advancedSql, resolution);
             if (!validation.IsValid)
             {
                 throw new InvalidOperationException($"Advanced SQL is invalid: {validation.ErrorMessage}");

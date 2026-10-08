@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', initConditionModeToggle);
 // textarea authoritative for both paths. (display:none does not exclude a named field
 // from form serialisation.)
 function initAdvancedSqlEditor() {
-    const ta = document.getElementById('Input_AdvancedSqlWhere');
+    const ta = document.getElementById('Input_AdvancedSql');
     if (!ta || typeof CodeMirror === 'undefined') return;
 
     const editor = CodeMirror.fromTextArea(ta, {
