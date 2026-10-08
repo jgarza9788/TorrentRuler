@@ -1,0 +1,22 @@
+@model TorrentRuler.Engine.Conditions.AdvancedSql.AdvancedSqlPreview
+@* The author's query's own columns and first rows -- extra columns included. Shared by the
+   Validate result and the dry-run panel. *@
+
+@if (Model.SampleRows.Count > 0)
+{
+    <div class="table-responsive mt-2 qf-query-sample">
+        <table class="table table-sm table-striped font-monospace small mb-0">
+            <thead><tr>@foreach (var c in Model.Columns) { <th>@c</th> }</tr></thead>
+            <tbody>
+            @foreach (var row in Model.SampleRows)
+            {
+                <tr>@foreach (var v in row) { <td>@(v is null ? "NULL" : v.ToString())</td> }</tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.PairCount > Model.SampleRows.Count)
+    {
+        <div class="form-text">First @Model.SampleRows.Count row(s) of the query.</div>
+    }
+}

@@ -280,7 +280,7 @@
                     <div class="mt-2">
                         <button type="button" class="btn btn-sm btn-outline-primary qf-ico-btn" hx-post="?handler=PreviewCondition" hx-target="#condition-sql-preview" hx-swap="innerHTML"><i class="ti ti-eye" aria-hidden="true"></i>Preview SQL</button>
                     </div>
-                    <pre id="condition-sql-preview" class="qf-sql-preview mt-2" style="display:none"></pre>
+                    <pre id="condition-sql-preview" class="qf-sql-preview qf-preview-slot mt-2"></pre>
                 </div>
             </div>
 
@@ -293,11 +293,16 @@
                     Extra columns are allowed and shown in dry runs.
                 </div>
                 <textarea asp-for="Input.AdvancedSql" class="form-control qf-muted-mono" rows="6"
-                          aria-describedby="advancedSqlColumnsHint"></textarea>
+                          aria-describedby="advancedSqlColumnsHint"
+                          data-template="@TorrentRuler.Core.Domain.AdvancedSqlTemplate.NewRule"></textarea>
                 <div class="form-text">A complete <code>SELECT</code> (or <code>WITH … SELECT</code>) against the documented schema. Any key from the field reference can be used directly when the torrent table is aliased <code>t</code> (<code>FROM qbittorrent t</code>), e.g. <code>qbittorrent.*.active_days &gt;= 14</code>, <code>storage.&lt;name&gt;.used_percent &lt; 90</code>, <code>tautulli.*.play_count = 0</code>. A per-row field of a related source has no single value here &mdash; use one of its aggregates instead. Runs read-only, single-statement only.</div>
-                <button type="button" class="btn btn-sm btn-outline-primary mt-2 qf-ico-btn"
-                        hx-post="?handler=ValidateAdvancedSql" hx-target="#advanced-sql-preview" hx-swap="innerHTML"><i class="ti ti-check" aria-hidden="true"></i>Validate</button>
-                <pre id="advanced-sql-preview" class="qf-sql-preview mt-2" style="display:none"></pre>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary qf-ico-btn"
+                            hx-post="?handler=ValidateAdvancedSql" hx-target="#advanced-sql-preview" hx-swap="innerHTML"><i class="ti ti-check" aria-hidden="true"></i>Validate</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary qf-ico-btn" id="testInSandbox"
+                            title="Open this query in the SQL sandbox (new tab)"><i class="ti ti-terminal-2" aria-hidden="true"></i>Test in SQL sandbox</button>
+                </div>
+                <div id="advanced-sql-preview" class="qf-preview-slot mt-2" aria-live="polite"></div>
             </div>
         </div>
     </div>

@@ -17,7 +17,8 @@ public sealed record PreviewActionLine(string Description, int WouldChange, int 
 
 /// <summary>
 /// Result of <see cref="IRuleRunner.DryRunAsync"/>: what the rule would match and do right
-/// now, with nothing actually applied.
+/// now, with nothing actually applied. <see cref="Query"/> is set for advanced-SQL drafts: the
+/// query's own columns and first rows, so extra columns the author selected show up in the preview.
 /// </summary>
 public sealed record RulePreview(
     bool Ok,
@@ -25,7 +26,8 @@ public sealed record RulePreview(
     int TorrentsInSnapshot,
     IReadOnlyList<PreviewActionLine> Actions,
     IReadOnlyList<string> SampleMatchedHashes,
-    string? Error)
+    string? Error,
+    TorrentRuler.Engine.Conditions.AdvancedSql.AdvancedSqlPreview? Query = null)
 {
     public static RulePreview Failure(string error) => new(false, 0, 0, [], [], error);
 }

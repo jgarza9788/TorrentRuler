@@ -1,0 +1,25 @@
+@model TorrentRuler.Engine.Conditions.AdvancedSql.AdvancedSqlPreview
+@* Result of the advanced-SQL Validate button, run against the current snapshot. *@
+
+@if (!Model.IsValid)
+{
+    <div class="alert alert-danger py-2 px-3 mb-0" role="alert">
+        <i class="ti ti-alert-circle" aria-hidden="true"></i>
+        <span style="white-space: pre-wrap; word-break: break-word;">@Model.Error</span>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-wrap align-items-center gap-2" role="status">
+        <span class="qf-badge qf-badge-success"><i class="ti ti-check" aria-hidden="true"></i>Valid</span>
+        <span class="small">@Model.PairCount torrent(s) match right now.</span>
+    </div>
+    @if (Model.UnknownPairCount > 0)
+    {
+        <div class="alert alert-warning py-2 px-3 mt-2 mb-0 small">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            @Model.UnknownPairCount returned pair(s) don't match any torrent in qBittorrent; the rule will skip them.
+        </div>
+    }
+    <partial name="_QuerySampleTable" model="Model" />
+}

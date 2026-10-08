@@ -449,6 +449,37 @@ function initAdvancedSqlEditor() {
     const toggle = document.getElementById('conditionModeToggle');
     if (toggle) toggle.addEventListener('click', () => setTimeout(() => editor.refresh(), 0));
 
+    // Switching basic -> SQL shows the basic builder's condition as the full query it compiles
+    // to. Only an untouched box (empty, or still the new-rule template) is filled silently; real
+    // SQL is replaced only if the user agrees. Switching back never touches the builder.
+    // (This listener runs after initConditionModeToggle's, so the hidden field already holds the new mode.)
+    const template = ta.dataset.template || '';
+    if (toggle) toggle.addEventListener('click', async () => {
+        if (document.getElementById('useAdvancedSqlValue')?.value.toLowerCase() !== 'true') return;
+
+        const current = editor.getValue().trim();
+        const untouched = current === '' || current === template.trim();
+        let generated;
+        try {
+            const response = await fetch('?handler=PreviewCondition', { method: 'POST', body: new FormData(ta.form) });
+            if (!response.ok) return; // an incomplete builder has no query to offer; leave the box alone
+            generated = await response.text();
+        } catch {
+            return;
+        }
+
+        if (generated.trim() === current) return;
+        if (untouched || confirm('Replace your SQL with the query generated from the basic builder?')) {
+            editor.setValue(generated);
+        }
+    });
+
+    // "Test in SQL sandbox": the live editor content, in a new tab.
+    const testBtn = document.getElementById('testInSandbox');
+    if (testBtn) testBtn.addEventListener('click', () => {
+        window.open('/Sandbox?sql=' + encodeURIComponent(editor.getValue()), '_blank', 'noopener');
+    });
+
     // Follow the app's theme picker. "Match system" removes the attribute entirely and
     // this Bootstrap build reads the attribute only, so an untagged page is light.
     function syncTheme() {

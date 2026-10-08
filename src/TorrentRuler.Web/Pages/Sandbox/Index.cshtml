@@ -47,7 +47,12 @@
         <form method="post">
             <textarea asp-for="Sql" class="form-control font-monospace mb-2" rows="8" spellcheck="false"
                       onkeydown="if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { this.form.requestSubmit(); }"></textarea>
-            <button type="submit" class="btn btn-primary btn-sm qf-ico-btn"><i class="ti ti-player-play" aria-hidden="true"></i>Run (Ctrl+Enter)</button>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary btn-sm qf-ico-btn"><i class="ti ti-player-play" aria-hidden="true"></i>Run (Ctrl+Enter)</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm qf-ico-btn" id="useAsRule"
+                        title="Start a new rule with this query as its condition"><i class="ti ti-filter-plus" aria-hidden="true"></i>Use as rule</button>
+            </div>
+            <div class="form-text">A rule's query must return <code>instance_id</code> and <code>torrent_hash</code>.</div>
         </form>
 
         @if (Model.Error is not null)
@@ -76,6 +81,11 @@
 
 @section Scripts {
     <script>
+        // "Use as rule": a new rule in advanced mode, prefilled with the current query.
+        document.getElementById('useAsRule')?.addEventListener('click', () => {
+            location.href = '/Rules/Edit?sql=' + encodeURIComponent(document.getElementById('Sql').value);
+        });
+
         // Insert a helper's signature at the cursor (replacing any selection) in the query box.
         document.addEventListener('click', e => {
             const btn = e.target.closest('[data-insert]');

@@ -28,7 +28,15 @@ public class IndexModel(IRuleRunner ruleRunner) : PageModel
 
     public record TableInfo(string Name, int RowCount, List<string> Columns);
 
-    public async Task OnGetAsync(CancellationToken ct) => await RunAsync(execute: false, ct);
+    /// <param name="sql">From the rule editor's "Test in SQL sandbox": load this query (without running it).</param>
+    public async Task OnGetAsync(string? sql, CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(sql))
+        {
+            Sql = sql;
+        }
+        await RunAsync(execute: false, ct);
+    }
 
     public async Task OnPostAsync(CancellationToken ct) => await RunAsync(execute: true, ct);
 

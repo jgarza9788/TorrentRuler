@@ -141,7 +141,10 @@ public class RuleRunner(
                     TorrentsInSnapshot: torrentCount,
                     Actions: lines,
                     SampleMatchedHashes: matches.Select(m => m.TorrentHash).Take(15).ToList(),
-                    Error: null);
+                    Error: null,
+                    Query: draft.UseAdvancedSql && !string.IsNullOrWhiteSpace(draft.AdvancedSql)
+                        ? await advancedSqlExecutor.PreviewAsync(snapshot, draft.AdvancedSql, resolution, ct)
+                        : null);
             }
         }
         catch (Exception ex)

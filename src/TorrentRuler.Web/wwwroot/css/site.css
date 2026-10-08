@@ -552,6 +552,16 @@ body {
   word-break: break-word;
 }
 
+/* A box htmx fills on demand (Preview SQL, Validate): invisible until it has content. */
+.qf-preview-slot:empty {
+  display: none;
+}
+
+.qf-query-sample {
+  max-height: 22rem;
+  overflow: auto;
+}
+
 /* ---- Field reference panel ---- */
 
 .qf-field-row {

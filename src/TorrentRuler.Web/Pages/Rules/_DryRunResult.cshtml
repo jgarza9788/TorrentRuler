@@ -46,6 +46,12 @@ else
                 </ul>
             }
 
+            @if (Model.Query is { IsValid: true, SampleRows.Count: > 0 } query)
+            {
+                <div class="small text-secondary mt-2">What the query returns (all columns):</div>
+                <partial name="_QuerySampleTable" model="query" />
+            }
+
             <div class="form-text mt-2">Preview only — nothing was changed.</div>
 
             @if (Model.SampleMatchedHashes.Count > 0)

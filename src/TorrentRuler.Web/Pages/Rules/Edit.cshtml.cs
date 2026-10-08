@@ -36,10 +36,14 @@ public class EditModel(
         CommonSchedulePresets.Presets.Select(p => new { label = p.Label, cron = p.CronExpression }));
     public IReadOnlyList<(string Signature, string Description)> UdfHelpers => SourceFieldCatalog.Helpers;
 
-    public async Task<IActionResult> OnGetAsync(int? id, CancellationToken ct)
+    /// <param name="sql">From the SQL sandbox's "Use as rule": start a new rule in advanced mode with this query.</param>
+    public async Task<IActionResult> OnGetAsync(int? id, string? sql, CancellationToken ct)
     {
         if (id is null)
         {
+            Input.UseAdvancedSql = !string.IsNullOrWhiteSpace(sql);
+            Input.AdvancedSql = Input.UseAdvancedSql ? sql : AdvancedSqlTemplate.NewRule;
+
             // New rule: seed the schedule timezone from the global setting rather than the
             // hard-coded "UTC" on InputModel, so it matches what Settings shows by default.
             Input.TimeZoneId = await db.AppSettings.AsNoTracking()
@@ -193,7 +197,8 @@ public class EditModel(
                 ?? throw new InvalidOperationException("Condition is empty.");
             var targetIds = Input.TargetInstanceIds.Count > 0 ? Input.TargetInstanceIds : null;
             var compiled = conditionCompiler.Compile(tree, await fieldContextProvider.GetAsync(ct), targetIds);
-            return Content(compiled.Sql, "text/plain");
+            // Parameters written in as literals: this is what "Switch to SQL" drops into the editor.
+            return Content(compiled.ToDisplaySql(), "text/plain");
         }
         catch (Exception ex)
         {
@@ -220,17 +225,17 @@ public class EditModel(
         return Partial("_DryRunResult", preview);
     }
 
+    /// <summary>
+    /// HTMX handler for the advanced-SQL Validate button. Runs against a freshly built snapshot (not
+    /// an empty one) so the result can show how many torrents match and the query's first rows.
+    /// Always 200: htmx doesn't swap error responses, and an invalid query is a normal result here.
+    /// </summary>
     public async Task<IActionResult> OnPostValidateAdvancedSqlAsync(CancellationToken ct)
     {
-        using var snapshot = new SnapshotDatabase();
-        var validation = advancedSqlExecutor.Validate(
-            snapshot, Input.AdvancedSql ?? "", await fieldContextProvider.GetAsync(ct));
-        if (!validation.IsValid)
-        {
-            Response.StatusCode = 400;
-            return Content($"Invalid: {validation.ErrorMessage}", "text/plain");
-        }
-        return Content(validation.CompiledSql!, "text/plain");
+        using var snapshot = await ruleRunner.BuildSandboxSnapshotAsync(ct);
+        var preview = await advancedSqlExecutor.PreviewAsync(
+            snapshot, Input.AdvancedSql ?? "", await fieldContextProvider.GetAsync(ct), ct);
+        return Partial("_AdvancedSqlPreview", preview);
     }
 
     public IActionResult OnPostPreviewSchedule()
