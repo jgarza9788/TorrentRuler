@@ -96,8 +96,11 @@ public class SourceFieldCatalogTests : IDisposable
             Assert.Equal(SourceNaming.ProvidesWatchHistory(type), fields.Any(f => f.KindFilter == SourceFieldCatalog.KindHistory));
         }
 
-        Assert.False(SourceFieldCatalog.Types["jellyfin"].Fields.ContainsKey("days_since_last_watched"));
+        // Plex reports only its library; Jellyfin reports both (watch history from each user's play data).
+        Assert.False(SourceFieldCatalog.Types["plex"].Fields.ContainsKey("days_since_last_watched"));
+        Assert.True(SourceFieldCatalog.Types["jellyfin"].Fields.ContainsKey("days_since_last_watched"));
         Assert.True(SourceFieldCatalog.Types["tautulli"].Fields.ContainsKey("days_since_last_watched"));
+        Assert.False(SourceFieldCatalog.Types["tautulli"].Fields.ContainsKey("added_at"));
     }
 
     [Fact]

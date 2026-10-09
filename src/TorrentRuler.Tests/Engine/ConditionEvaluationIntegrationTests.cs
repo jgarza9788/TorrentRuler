@@ -257,17 +257,38 @@ public class ConditionEvaluationIntegrationTests : IDisposable
                 {
                     InstanceId = 5, InstanceName = "jf1", SourceType = SourceType.Jellyfin,
                     ExternalKey = "1", Title = "A", MediaType = "movie", FilePaths = ["/media/a.mkv"]
+                },
+                new MediaItemRecord
+                {
+                    InstanceId = 6, InstanceName = "plex1", SourceType = SourceType.Plex,
+                    ExternalKey = "p1", Title = "B", MediaType = "movie", FilePaths = ["/media/b.mkv"]
+                }
+            ],
+            // Jellyfin's own history row for B only: A is in the library but unwatched, B is watched but
+            // (as far as the library goes) not in Jellyfin's media rows.
+            WatchHistory =
+            [
+                new WatchHistoryRecord
+                {
+                    InstanceId = 5, InstanceName = "jf1", SourceType = SourceType.Jellyfin,
+                    ExternalKey = "2", FilePath = "/media/b.mkv", UserName = "alice", WatchedAt = DateTimeOffset.UtcNow
                 }
             ]
         });
 
+        // media_count sees library rows only; the history row for B does not make B "in the library".
         var inLibrary = await _compiler.ExecuteAsync(_db,
             _compiler.Compile(Cmp("jellyfin.*.media_count", ComparisonOperator.Gt, Json(0))));
         Assert.Equal("in-library", Assert.Single(inLibrary).TorrentHash);
 
-        // Jellyfin reports no watch history, so history fields are not offered for it at all.
-        Assert.Throws<ConditionCompileException>(() =>
+        // play_count sees history rows only; the library row for A does not count as a play.
+        var watched = await _compiler.ExecuteAsync(_db,
             _compiler.Compile(Cmp("jellyfin.*.play_count", ComparisonOperator.Gt, Json(0))));
+        Assert.Equal("not-in-library", Assert.Single(watched).TorrentHash);
+
+        // Plex reports only its library, so history fields are not offered for it at all.
+        Assert.Throws<ConditionCompileException>(() =>
+            _compiler.Compile(Cmp("plex.*.play_count", ComparisonOperator.Gt, Json(0))));
     }
 
     /// <summary>Three torrents -- watched recently, watched long ago, never watched -- with Tautulli history.</summary>

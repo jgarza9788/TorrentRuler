@@ -13,6 +13,12 @@ public class MediaItemRecord
     /// <summary>The item's genres as one comma-separated string ("Drama,Sci-Fi"), or null when it has none.</summary>
     public string? Genres { get; init; }
 
+    /// <summary>The community (audience) rating the source reports, e.g. 7.4 out of 10.</summary>
+    public double? CommunityRating { get; init; }
+
+    /// <summary>The critic rating the source reports, e.g. 85 out of 100.</summary>
+    public double? CriticRating { get; init; }
+
     public List<string> FilePaths { get; init; } = [];
     public DateTimeOffset? AddedAt { get; init; }
 }

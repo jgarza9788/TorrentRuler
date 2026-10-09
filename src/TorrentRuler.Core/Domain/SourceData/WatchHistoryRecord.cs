@@ -24,6 +24,12 @@ public class WatchHistoryRecord
     /// <summary>The item's genres as one comma-separated string ("Drama,Sci-Fi"), or null when unknown.</summary>
     public string? Genres { get; init; }
 
+    /// <summary>The community (audience) rating the source reports, e.g. 7.4 out of 10.</summary>
+    public double? CommunityRating { get; init; }
+
+    /// <summary>The critic rating the source reports, e.g. 85 out of 100.</summary>
+    public double? CriticRating { get; init; }
+
     /// <summary>How many times the item has been played in total (Jellystat's <c>times_played</c>).</summary>
     public long? TimesPlayed { get; init; }
 

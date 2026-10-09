@@ -36,7 +36,7 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
         using var client = httpClientFactory.CreateClient(connection);
         using var cts = HttpTimeouts.Create(ct, connection.TimeoutSeconds);
 
-        using var request = BuildRequest(connection, "/Items?Recursive=true&IncludeItemTypes=Movie,Episode&Fields=Path,DateCreated,Genres");
+        using var request = BuildRequest(connection, $"/Items?Recursive=true&IncludeItemTypes=Movie,Episode&Fields={ItemFields},DateCreated");
         using var response = await client.SendAsync(request, cts.Token);
         await AdapterHttp.EnsureSuccessAsync(response, "Jellyfin", cts.Token);
         var payload = await response.Content.ReadFromJsonAsync<JellyfinItemsResponse>(cancellationToken: cts.Token);
@@ -49,13 +49,101 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
             ExternalKey = i.Id,
             Title = i.Name,
             MediaType = i.Type,
-            Genres = i.Genres is { Count: > 0 } ? string.Join(",", i.Genres.Where(g => !string.IsNullOrWhiteSpace(g))) : null,
+            Genres = JoinGenres(i.Genres),
+            CommunityRating = i.CommunityRating,
+            CriticRating = i.CriticRating,
             FilePaths = string.IsNullOrEmpty(i.Path) ? [] : [i.Path],
             AddedAt = i.DateCreated
         }).ToList();
 
-        return new SourceFetchResult { MediaItems = items };
+        var history = await FetchWatchHistoryAsync(client, connection, ct);
+        return new SourceFetchResult { MediaItems = items, WatchHistory = history };
     }
+
+    /// <summary>The item fields both the library fetch and the per-user fetches ask for.</summary>
+    private const string ItemFields = "Path,Genres,CommunityRating,CriticRating";
+
+    private static string? JoinGenres(List<string>? genres) =>
+        genres?.Where(g => !string.IsNullOrWhiteSpace(g)).Select(g => g.Trim()).ToList() is { Count: > 0 } list
+            ? string.Join(",", list)
+            : null;
+
+    /// <summary>
+    /// Watch history from each user's own play data (<c>UserData</c>): one row per user per item they
+    /// played or started. Listing users needs an admin key; without one this returns nothing rather than
+    /// failing the whole fetch, since the library itself is the adapter's main job. A user whose items
+    /// can't be read is skipped the same way.
+    /// </summary>
+    private async Task<List<WatchHistoryRecord>> FetchWatchHistoryAsync(HttpClient client, SourceConnectionInfo connection, CancellationToken ct)
+    {
+        var history = new List<WatchHistoryRecord>();
+
+        List<JellyfinUser> users;
+        try
+        {
+            using var cts = HttpTimeouts.Create(ct, connection.TimeoutSeconds);
+            using var request = BuildRequest(connection, "/Users");
+            using var response = await client.SendAsync(request, cts.Token);
+            await AdapterHttp.EnsureSuccessAsync(response, "Jellyfin", cts.Token);
+            users = await response.Content.ReadFromJsonAsync<List<JellyfinUser>>(cancellationToken: cts.Token) ?? [];
+        }
+        catch (Exception ex) when (IsRecoverable(ex, ct))
+        {
+            return history;
+        }
+
+        foreach (var user in users.Where(u => !string.IsNullOrEmpty(u.Id)))
+        {
+            try
+            {
+                // Per request, like the library fetch: TimeoutSeconds bounds one response, not the whole refresh.
+                using var cts = HttpTimeouts.Create(ct, connection.TimeoutSeconds);
+                using var request = BuildRequest(connection,
+                    $"/Users/{Uri.EscapeDataString(user.Id)}/Items?Recursive=true&IncludeItemTypes=Movie,Episode&Fields={ItemFields}&EnableImages=false");
+                using var response = await client.SendAsync(request, cts.Token);
+                await AdapterHttp.EnsureSuccessAsync(response, "Jellyfin", cts.Token);
+                var payload = await response.Content.ReadFromJsonAsync<JellyfinItemsResponse>(cancellationToken: cts.Token);
+
+                foreach (var i in payload?.Items ?? [])
+                {
+                    if (i.UserData is not { } data || !(data.Played || data.PlayCount > 0 || data.PlaybackPositionTicks > 0))
+                    {
+                        continue; // never started by this user
+                    }
+
+                    history.Add(new WatchHistoryRecord
+                    {
+                        InstanceId = connection.InstanceId,
+                        InstanceName = connection.InstanceName,
+                        SourceType = SourceType.Jellyfin,
+                        ExternalKey = i.Id,
+                        MediaTitle = i.Name,
+                        MediaType = i.Type,
+                        Genres = JoinGenres(i.Genres),
+                        CommunityRating = i.CommunityRating,
+                        CriticRating = i.CriticRating,
+                        FilePath = i.Path,
+                        UserName = user.Name,
+                        WatchedAt = data.LastPlayedDate,
+                        // Jellyfin leaves PlayedPercentage out for a finished item; finished means all of it.
+                        PercentComplete = data.PlayedPercentage ?? (data.Played ? 100.0 : null),
+                        TimesPlayed = data.PlayCount
+                    });
+                }
+            }
+            catch (Exception ex) when (IsRecoverable(ex, ct))
+            {
+                // This user's data is unavailable; the other users' history is still worth having.
+            }
+        }
+
+        return history;
+    }
+
+    /// <summary>A failed request or unreadable response is recoverable; the caller cancelling the whole fetch is not.</summary>
+    private static bool IsRecoverable(Exception ex, CancellationToken ct) =>
+        ex is HttpRequestException or InvalidOperationException or System.Text.Json.JsonException
+        || (ex is OperationCanceledException && !ct.IsCancellationRequested);
 
     /// <summary>
     /// Auth via the <c>Authorization: MediaBrowser Token="&lt;key&gt;"</c> scheme -- the original
@@ -86,6 +174,24 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
         [JsonPropertyName("Type")] public string Type { get; set; } = "";
         [JsonPropertyName("Path")] public string? Path { get; set; }
         [JsonPropertyName("Genres")] public List<string>? Genres { get; set; }
+        [JsonPropertyName("CommunityRating")] public double? CommunityRating { get; set; }
+        [JsonPropertyName("CriticRating")] public double? CriticRating { get; set; }
         [JsonPropertyName("DateCreated")] public DateTimeOffset? DateCreated { get; set; }
+        [JsonPropertyName("UserData")] public JellyfinUserData? UserData { get; set; }
+    }
+
+    private sealed class JellyfinUser
+    {
+        [JsonPropertyName("Id")] public string Id { get; set; } = "";
+        [JsonPropertyName("Name")] public string Name { get; set; } = "";
+    }
+
+    private sealed class JellyfinUserData
+    {
+        [JsonPropertyName("PlayedPercentage")] public double? PlayedPercentage { get; set; }
+        [JsonPropertyName("PlaybackPositionTicks")] public long PlaybackPositionTicks { get; set; }
+        [JsonPropertyName("PlayCount")] public long PlayCount { get; set; }
+        [JsonPropertyName("Played")] public bool Played { get; set; }
+        [JsonPropertyName("LastPlayedDate")] public DateTimeOffset? LastPlayedDate { get; set; }
     }
 }

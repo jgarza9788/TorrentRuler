@@ -140,12 +140,14 @@ public static class SourceFieldCatalog
 
         Row("media_type", "{alias}.media_type", FieldValueType.Text, "movie, episode, etc. as reported by the source (Movie / Episode from Jellyfin and Jellystat).", "Movie"),
         Row("genres", "{alias}.genres", FieldValueType.Text, "The item's genres, comma-separated; use Contains to match one genre.", "Drama,Sci-Fi"),
+        Row("community_rating", "{alias}.community_rating", FieldValueType.Real, "The item's community (audience) rating, as the source reports it (Jellyfin: 0-10).", "7.4"),
+        Row("critic_rating", "{alias}.critic_rating", FieldValueType.Real, "The item's critic rating, as the source reports it (Jellyfin: 0-100).", "85"),
         RowOfKind("added_at", "{alias}.added_at", FieldValueType.DateTime, KindMedia, "When the media library added this item.", "2026-01-01T00:00:00+00:00"),
         RowOfKind("days_since_added", "days_since({alias}.added_at)", FieldValueType.Real, KindMedia, "Days since the media library added this item.", "42.5"),
 
         RowOfKind("user_name", "{alias}.user_name", FieldValueType.Text, KindHistory, "Viewer's username.", "alice"),
         RowOfKind("percent_complete", "{alias}.percent_complete", FieldValueType.Real, KindHistory, "Percent of the item watched, 0..100.", "95.0"),
-        RowOfKind("times_played", "{alias}.times_played", FieldValueType.Integer, KindHistory, "How many times the item has been played in total (Jellystat's times_played).", "12"),
+        RowOfKind("times_played", "{alias}.times_played", FieldValueType.Integer, KindHistory, "How many times the item has been played, as the source counts it (Jellystat's times_played across users; Jellyfin's PlayCount for that user).", "12"),
         RowOfKind("watched_at", "{alias}.watched_at", FieldValueType.DateTime, KindHistory, "When this watch event occurred.", "2026-01-01T00:00:00+00:00"),
         RowOfKind("days_since_watched", "days_since({alias}.watched_at)", FieldValueType.Real, KindHistory, "Days since this watch event.", "10.2"),
 

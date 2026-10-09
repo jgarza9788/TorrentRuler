@@ -37,7 +37,10 @@ public static class SourceNaming
     /// <summary>True for sources whose adapter reports library items (Plex, Jellyfin).</summary>
     public static bool ProvidesMedia(SourceType type) => type is SourceType.Plex or SourceType.Jellyfin;
 
-    /// <summary>True for sources whose adapter reports playback events (Tautulli, Jellystat, Jellyglance).</summary>
+    /// <summary>
+    /// True for sources whose adapter reports playback events: Tautulli, Jellystat, Jellyglance, and
+    /// Jellyfin (from each user's own play data, when its key may list users).
+    /// </summary>
     public static bool ProvidesWatchHistory(SourceType type) =>
-        type is SourceType.Tautulli or SourceType.Jellystat or SourceType.Jellyglance;
+        type is SourceType.Tautulli or SourceType.Jellystat or SourceType.Jellyglance or SourceType.Jellyfin;
 }

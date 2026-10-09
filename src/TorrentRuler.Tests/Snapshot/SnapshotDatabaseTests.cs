@@ -435,7 +435,7 @@ public class SnapshotDatabaseTests : IDisposable
                 new MediaItemRecord
                 {
                     InstanceId = 1, InstanceName = "jf1", SourceType = SourceType.Jellyfin,
-                    ExternalKey = "m1", Title = "Foo", MediaType = "Movie", Genres = "Drama,Sci-Fi"
+                    ExternalKey = "m1", Title = "Foo", MediaType = "Movie", Genres = "Drama,Sci-Fi", CommunityRating = 7.4, CriticRating = 85
                 }
             ],
             WatchHistory =
@@ -443,23 +443,25 @@ public class SnapshotDatabaseTests : IDisposable
                 new WatchHistoryRecord
                 {
                     InstanceId = 2, InstanceName = "js1", SourceType = SourceType.Jellystat,
-                    ExternalKey = "m1", UserName = "alice", MediaType = "Movie", Genres = "Drama,Sci-Fi", TimesPlayed = 12
+                    ExternalKey = "m1", UserName = "alice", MediaType = "Movie", Genres = "Drama,Sci-Fi", TimesPlayed = 12, CommunityRating = 7.4, CriticRating = 85
                 }
             ]
         });
 
         using var cmd = _db.Connection.CreateCommand();
         cmd.CommandText = """
-            SELECT 'media', media_type, genres, times_played FROM jellyfin
-            UNION ALL SELECT 'history', media_type, genres, times_played FROM jellystat
+            SELECT 'media', media_type, genres, times_played, community_rating, critic_rating FROM jellyfin
+            UNION ALL SELECT 'history', media_type, genres, times_played, community_rating, critic_rating FROM jellystat
             """;
         using var reader = cmd.ExecuteReader();
 
         Assert.True(reader.Read());
         Assert.Equal(("media", "Movie", "Drama,Sci-Fi"), (reader.GetString(0), reader.GetString(1), reader.GetString(2)));
-        Assert.True(reader.IsDBNull(3)); // a library item has no play time of its own
+        Assert.True(reader.IsDBNull(3)); // a library item has no play count of its own
+        Assert.Equal((7.4, 85.0), (reader.GetDouble(4), reader.GetDouble(5)));
         Assert.True(reader.Read());
         Assert.Equal(("history", "Movie", "Drama,Sci-Fi", 12L), (reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt64(3)));
+        Assert.Equal((7.4, 85.0), (reader.GetDouble(4), reader.GetDouble(5)));
     }
 
     private List<(string Kind, string Title, string Instance)> Rows(string table)

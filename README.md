@@ -74,7 +74,7 @@ type you pick, so it tells you which fields that particular source actually uses
 |---|---|---|---|
 | `Qbittorrent` | The torrents rules act on. At least one is required. | username + password | WebUI login, session cookie (omitted entirely if you leave the username blank, for a WebUI with auth bypassed) |
 | `Plex` | Library items — what your library knows about a file | API key = your Plex token | `X-Plex-Token` header |
-| `Jellyfin` | Library items | API key | `Authorization: MediaBrowser Token="…"` |
+| `Jellyfin` | Library items, plus watch history from each user's play data (needs an admin API key to list users) | API key | `Authorization: MediaBrowser Token="…"` |
 | `Tautulli` | Playback events — who watched what, when | API key | `?apikey=` query parameter |
 | `Jellystat` | Playback events | API key | `x-api-token` header |
 | `Jellyglance` | Playback events | API key | `X-Api-Key` header |
@@ -352,10 +352,12 @@ Prefix each with `qbittorrent.<instance>.` or `qbittorrent.*.`.
 
 These five describe two kinds of row: a **library item** (your media server knows about
 this file) and a **playback event** (somebody watched it). Each source only offers the
-fields it can actually populate — Plex and Jellyfin report library items (the `media`
-fields), while Tautulli, Jellystat and Jellyglance report playback events (the `history`
-fields). Using a field a source doesn't offer, e.g. `jellyfin.*.play_count`, is a
-compile error rather than silently reading NULL.
+fields it can actually populate — Plex reports library items (the `media` fields),
+Tautulli, Jellystat and Jellyglance report playback events (the `history` fields), and
+Jellyfin reports both: its library, and one playback row per user per item they played or
+started (from Jellyfin's per-user play data: last played, percent watched, play count).
+Using a field a source doesn't offer, e.g. `plex.*.play_count`, is a compile error rather
+than silently reading NULL.
 
 Per-row fields — usable at the top level (auto-correlated) or inside a related-source
 check:
@@ -368,11 +370,13 @@ check:
 | `external_key` | Text | all rows | The media server's id for the item. A watch event and its library item share it (Jellystat <-> Jellyfin item id, Tautulli <-> Plex rating key). | `12345` |
 | `media_type` | Text | all rows | movie, episode, etc. as reported by the source (Movie / Episode from Jellyfin and Jellystat). | `Movie` |
 | `genres` | Text | all rows | The item's genres, comma-separated; use Contains to match one genre. | `Drama,Sci-Fi` |
+| `community_rating` | Real | all rows | The item's community (audience) rating, as the source reports it (Jellyfin: 0-10). | `7.4` |
+| `critic_rating` | Real | all rows | The item's critic rating, as the source reports it (Jellyfin: 0-100). | `85` |
 | `added_at` | DateTime | library item | When the media library added this item. | `2026-01-01T00:00:00+00:00` |
 | `days_since_added` | Real | library item | Days since the media library added this item. | `42.5` |
 | `user_name` | Text | playback event | Viewer's username. | `alice` |
 | `percent_complete` | Real | playback event | Percent of the item watched, 0..100. | `95.0` |
-| `times_played` | Integer | playback event | How many times the item has been played in total (Jellystat's `times_played`). | `12` |
+| `times_played` | Integer | playback event | How many times the item has been played, as the source counts it (Jellystat's `times_played` across users; Jellyfin's `PlayCount` for that user). | `12` |
 | `watched_at` | DateTime | playback event | When this watch event occurred. | `2026-01-01T00:00:00+00:00` |
 | `days_since_watched` | Real | playback event | Days since this watch event. | `10.2` |
 
@@ -617,7 +621,7 @@ The schema is addressed by source, which is what makes a field key resolve direc
 | Table | Rows | Notable columns |
 |---|---|---|
 | `qbittorrent` | one per torrent | `instance_id`, `instance`, `hash`, `path_key`, + every torrent field |
-| `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance` | one per library item or playback event | `instance`, `kind` (`media` / `history`), `title`, `media_type`, `genres`, `file_path`, `path_key`, `added_at`, `user_name`, `watched_at`, `percent_complete`, `times_played` |
+| `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance` | one per library item or playback event | `instance`, `kind` (`media` / `history`), `title`, `media_type`, `genres`, `community_rating`, `critic_rating`, `file_path`, `path_key`, `added_at`, `user_name`, `watched_at`, `percent_complete`, `times_played` |
 | `storage` | one per configured storage path | `instance`, `path`, `total_bytes`, `used_bytes`, `free_bytes`, `used_percent`, `folder_size_bytes` |
 | `qbittorrent_files` | one per file in a torrent | not populated yet; see `docs/IMPROVEMENTS.md` |
 

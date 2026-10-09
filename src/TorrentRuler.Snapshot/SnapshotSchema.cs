@@ -132,6 +132,8 @@ internal static class SnapshotSchema
             title TEXT,
             media_type TEXT,
             genres TEXT,
+            community_rating REAL,
+            critic_rating REAL,
             file_path TEXT,
             path_key TEXT,
             added_at TEXT,
