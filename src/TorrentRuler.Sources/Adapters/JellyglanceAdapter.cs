@@ -22,7 +22,13 @@ public class JellyglanceAdapter(IInstanceHttpClientFactory httpClientFactory) : 
         ["filePath"] = "path",
         ["user"] = "user",
         ["watchedAt"] = "watchedAt",
-        ["percent"] = "percent"
+        ["percent"] = "percent",
+        // Optional: read from the history row when it has them. Point these at your deployment's
+        // field names in ExtraConfigJson; a field the row lacks stays NULL.
+        ["genres"] = "genres",
+        ["officialRating"] = "officialRating",
+        ["productionYear"] = "productionYear",
+        ["overview"] = "overview"
     };
 
     protected override void ApplyAuth(HttpRequestMessage request, SourceConnectionInfo connection)

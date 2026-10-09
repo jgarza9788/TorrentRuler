@@ -464,6 +464,48 @@ public class SnapshotDatabaseTests : IDisposable
         Assert.Equal((7.4, 85.0), (reader.GetDouble(4), reader.GetDouble(5)));
     }
 
+    [Fact]
+    public void Rebuild_StoresDescriptiveMetadata_ForBothKinds()
+    {
+        var premiere = DateTimeOffset.Parse("2008-01-20T00:00:00Z");
+        _db.Rebuild(new SnapshotInput
+        {
+            MediaItems =
+            [
+                new MediaItemRecord
+                {
+                    InstanceId = 1, InstanceName = "pl1", SourceType = SourceType.Plex, ExternalKey = "m1", Title = "Pilot",
+                    OfficialRating = "TV-MA", ProductionYear = 2008, Overview = "Crime.", SortName = "pilot", OriginalTitle = "Pilot",
+                    SeriesName = "Breaking Bad", SeasonNumber = 1, EpisodeNumber = 2, RuntimeMinutes = 58.5, PremiereDate = premiere, Studios = "AMC"
+                }
+            ],
+            WatchHistory =
+            [
+                new WatchHistoryRecord
+                {
+                    InstanceId = 2, InstanceName = "t1", SourceType = SourceType.Tautulli, ExternalKey = "m1", UserName = "alice",
+                    OfficialRating = "TV-MA", ProductionYear = 2008, SeriesName = "Breaking Bad", SeasonNumber = 1, EpisodeNumber = 2
+                }
+            ]
+        });
+
+        using var cmd = _db.Connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT official_rating, production_year, overview, sort_name, original_title, series_name, season_number,
+                   episode_number, runtime_minutes, premiere_date, studios FROM plex
+            UNION ALL SELECT official_rating, production_year, NULL, NULL, NULL, series_name, season_number,
+                   episode_number, NULL, NULL, NULL FROM tautulli
+            """;
+        using var reader = cmd.ExecuteReader();
+
+        Assert.True(reader.Read());
+        Assert.Equal(("TV-MA", 2008L, "Crime.", "pilot", "Pilot"), (reader.GetString(0), reader.GetInt64(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)));
+        Assert.Equal(("Breaking Bad", 1L, 2L, 58.5, "AMC"), (reader.GetString(5), reader.GetInt64(6), reader.GetInt64(7), reader.GetDouble(8), reader.GetString(10)));
+        Assert.Equal(premiere, DateTimeOffset.Parse(reader.GetString(9)));
+        Assert.True(reader.Read());
+        Assert.Equal(("TV-MA", 2008L, "Breaking Bad"), (reader.GetString(0), reader.GetInt64(1), reader.GetString(5)));
+    }
+
     private List<(string Kind, string Title, string Instance)> Rows(string table)
     {
         using var cmd = _db.Connection.CreateCommand();

@@ -170,4 +170,19 @@ public class JellystatAdapterTests
         await adapter.FetchAsync(Connection);
         Assert.Equal(3, detailCalls);
     }
+
+    [Fact]
+    public async Task FetchAsync_TakesDescriptiveMetadataFromItemDetails()
+    {
+        var handler = new FakeHttpMessageHandler(req => req.RequestUri!.AbsolutePath == "/api/getHistory"
+            ? Json("""{"pages":1,"results":[{"NowPlayingItemId":"m1","NowPlayingItemName":"Foo","SeriesName":"Show","UserName":"alice","ActivityDateInserted":"2026-01-01T00:00:00Z"}]}""")
+            : Json("""[{"Path":"/media/Foo.mkv","OfficialRating":"PG-13","ProductionYear":2020,"Overview":"A film.","RunTimeTicks":54000000000,"PremiereDate":"2020-05-01T00:00:00Z","Studios":[{"Name":"Acme"}],"ParentIndexNumber":3,"IndexNumber":4}]"""));
+
+        var result = await new JellystatAdapter(new StubInstanceHttpClientFactory(handler)).FetchAsync(Connection);
+
+        var row = result.WatchHistory.Single();
+        Assert.Equal(("PG-13", 2020, "A film.", 90.0, "Acme", "Show", 3, 4),
+            (row.OfficialRating, row.ProductionYear, row.Overview, row.RuntimeMinutes, row.Studios, row.SeriesName, row.SeasonNumber, row.EpisodeNumber));
+        Assert.Equal(DateTimeOffset.Parse("2020-05-01T00:00:00Z"), row.PremiereDate);
+    }
 }

@@ -52,6 +52,17 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
             Genres = JoinGenres(i.Genres),
             CommunityRating = i.CommunityRating,
             CriticRating = i.CriticRating,
+            OfficialRating = i.OfficialRating,
+            ProductionYear = i.ProductionYear,
+            Overview = i.Overview,
+            SortName = i.SortName,
+            OriginalTitle = i.OriginalTitle,
+            SeriesName = i.SeriesName,
+            SeasonNumber = i.ParentIndexNumber,
+            EpisodeNumber = i.IndexNumber,
+            RuntimeMinutes = i.RunTimeTicks / TicksPerMinute,
+            PremiereDate = i.PremiereDate,
+            Studios = JoinNames(i.Studios?.Select(s => s.Name)),
             FilePaths = string.IsNullOrEmpty(i.Path) ? [] : [i.Path],
             AddedAt = i.DateCreated
         }).ToList();
@@ -61,10 +72,14 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
     }
 
     /// <summary>The item fields both the library fetch and the per-user fetches ask for.</summary>
-    private const string ItemFields = "Path,Genres,CommunityRating,CriticRating";
+    private const string ItemFields = "Path,Genres,CommunityRating,CriticRating,Overview,OriginalTitle,SortName,Studios";
 
-    private static string? JoinGenres(List<string>? genres) =>
-        genres?.Where(g => !string.IsNullOrWhiteSpace(g)).Select(g => g.Trim()).ToList() is { Count: > 0 } list
+    private const double TicksPerMinute = 600_000_000.0;
+
+    private static string? JoinGenres(List<string>? genres) => JoinNames(genres);
+
+    private static string? JoinNames(IEnumerable<string>? names) =>
+        names?.Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n.Trim()).ToList() is { Count: > 0 } list
             ? string.Join(",", list)
             : null;
 
@@ -122,6 +137,17 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
                         Genres = JoinGenres(i.Genres),
                         CommunityRating = i.CommunityRating,
                         CriticRating = i.CriticRating,
+                        OfficialRating = i.OfficialRating,
+                        ProductionYear = i.ProductionYear,
+                        Overview = i.Overview,
+                        SortName = i.SortName,
+                        OriginalTitle = i.OriginalTitle,
+                        SeriesName = i.SeriesName,
+                        SeasonNumber = i.ParentIndexNumber,
+                        EpisodeNumber = i.IndexNumber,
+                        RuntimeMinutes = i.RunTimeTicks / TicksPerMinute,
+                        PremiereDate = i.PremiereDate,
+                        Studios = JoinNames(i.Studios?.Select(s => s.Name)),
                         FilePath = i.Path,
                         UserName = user.Name,
                         WatchedAt = data.LastPlayedDate,
@@ -176,8 +202,24 @@ public class JellyfinAdapter(IInstanceHttpClientFactory httpClientFactory) : ISo
         [JsonPropertyName("Genres")] public List<string>? Genres { get; set; }
         [JsonPropertyName("CommunityRating")] public double? CommunityRating { get; set; }
         [JsonPropertyName("CriticRating")] public double? CriticRating { get; set; }
+        [JsonPropertyName("OfficialRating")] public string? OfficialRating { get; set; }
+        [JsonPropertyName("ProductionYear")] public int? ProductionYear { get; set; }
+        [JsonPropertyName("Overview")] public string? Overview { get; set; }
+        [JsonPropertyName("SortName")] public string? SortName { get; set; }
+        [JsonPropertyName("OriginalTitle")] public string? OriginalTitle { get; set; }
+        [JsonPropertyName("SeriesName")] public string? SeriesName { get; set; }
+        [JsonPropertyName("ParentIndexNumber")] public int? ParentIndexNumber { get; set; }
+        [JsonPropertyName("IndexNumber")] public int? IndexNumber { get; set; }
+        [JsonPropertyName("RunTimeTicks")] public long? RunTimeTicks { get; set; }
+        [JsonPropertyName("PremiereDate")] public DateTimeOffset? PremiereDate { get; set; }
+        [JsonPropertyName("Studios")] public List<JellyfinNamed>? Studios { get; set; }
         [JsonPropertyName("DateCreated")] public DateTimeOffset? DateCreated { get; set; }
         [JsonPropertyName("UserData")] public JellyfinUserData? UserData { get; set; }
+    }
+
+    private sealed class JellyfinNamed
+    {
+        [JsonPropertyName("Name")] public string Name { get; set; } = "";
     }
 
     private sealed class JellyfinUser

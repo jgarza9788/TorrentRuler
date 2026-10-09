@@ -30,6 +30,39 @@ public class WatchHistoryRecord
     /// <summary>The critic rating the source reports, e.g. 85 out of 100.</summary>
     public double? CriticRating { get; init; }
 
+    /// <summary>The content rating the source reports, e.g. "PG-13" or "TV-MA".</summary>
+    public string? OfficialRating { get; init; }
+
+    /// <summary>The year the item was produced or released.</summary>
+    public int? ProductionYear { get; init; }
+
+    /// <summary>The item's synopsis.</summary>
+    public string? Overview { get; init; }
+
+    /// <summary>The title the source sorts by (no leading "The"), e.g. "Matrix, The".</summary>
+    public string? SortName { get; init; }
+
+    /// <summary>The title in its original language.</summary>
+    public string? OriginalTitle { get; init; }
+
+    /// <summary>For an episode, the name of its series.</summary>
+    public string? SeriesName { get; init; }
+
+    /// <summary>For an episode, its season number.</summary>
+    public int? SeasonNumber { get; init; }
+
+    /// <summary>For an episode, its number within the season.</summary>
+    public int? EpisodeNumber { get; init; }
+
+    /// <summary>How long the item runs, in minutes.</summary>
+    public double? RuntimeMinutes { get; init; }
+
+    /// <summary>When the item first aired or was released.</summary>
+    public DateTimeOffset? PremiereDate { get; init; }
+
+    /// <summary>The item's studios, comma-separated.</summary>
+    public string? Studios { get; init; }
+
     /// <summary>How many times the item has been played in total (Jellystat's <c>times_played</c>).</summary>
     public long? TimesPlayed { get; init; }
 

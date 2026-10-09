@@ -222,6 +222,17 @@ public class SnapshotDatabase : IDisposable
                 insert.Parameters.AddWithValue("$genres", DbValues.Of(m.Genres));
                 insert.Parameters.AddWithValue("$community_rating", DbValues.Of(m.CommunityRating));
                 insert.Parameters.AddWithValue("$critic_rating", DbValues.Of(m.CriticRating));
+                insert.Parameters.AddWithValue("$official_rating", DbValues.Of(m.OfficialRating));
+                insert.Parameters.AddWithValue("$production_year", DbValues.Of(m.ProductionYear));
+                insert.Parameters.AddWithValue("$overview", DbValues.Of(m.Overview));
+                insert.Parameters.AddWithValue("$sort_name", DbValues.Of(m.SortName));
+                insert.Parameters.AddWithValue("$original_title", DbValues.Of(m.OriginalTitle));
+                insert.Parameters.AddWithValue("$series_name", DbValues.Of(m.SeriesName));
+                insert.Parameters.AddWithValue("$season_number", DbValues.Of(m.SeasonNumber));
+                insert.Parameters.AddWithValue("$episode_number", DbValues.Of(m.EpisodeNumber));
+                insert.Parameters.AddWithValue("$runtime_minutes", DbValues.Of(m.RuntimeMinutes));
+                insert.Parameters.AddWithValue("$premiere_date", DbValues.Of(m.PremiereDate));
+                insert.Parameters.AddWithValue("$studios", DbValues.Of(m.Studios));
                 insert.Parameters.AddWithValue("$file_path", DbValues.Of(filePath));
                 insert.Parameters.AddWithValue("$path_key", DbValues.Of(PathKeyNormalizer.Normalize(filePath, rules)));
                 insert.Parameters.AddWithValue("$added_at", DbValues.Of(m.AddedAt));
@@ -250,6 +261,17 @@ public class SnapshotDatabase : IDisposable
             insert.Parameters.AddWithValue("$genres", DbValues.Of(w.Genres));
             insert.Parameters.AddWithValue("$community_rating", DbValues.Of(w.CommunityRating));
             insert.Parameters.AddWithValue("$critic_rating", DbValues.Of(w.CriticRating));
+            insert.Parameters.AddWithValue("$official_rating", DbValues.Of(w.OfficialRating));
+            insert.Parameters.AddWithValue("$production_year", DbValues.Of(w.ProductionYear));
+            insert.Parameters.AddWithValue("$overview", DbValues.Of(w.Overview));
+            insert.Parameters.AddWithValue("$sort_name", DbValues.Of(w.SortName));
+            insert.Parameters.AddWithValue("$original_title", DbValues.Of(w.OriginalTitle));
+            insert.Parameters.AddWithValue("$series_name", DbValues.Of(w.SeriesName));
+            insert.Parameters.AddWithValue("$season_number", DbValues.Of(w.SeasonNumber));
+            insert.Parameters.AddWithValue("$episode_number", DbValues.Of(w.EpisodeNumber));
+            insert.Parameters.AddWithValue("$runtime_minutes", DbValues.Of(w.RuntimeMinutes));
+            insert.Parameters.AddWithValue("$premiere_date", DbValues.Of(w.PremiereDate));
+            insert.Parameters.AddWithValue("$studios", DbValues.Of(w.Studios));
             insert.Parameters.AddWithValue("$file_path", DbValues.Of(filePath));
             insert.Parameters.AddWithValue("$path_key", DbValues.Of(PathKeyNormalizer.Normalize(filePath, rules)));
             insert.Parameters.AddWithValue("$added_at", DBNull.Value);
@@ -271,10 +293,10 @@ public class SnapshotDatabase : IDisposable
 
         return $"""
             INSERT INTO {SnapshotSchema.TableFor(type)}
-            (instance_id, instance, kind, external_key, title, media_type, genres, community_rating, critic_rating, file_path, path_key,
+            (instance_id, instance, kind, external_key, title, media_type, genres, community_rating, critic_rating, official_rating, production_year, overview, sort_name, original_title, series_name, season_number, episode_number, runtime_minutes, premiere_date, studios, file_path, path_key,
              added_at, user_name, watched_at, percent_complete, times_played)
             VALUES
-            ($instance_id, $instance, $kind, $external_key, $title, $media_type, $genres, $community_rating, $critic_rating, $file_path, $path_key,
+            ($instance_id, $instance, $kind, $external_key, $title, $media_type, $genres, $community_rating, $critic_rating, $official_rating, $production_year, $overview, $sort_name, $original_title, $series_name, $season_number, $episode_number, $runtime_minutes, $premiere_date, $studios, $file_path, $path_key,
              $added_at, $user_name, $watched_at, $percent_complete, $times_played)
             """;
     }

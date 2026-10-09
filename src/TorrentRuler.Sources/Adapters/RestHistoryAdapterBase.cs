@@ -15,7 +15,26 @@ namespace TorrentRuler.Sources.Adapters;
 /// further overridable per-instance via ExtraConfigJson, see RestHistoryConfig).
 /// </summary>
 /// <summary>What a per-item details lookup found out about one watched item. Anything it couldn't find is null.</summary>
-public sealed record HistoryItemDetails(string? Path, string? MediaType, string? Genres, long? TimesPlayed);
+public sealed record HistoryItemDetails
+{
+    public string? Path { get; init; }
+    public string? MediaType { get; init; }
+    public string? Genres { get; init; }
+    public long? TimesPlayed { get; init; }
+    public double? CommunityRating { get; init; }
+    public double? CriticRating { get; init; }
+    public string? OfficialRating { get; init; }
+    public int? ProductionYear { get; init; }
+    public string? Overview { get; init; }
+    public string? SortName { get; init; }
+    public string? OriginalTitle { get; init; }
+    public string? SeriesName { get; init; }
+    public int? SeasonNumber { get; init; }
+    public int? EpisodeNumber { get; init; }
+    public double? RuntimeMinutes { get; init; }
+    public DateTimeOffset? PremiereDate { get; init; }
+    public string? Studios { get; init; }
+}
 
 public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClientFactory) : ISourceAdapter
 {
@@ -80,6 +99,10 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
         IReadOnlyCollection<string> itemIds, CancellationToken ct) =>
         Task.FromResult<IReadOnlyDictionary<string, HistoryItemDetails>>(new Dictionary<string, HistoryItemDetails>());
 
+    protected static DateTimeOffset? ParseDate(string? text) =>
+        DateTimeOffset.TryParse(text, System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed) ? parsed : null;
+
     private async Task<List<WatchHistoryRecord>> FetchHistoryAsync(SourceConnectionInfo connection, RestHistoryConfig config, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient(connection);
@@ -139,6 +162,15 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
                 filePath = itemDetails?.Path;
             }
 
+            // What the history row itself says, by the field map; a details lookup, where the source has
+            // one, wins because it describes the item rather than one play of it.
+            string? Text(string key) => JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault(key));
+            double? Number(string key) => JsonPathResolver.GetDouble(item, config.FieldMap.GetValueOrDefault(key));
+            int? Whole(string key) => Number(key) is { } n ? (int)Math.Round(n) : null;
+            var rowGenres = config.FieldMap.GetValueOrDefault("genres") is { Length: > 0 } genresField
+                ? JsonPathResolver.ToCommaList(JsonPathResolver.FindElement(item, genresField))
+                : null;
+
             return new WatchHistoryRecord
             {
                 InstanceId = connection.InstanceId,
@@ -147,8 +179,21 @@ public abstract class RestHistoryAdapterBase(IInstanceHttpClientFactory httpClie
                 ExternalKey = externalKey,
                 MediaTitle = JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("title")),
                 MediaType = itemDetails?.MediaType ?? JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("mediaType")),
-                Genres = itemDetails?.Genres,
+                Genres = itemDetails?.Genres ?? rowGenres,
                 TimesPlayed = itemDetails?.TimesPlayed,
+                CommunityRating = itemDetails?.CommunityRating ?? Number("communityRating"),
+                CriticRating = itemDetails?.CriticRating ?? Number("criticRating"),
+                OfficialRating = itemDetails?.OfficialRating ?? Text("officialRating"),
+                ProductionYear = itemDetails?.ProductionYear ?? Whole("productionYear"),
+                Overview = itemDetails?.Overview ?? Text("overview"),
+                SortName = itemDetails?.SortName ?? Text("sortName"),
+                OriginalTitle = itemDetails?.OriginalTitle ?? Text("originalTitle"),
+                SeriesName = itemDetails?.SeriesName ?? Text("seriesName"),
+                SeasonNumber = itemDetails?.SeasonNumber ?? Whole("seasonNumber"),
+                EpisodeNumber = itemDetails?.EpisodeNumber ?? Whole("episodeNumber"),
+                RuntimeMinutes = itemDetails?.RuntimeMinutes ?? Number("runtimeMinutes"),
+                PremiereDate = itemDetails?.PremiereDate ?? ParseDate(Text("premiereDate")),
+                Studios = itemDetails?.Studios ?? Text("studios"),
                 FilePath = filePath,
                 UserName = JsonPathResolver.GetString(item, config.FieldMap.GetValueOrDefault("user")),
                 WatchedAt = JsonPathResolver.GetUnixSeconds(item, config.FieldMap.GetValueOrDefault("watchedAt")),

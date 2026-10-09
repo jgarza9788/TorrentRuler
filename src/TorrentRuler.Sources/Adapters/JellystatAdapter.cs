@@ -46,11 +46,25 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
         ["user"] = "UserName",
         ["watchedAt"] = "ActivityDateInserted",
         ["percent"] = "PercentComplete",
+        ["seriesName"] = "SeriesName",
         // Properties of the getItemDetails response.
         ["itemPath"] = "Path",
         ["itemType"] = "Type",
         ["itemGenres"] = "Genres",
-        ["itemTimesPlayed"] = "times_played"
+        ["itemTimesPlayed"] = "times_played",
+        ["itemCommunityRating"] = "CommunityRating",
+        ["itemCriticRating"] = "CriticRating",
+        ["itemOfficialRating"] = "OfficialRating",
+        ["itemProductionYear"] = "ProductionYear",
+        ["itemOverview"] = "Overview",
+        ["itemSortName"] = "SortName",
+        ["itemOriginalTitle"] = "OriginalTitle",
+        ["itemSeriesName"] = "SeriesName",
+        ["itemSeasonNumber"] = "ParentIndexNumber",
+        ["itemEpisodeNumber"] = "IndexNumber",
+        ["itemRunTimeTicks"] = "RunTimeTicks",
+        ["itemPremiereDate"] = "PremiereDate",
+        ["itemStudios"] = "Studios"
     };
 
     protected override void ApplyAuth(HttpRequestMessage request, SourceConnectionInfo connection)
@@ -81,6 +95,9 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
         var typeField = Field("itemType", "Type");
         var genresField = Field("itemGenres", "Genres");
         var timesPlayedField = Field("itemTimesPlayed", "times_played");
+        string? Text(JsonElement root, string key, string fallback) => JsonPathResolver.FindString(root, Field(key, fallback));
+        double? Number(JsonElement root, string key, string fallback) => JsonPathResolver.ToDouble(JsonPathResolver.FindElement(root, Field(key, fallback)));
+        int? Whole(JsonElement root, string key, string fallback) => Number(root, key, fallback) is { } n ? (int)Math.Round(n) : null;
         var resolved = new ConcurrentDictionary<string, HistoryItemDetails>(StringComparer.Ordinal);
         var now = DateTimeOffset.UtcNow;
 
@@ -121,14 +138,29 @@ public class JellystatAdapter(IInstanceHttpClientFactory httpClientFactory) : Re
                     using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
                     using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cts.Token);
                     var root = doc.RootElement;
-                    var details = new HistoryItemDetails(
-                        JsonPathResolver.FindString(root, pathField),
-                        JsonPathResolver.FindString(root, typeField),
-                        JsonPathResolver.ToCommaList(JsonPathResolver.FindElement(root, genresField)),
-                        JsonPathResolver.ToDouble(JsonPathResolver.FindElement(root, timesPlayedField)) is { } n ? (long)Math.Round(n) : null);
+                    var details = new HistoryItemDetails
+                    {
+                        Path = JsonPathResolver.FindString(root, pathField),
+                        MediaType = JsonPathResolver.FindString(root, typeField),
+                        Genres = JsonPathResolver.ToCommaList(JsonPathResolver.FindElement(root, genresField)),
+                        TimesPlayed = JsonPathResolver.ToDouble(JsonPathResolver.FindElement(root, timesPlayedField)) is { } n ? (long)Math.Round(n) : null,
+                        CommunityRating = Number(root, "itemCommunityRating", "CommunityRating"),
+                        CriticRating = Number(root, "itemCriticRating", "CriticRating"),
+                        OfficialRating = Text(root, "itemOfficialRating", "OfficialRating"),
+                        ProductionYear = Whole(root, "itemProductionYear", "ProductionYear"),
+                        Overview = Text(root, "itemOverview", "Overview"),
+                        SortName = Text(root, "itemSortName", "SortName"),
+                        OriginalTitle = Text(root, "itemOriginalTitle", "OriginalTitle"),
+                        SeriesName = Text(root, "itemSeriesName", "SeriesName"),
+                        SeasonNumber = Whole(root, "itemSeasonNumber", "ParentIndexNumber"),
+                        EpisodeNumber = Whole(root, "itemEpisodeNumber", "IndexNumber"),
+                        RuntimeMinutes = Number(root, "itemRunTimeTicks", "RunTimeTicks") / 600_000_000.0,
+                        PremiereDate = ParseDate(Text(root, "itemPremiereDate", "PremiereDate")),
+                        Studios = JsonPathResolver.ToCommaList(JsonPathResolver.FindElement(root, Field("itemStudios", "Studios")))
+                    };
 
                     // A response that told us nothing isn't worth caching (and isn't worth a row of NULLs).
-                    if (details != new HistoryItemDetails(null, null, null, null))
+                    if (details != new HistoryItemDetails())
                     {
                         resolved[id] = details;
                         _itemDetails[(connection.InstanceId, id)] = (details, DateTimeOffset.UtcNow);

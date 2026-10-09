@@ -86,6 +86,36 @@ public class JellyfinAdapterTests
     }
 
     [Fact]
+    public async Task FetchAsync_CarriesDescriptiveMetadataOntoLibraryAndHistoryRows()
+    {
+        const string item = """
+            {"Id":"e9","Name":"Pilot","Type":"Episode","Path":"/media/Pilot.mkv","OfficialRating":"TV-MA","ProductionYear":2008,
+             "Overview":"A teacher turns to crime.","SortName":"pilot","OriginalTitle":"Pilot (orig)","SeriesName":"Breaking Bad",
+             "ParentIndexNumber":1,"IndexNumber":2,"RunTimeTicks":36000000000,"PremiereDate":"2008-01-20T00:00:00.0000000Z",
+             "Studios":[{"Name":"Sony"},{"Name":"AMC"}],
+             "UserData":{"PlayCount":1,"Played":true}}
+            """;
+        var handler = new FakeHttpMessageHandler(req => req.RequestUri!.AbsolutePath switch
+        {
+            "/Items" => Json($$"""{"Items":[{{item}}]}"""),
+            "/Users" => Json("""[{"Id":"u1","Name":"alice"}]"""),
+            _ => Json($$"""{"Items":[{{item}}]}""")
+        });
+
+        var result = await new JellyfinAdapter(new StubInstanceHttpClientFactory(handler)).FetchAsync(Connection);
+
+        var library = result.MediaItems.Single();
+        Assert.Equal(("TV-MA", 2008, "A teacher turns to crime.", "pilot", "Pilot (orig)"),
+            (library.OfficialRating, library.ProductionYear, library.Overview, library.SortName, library.OriginalTitle));
+        Assert.Equal(("Breaking Bad", 1, 2, 60.0, "Sony,AMC"),
+            (library.SeriesName, library.SeasonNumber, library.EpisodeNumber, library.RuntimeMinutes, library.Studios));
+        Assert.Equal(DateTimeOffset.Parse("2008-01-20T00:00:00Z"), library.PremiereDate);
+
+        var watched = result.WatchHistory.Single();
+        Assert.Equal(("TV-MA", 2008, "Breaking Bad"), (watched.OfficialRating, watched.ProductionYear, watched.SeriesName));
+    }
+
+    [Fact]
     public async Task FetchAsync_SkipsItemsAUserNeverStarted_AndKeepsPartiallyWatchedOnes()
     {
         var handler = Server(user => user == "u-bob"

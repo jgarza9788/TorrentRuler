@@ -372,6 +372,17 @@ check:
 | `genres` | Text | all rows | The item's genres, comma-separated; use Contains to match one genre. | `Drama,Sci-Fi` |
 | `community_rating` | Real | all rows | The item's community (audience) rating, as the source reports it (Jellyfin: 0-10). | `7.4` |
 | `critic_rating` | Real | all rows | The item's critic rating, as the source reports it (Jellyfin: 0-100). | `85` |
+| `official_rating` | Text | all rows | The content rating, as the source reports it (Jellyfin and Plex). | `PG-13` |
+| `production_year` | Integer | all rows | The year the item was produced or released. | `2020` |
+| `overview` | Text | all rows | The item's synopsis; use Contains to search it. | `A hacker learns the truth about his reality.` |
+| `sort_name` | Text | all rows | The title the source sorts by (no leading 'The'). | `Matrix, The` |
+| `original_title` | Text | all rows | The title in its original language. | `The Matrix` |
+| `series_name` | Text | all rows | For an episode, the name of its series. | `Breaking Bad` |
+| `season_number` | Integer | all rows | For an episode, its season number. | `2` |
+| `episode_number` | Integer | all rows | For an episode, its number within the season. | `5` |
+| `runtime_minutes` | Real | all rows | How long the item runs, in minutes. | `136.0` |
+| `premiere_date` | DateTime | all rows | When the item first aired or was released. | `1999-03-31T00:00:00+00:00` |
+| `studios` | Text | all rows | The item's studios, comma-separated; use Contains to match one. | `Warner Bros.` |
 | `added_at` | DateTime | library item | When the media library added this item. | `2026-01-01T00:00:00+00:00` |
 | `days_since_added` | Real | library item | Days since the media library added this item. | `42.5` |
 | `user_name` | Text | playback event | Viewer's username. | `alice` |
@@ -621,7 +632,7 @@ The schema is addressed by source, which is what makes a field key resolve direc
 | Table | Rows | Notable columns |
 |---|---|---|
 | `qbittorrent` | one per torrent | `instance_id`, `instance`, `hash`, `path_key`, + every torrent field |
-| `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance` | one per library item or playback event | `instance`, `kind` (`media` / `history`), `title`, `media_type`, `genres`, `community_rating`, `critic_rating`, `file_path`, `path_key`, `added_at`, `user_name`, `watched_at`, `percent_complete`, `times_played` |
+| `plex`, `jellyfin`, `tautulli`, `jellystat`, `jellyglance` | one per library item or playback event | `instance`, `kind` (`media` / `history`), `title`, `media_type`, `genres`, `community_rating`, `critic_rating`, `official_rating`, `production_year`, `overview`, `sort_name`, `original_title`, `series_name`, `season_number`, `episode_number`, `runtime_minutes`, `premiere_date`, `studios`, `file_path`, `path_key`, `added_at`, `user_name`, `watched_at`, `percent_complete`, `times_played` |
 | `storage` | one per configured storage path | `instance`, `path`, `total_bytes`, `used_bytes`, `free_bytes`, `used_percent`, `folder_size_bytes` |
 | `qbittorrent_files` | one per file in a torrent | not populated yet; see `docs/IMPROVEMENTS.md` |
 

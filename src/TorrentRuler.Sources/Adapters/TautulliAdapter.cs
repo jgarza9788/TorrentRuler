@@ -20,6 +20,14 @@ public class TautulliAdapter(IInstanceHttpClientFactory httpClientFactory) : Res
         ["mediaType"] = "media_type",
         ["user"] = "friendly_name",
         ["watchedAt"] = "date",
-        ["percent"] = "percent_complete"
+        ["percent"] = "percent_complete",
+        // The history rows carry these. Genres, content rating and the synopsis are only in
+        // get_metadata, so query those from the plex table through external_key.
+        ["productionYear"] = "year",
+        ["originalTitle"] = "original_title",
+        ["seriesName"] = "grandparent_title",
+        ["seasonNumber"] = "parent_media_index",
+        ["episodeNumber"] = "media_index",
+        ["premiereDate"] = "originally_available_at"
     };
 }

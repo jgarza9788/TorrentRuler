@@ -66,6 +66,22 @@ public class PlexAdapter(IInstanceHttpClientFactory httpClientFactory) : ISource
                     ExternalKey = meta.RatingKey,
                     Title = meta.Title,
                     MediaType = meta.Type,
+                    Genres = JoinTags(meta.Genre),
+                    CommunityRating = meta.AudienceRating,
+                    CriticRating = meta.Rating,
+                    OfficialRating = meta.ContentRating,
+                    ProductionYear = meta.Year,
+                    Overview = meta.Summary,
+                    SortName = meta.TitleSort,
+                    OriginalTitle = meta.OriginalTitle,
+                    // For an episode Plex's grandparent is the series and its parent the season.
+                    SeriesName = meta.GrandparentTitle,
+                    SeasonNumber = meta.ParentIndex,
+                    EpisodeNumber = meta.Index,
+                    RuntimeMinutes = meta.Duration > 0 ? meta.Duration / 60_000.0 : null,
+                    PremiereDate = DateTimeOffset.TryParse(meta.OriginallyAvailableAt, System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.AssumeUniversal, out var premiere) ? premiere : null,
+                    Studios = meta.Studio,
                     FilePaths = filePaths,
                     AddedAt = meta.AddedAt > 0 ? DateTimeOffset.FromUnixTimeSeconds(meta.AddedAt) : null
                 });
@@ -74,6 +90,11 @@ public class PlexAdapter(IInstanceHttpClientFactory httpClientFactory) : ISource
 
         return new SourceFetchResult { MediaItems = items };
     }
+
+    private static string? JoinTags(List<PlexTag>? tags) =>
+        tags?.Select(t => t.Tag?.Trim()).Where(t => !string.IsNullOrEmpty(t)).ToList() is { Count: > 0 } list
+            ? string.Join(",", list)
+            : null;
 
     private static HttpRequestMessage BuildRequest(SourceConnectionInfo connection, string path)
     {
@@ -126,7 +147,26 @@ public class PlexAdapter(IInstanceHttpClientFactory httpClientFactory) : ISource
         [JsonPropertyName("title")] public string Title { get; set; } = "";
         [JsonPropertyName("type")] public string Type { get; set; } = "";
         [JsonPropertyName("addedAt")] public long AddedAt { get; set; }
+        [JsonPropertyName("Genre")] public List<PlexTag>? Genre { get; set; }
+        [JsonPropertyName("audienceRating")] public double? AudienceRating { get; set; }
+        [JsonPropertyName("rating")] public double? Rating { get; set; }
+        [JsonPropertyName("contentRating")] public string? ContentRating { get; set; }
+        [JsonPropertyName("year")] public int? Year { get; set; }
+        [JsonPropertyName("summary")] public string? Summary { get; set; }
+        [JsonPropertyName("titleSort")] public string? TitleSort { get; set; }
+        [JsonPropertyName("originalTitle")] public string? OriginalTitle { get; set; }
+        [JsonPropertyName("grandparentTitle")] public string? GrandparentTitle { get; set; }
+        [JsonPropertyName("parentIndex")] public int? ParentIndex { get; set; }
+        [JsonPropertyName("index")] public int? Index { get; set; }
+        [JsonPropertyName("duration")] public long Duration { get; set; }
+        [JsonPropertyName("originallyAvailableAt")] public string? OriginallyAvailableAt { get; set; }
+        [JsonPropertyName("studio")] public string? Studio { get; set; }
         [JsonPropertyName("Media")] public List<PlexMedia>? Media { get; set; }
+    }
+
+    private sealed class PlexTag
+    {
+        [JsonPropertyName("tag")] public string? Tag { get; set; }
     }
 
     private sealed class PlexMedia
